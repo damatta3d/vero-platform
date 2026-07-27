@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-006 |
 | Título | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão |
-| Versão | 0.2.0 |
-| Estado | Proposed — aguardando revisão arquitetural |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -246,3 +246,4 @@ Separar capacidades Core de semântica universal reduz acoplamento e preserva ow
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de limites e catálogo do Core Platform e Shared Kernel | Proposed |
 | 0.2.0 | 2026-07-27 | Ownership, dependências e escopo do catálogo inicial refinados | Proposed |
+| 1.0.0 | 2026-07-27 | Decisão arquitetural revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
