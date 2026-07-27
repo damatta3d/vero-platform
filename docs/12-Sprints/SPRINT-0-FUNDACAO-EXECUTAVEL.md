@@ -5,7 +5,7 @@
 | Campo | Valor |
 |---|---|
 | Missão | MISSÃO 002 |
-| Estado | Authorized — aguardando decisões arquiteturais reservadas |
+| Estado | In Progress — baseline arquitetural aprovada e integrada |
 | Data de autorização | 2026-07-27 |
 | Autoridade | Arquiteto-Chefe |
 | Branch de execução | `agent/sprint-0-foundation` |
@@ -16,9 +16,9 @@
 1. VERO-CONST-001 v1.0.0 — Approved;
 2. VERO-BLP-001 v0.1.0 — Approved;
 3. VERO-BLP-002 v0.1.0 — Approved;
-4. ADRs vigentes;
+4. ADR-001 a ADR-006 v1.0.0 — Approved;
 5. VERO-CDM-001 v0.1.0 — Approved;
-6. Engineering Playbook v1.0.0 — Ativo;
+6. VERO-ENG-001 v1.1.0 — Ativo;
 7. código e artefatos operacionais.
 
 Em conflito, o documento superior prevalece. Código divergente deve ser corrigido. Mudança normativa ocorre somente pelo processo formal aplicável e nunca por adaptação silenciosa da documentação ao código.
@@ -78,14 +78,14 @@ Construir exclusivamente a fundação técnica executável da VERO Platform, sem
 | S0-01 | Workspace Nx, pnpm e TypeScript | Pendente |
 | S0-02 | Qualidade: ESLint, Prettier, Husky e Commitlint | Pendente |
 | S0-03 | Aplicação NestJS com Fastify | Pendente |
-| S0-04 | Configuração centralizada e validada | Bloqueado por decisão reservada |
-| S0-05 | Shared Kernel mínimo | Bloqueado por catálogo/ADR |
-| S0-06 | Estrutura Core Platform | Pendente de decomposição aprovada |
+| S0-04 | Configuração centralizada e validada | Pendente |
+| S0-05 | Shared Kernel mínimo | Pendente |
+| S0-06 | Estrutura Core Platform | Pendente |
 | S0-07 | Prisma e PostgreSQL | Pendente |
 | S0-08 | Redis | Pendente |
 | S0-09 | RabbitMQ | Pendente |
-| S0-10 | Logging estruturado | Bloqueado por decisão reservada |
-| S0-11 | Observabilidade básica | Bloqueado por decisão reservada |
+| S0-10 | Logging estruturado | Pendente |
+| S0-11 | Observabilidade básica | Pendente |
 | S0-12 | Health checks | Pendente |
 | S0-13 | Docker e Docker Compose | Pendente |
 | S0-14 | Testes arquiteturais, unitários e integração | Pendente |
@@ -107,7 +107,7 @@ O VERO-BLP-002 § 23 exige decisão formal antes da implementação corresponden
 - outbox/inbox e publicação de eventos;
 - schema registry e contract testing.
 
-A Sprint permanece autorizada, mas a implementação técnica não pode transformar essas escolhas em decisões implícitas.
+Os ADR-001 a ADR-006 resolveram as escolhas necessárias à fundação. Os temas ainda reservados — formato e geração de identificadores globais, outbox/inbox, publicação transacional, Unit of Work, schemas Prisma modulares definitivos, schema registry, contract testing, topologia definitiva de mensageria e secret store compartilhado — permanecem fora do escopo implementável desta Sprint.
 
 ## Critérios de conclusão
 
