@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-003 |
 | Título | Persistência e Mensageria — PostgreSQL, Prisma, Redis e RabbitMQ |
-| Versão | 0.2.0 |
-| Estado | Proposed — aguardando revisão arquitetural |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -185,3 +185,4 @@ A combinação fornece persistência ACID, acesso tipado, cache compartilhado e 
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de persistência, cache e mensageria | Proposed |
 | 0.2.0 | 2026-07-27 | Delimitação da baseline técnica, schema vazio e topologia efêmera de testes | Proposed |
+| 1.0.0 | 2026-07-27 | Decisão arquitetural revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
