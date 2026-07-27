@@ -12,7 +12,7 @@
 | Documento | Blueprint Arquitetural da VERO Platform |
 | Volume | II — Core Platform e Shared Kernel |
 | Versão | 0.1.0 |
-| Estado | Draft — aguardando aprovação do Arquiteto-Chefe |
+| Estado | Approved |
 | Documento normativo superior | VERO-CONST-001 v1.0.0 — Approved |
 | Blueprint anterior | VERO-BLP-001 v0.1.0 — Approved |
 | Autoridade | Arquiteto-Chefe |
@@ -1020,11 +1020,11 @@ Este capítulo implementa:
 
 ---
 
-## 25. Condição de aprovação
+## 25. Estado de aprovação
 
-Este Volume II permanece em `Draft` até aprovação expressa do Arquiteto-Chefe. Sua aprovação:
+Este Volume II foi aprovado expressamente pelo Arquiteto-Chefe na autorização oficial da MISSÃO 002. A aprovação:
 
-- altera o estado documental para `Approved`;
+- estabelece o estado documental como `Approved`;
 - não altera a versão da plataforma;
 - não autoriza automaticamente código ou módulos de negócio;
 - permite iniciar o Volume III somente mediante missão subsequente;
@@ -1043,4 +1043,4 @@ Este capítulo implementa:
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
-| 0.1.0 | 2026-07-27 | Primeira materialização do Volume II — Core Platform, Shared Kernel e mecanismos fundamentais compartilhados | Draft — aguardando aprovação |
+| 0.1.0 | 2026-07-27 | Primeira materialização e aprovação do Volume II — Core Platform, Shared Kernel e mecanismos fundamentais compartilhados | Approved |
