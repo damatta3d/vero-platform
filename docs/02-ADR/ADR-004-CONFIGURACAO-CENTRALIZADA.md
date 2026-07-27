@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | ADR-004 |
 | Título | Configuração Centralizada — Environment, Validation, Secrets e Feature Flags |
-| Versão | 0.1.0 |
+| Versão | 0.2.0 |
 | Estado | Proposed — aguardando revisão arquitetural |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -36,12 +36,12 @@ Se aprovado, este ADR estabelece:
    2. arquivo ou parâmetros não sensíveis do ambiente;
    3. variáveis de ambiente;
    4. secret store;
-   5. override efêmero de teste.
+   5. override efêmero de teste, habilitado exclusivamente pelo test harness e rejeitado em qualquer ambiente não classificado como teste.
 6. Valores obrigatórios ausentes ou inválidos bloquearão o startup com erro seguro, indicando chave lógica e regra violada sem revelar valor sensível.
 7. `process.env` será lido somente pelo adapter de configuração no bootstrap.
 8. Módulos receberão apenas seu recorte tipado, por token ou contrato explícito.
 9. Arquivos `.env` reais e segredos nunca serão versionados; `.env.example` conterá somente nomes e exemplos não sensíveis.
-10. Secrets serão obtidos por uma porta `SecretProvider` em Infrastructure. Na Sprint 0, environment poderá implementar a porta somente para desenvolvimento local; a seleção de secret store compartilhado ficará adiada.
+10. Secrets serão obtidos por uma porta `SecretProvider` em Infrastructure. Na Sprint 0, environment poderá implementar a porta somente para desenvolvimento local; a seleção de secret store compartilhado ficará adiada. Valores secretos não serão copiados para objetos globais, serializados, enumerados em diagnóstico ou expostos a consumidores que não os declarem.
 11. Feature flags serão acessadas por porta provider-agnostic, possuirão owner, tipo, default seguro, escopo e data de revisão.
 12. A implementação inicial de feature flags será estática e derivada da configuração validada. Avaliação dinâmica, segmentação remota ou provider externo exigirão decisão posterior.
 13. Feature flag não substituirá Permission, Policy, configuração de negócio, lifecycle ou regra de domínio.
@@ -179,3 +179,4 @@ A validação centralizada e tipada reduz estados inválidos e vazamento de segr
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de configuração, secrets e feature flags | Proposed |
+| 0.2.0 | 2026-07-27 | Restrição de overrides de teste e exposição de secrets por menor privilégio | Proposed |
