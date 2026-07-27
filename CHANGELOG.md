@@ -8,6 +8,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Pacote 5 da Constituição Arquitetural com papéis, processo decisório, critérios de ADR, conformidade, exceções, governança documental e qualidade arquitetural.
+- Governança constitucional do Shared Kernel, criação e depreciação de módulos e ciclo de vida de APIs e eventos.
+- Referências para operating model, evidências, métricas, catálogo do Shared Kernel e ciclo de módulos no Blueprint.
 - Pacote 4 da Constituição Arquitetural com modelo conceitual de camadas, núcleo, módulos, comunicação, contratos e dependências.
 - Diagramas conceituais de camadas e organização do núcleo arquitetural.
 - Referências rastreáveis para o detalhamento técnico do Modelo Arquitetural no Blueprint.
@@ -21,6 +24,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Pacote 4 registrado como aprovado pelo Arquiteto-Chefe.
+- Capítulo de Governança e Autoridade ampliado e reorganizado segundo o modelo normativo obrigatório, preservando o conteúdo aprovado no Pacote 1.
+- Constituição `VERO-CONST-001` evoluída para `0.5.0`, mantendo estado Draft e o Pacote 5 para revisão.
 - Pacote 3 registrado como aprovado pelo Arquiteto-Chefe.
 - Princípio de Evolução Arquitetural Controlada incorporado à Constituição.
 - Constituição `VERO-CONST-001` evoluída para `0.4.0`, mantendo estado Draft e o Pacote 4 para revisão.

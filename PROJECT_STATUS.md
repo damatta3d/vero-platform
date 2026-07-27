@@ -3,9 +3,9 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v0.4.0  
+**Constituição:** VERO-CONST-001 v0.5.0  
 **Fase:** Consolidação Arquitetural  
-**Estado:** Pacotes 1, 2 e 3 aprovados; Pacote 4 materializado para revisão  
+**Estado:** Pacotes 1, 2, 3 e 4 aprovados; Pacote 5 materializado para revisão  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -21,8 +21,9 @@
 - Pacote 3 — Princípios Arquiteturais — aprovado.
 - Princípio de Evolução Arquitetural Controlada incorporado.
 - Modelo editorial único para capítulos constitucionais.
+- Pacote 4 — Modelo Arquitetural — aprovado.
 - Registro ampliado de referências cruzadas para o Blueprint.
-- Pacote 4 — Modelo Arquitetural — materializado para revisão.
+- Pacote 5 — Governança Arquitetural — materializado para revisão.
 
 ## Escopo autorizado nesta fase
 
@@ -49,9 +50,9 @@ Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram
 
 ## Próximos marcos
 
-1. Submeter o Pacote 4 à aprovação do Arquiteto-Chefe.
-2. Após aprovação, materializar o Pacote 5 — Governança Arquitetural.
-3. Concluir e consolidar a Constituição até 1.0.0.
+1. Submeter o Pacote 5 à aprovação do Arquiteto-Chefe.
+2. Após aprovação, materializar o Pacote 6 — Evolução e Gestão de Mudanças.
+3. Concluir o Pacote 7 e consolidar a Constituição até 1.0.0.
 4. Iniciar o Blueprint somente após autorização expressa.
 5. Construir o Canonical Domain Model.
 6. Criar os ADRs aprovados.

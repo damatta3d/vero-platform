@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | VERO-CONST-001-TR01 |
 | Documento de origem | VERO-CONST-001 |
-| Versão | 0.4.0 |
+| Versão | 0.5.0 |
 | Estado | Draft |
 | Data | 2026-07-27 |
 | Responsável | Engenharia Oficial |
@@ -24,13 +24,13 @@ Manter rastreabilidade dos temas constitucionais que deverão ser detalhados tec
 | Bounded contexts e topologia modular | CH02 §§ 3.1–3.3; CH05 §§ 3.2–3.3 | Definir catálogo, fronteiras, responsabilidades, propriedade e testes de módulos | Pendente |
 | Realização das camadas | CH05 § 3.1 | Definir estrutura física, projetos, portas, adaptadores, composição e testes de dependência | Pendente |
 | Composição do núcleo arquitetural | CH05 § 3.2 | Detalhar Core Platform, Shared Kernel, Cross-Cutting Services, Engines, AI Gateway e Integration Hub | Pendente |
-| Classificação e catálogo de módulos | CH05 § 3.3 | Definir módulos Core, Platform, Business e Integrations, com responsabilidades e contratos | Pendente |
+| Classificação e catálogo de módulos | CH05 § 3.3; CH03 § 3.10 | Definir módulos Core, Platform, Business e Integrations, critérios de criação, responsabilidades e contratos | Pendente |
 | Comunicação síncrona | CH05 § 3.4 | Definir padrões de comandos, consultas, APIs, timeouts, autorização, erros e observabilidade | Pendente |
 | Matriz de dependências | CH05 § 3.5 | Especificar dependências permitidas, restrições automatizadas e testes arquiteturais | Pendente |
-| Governança de contratos e propriedade | CH05 § 3.6 | Definir ownership, compatibilidade, depreciação, validação e rastreabilidade de APIs, eventos e dados | Pendente |
+| Governança de contratos e propriedade | CH05 § 3.6; CH03 § 3.12 | Definir ownership, estados, compatibilidade, depreciação, validação e rastreabilidade de APIs, eventos e dados | Pendente |
 | Estratégia do Modular Monolith | CH02 § 3.1 | Detalhar composição, implantação, modularização física e critérios futuros de extração | Pendente |
 | Contexto e isolamento multi-tenant | CH02 § 3.4 | Definir resolução e propagação de tenant, isolamento de dados, permissões, administração e testes | Pendente |
-| Taxonomia e contratos de eventos | CH02 § 3.5 | Definir domínio versus integração, envelope, schema registry, compatibilidade, idempotência, causalidade e entrega | Pendente |
+| Taxonomia e contratos de eventos | CH02 § 3.5; CH03 § 3.12 | Definir domínio versus integração, envelope, schema registry, compatibilidade, idempotência, causalidade, entrega e ciclo de vida | Pendente |
 | Event Platform | CH02 § 3.6 | Detalhar publicação, transporte, persistência, entrega, replay, falhas e observabilidade | Pendente |
 | Lifecycle Engine | CH02 § 3.6 | Definir estados, transições, guardas, histórico, comandos e integração com domínios | Pendente |
 | Workflow Engine | CH02 § 3.6 | Definir orquestração, tarefas, compensações, temporização e rastreabilidade | Pendente |
@@ -40,7 +40,11 @@ Manter rastreabilidade dos temas constitucionais que deverão ser detalhados tec
 | Integration Hub, adaptadores e ACL | CH02 § 3.8 | Definir padrões de adaptação, tradução, resiliência, sincronização, APIs externas e erros | Pendente |
 | Segurança Zero Trust | CH02 § 3.9 | Definir identidade, autenticação, autorização, least privilege, criptografia, segredos e threat model | Pendente |
 | Arquitetura de observabilidade | CH02 § 3.10 | Definir logs, métricas, traces, correlação, health checks, SLOs, retenção e proteção de dados | Pendente |
-| Auditoria e conformidade | CH02 §§ 3.9–3.10 | Definir eventos auditáveis, integridade, retenção, acesso, evidências e consultas | Pendente |
+| Auditoria e conformidade | CH02 §§ 3.9–3.10; CH03 § 3.5 | Definir eventos auditáveis, integridade, retenção, acesso, evidências, consultas e revisões periódicas | Pendente |
+| Operating model de governança | CH03 §§ 3.1–3.4 | Definir gates, papéis operacionais, RACI, fluxos, classes de mudança e automações | Pendente |
+| Evidências e fiscalização | CH03 §§ 3.5–3.8 | Definir repositório de evidências, checklists, métricas, testes, alertas e tratamento de desvios | Pendente |
+| Catálogo do Shared Kernel | CH03 § 3.9; CH05 §§ 3.2 e 3.5 | Definir ownership, itens permitidos, consumidores, versionamento e testes de compatibilidade | Pendente |
+| Ciclo de vida de módulos | CH03 §§ 3.10–3.11 | Definir proposta, aprovação, catálogo, migração, depreciação, fusão, extração e encerramento | Pendente |
 | Governança e rastreabilidade | CH02 § 3.11; CH03; CH04; CH05 § 3.6 | Definir ligação entre requisitos, ADRs, contratos, testes, telemetria, exceções e evidências | Pendente |
 
 ## Regra de rastreabilidade

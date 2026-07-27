@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.4.0 |
-| Estado | Draft — Pacotes 1, 2 e 3 aprovados; Pacote 4 materializado para revisão |
+| Versão atual | 0.5.0 |
+| Estado | Draft — Pacotes 1, 2, 3 e 4 aprovados; Pacote 5 materializado para revisão |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -20,13 +20,13 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 ## Conteúdo aprovado
 
 1. [Fundamentos e Escopo](01-FUNDAMENTOS-E-ESCOPO.md) — Pacote 1;
-2. [Governança e Autoridade](03-GOVERNANCA-E-AUTORIDADE.md) — Pacote 1;
-3. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md) — Pacote 2;
-4. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md) — Pacote 3, incluindo a emenda autorizada de Evolução Arquitetural Controlada.
+2. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md) — Pacote 2;
+3. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md) — Pacote 3, incluindo a emenda autorizada de Evolução Arquitetural Controlada;
+4. [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md) — Pacote 4.
 
-## Conteúdo em revisão — Pacote 4
+## Conteúdo em revisão — Pacote 5
 
-1. [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md).
+1. [Governança Arquitetural](03-GOVERNANCA-E-AUTORIDADE.md), ampliando as disposições iniciais aprovadas no Pacote 1.
 
 ## Controles
 
@@ -37,7 +37,7 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 
 ## Linha evolutiva
 
-A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
+A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), 0.5.0 (Pacote 5), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
 
 ## Ordem normativa
 

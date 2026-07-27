@@ -3,21 +3,22 @@
 | Campo | Valor |
 |---|---|
 | Identificador do documento | VERO-CONST-001 |
-| Versão atual | 0.4.0 |
+| Versão atual | 0.5.0 |
 | Estado | Draft |
 | Data | 2026-07-27 |
 | Responsável | Arquiteto-Chefe |
-| Situação | Pacotes 1, 2 e 3 aprovados; Pacote 4 materializado para revisão |
+| Situação | Pacotes 1, 2, 3 e 4 aprovados; Pacote 5 materializado para revisão |
 
 ## Linha evolutiva
 
 | Versão | Marco | Estado resumido |
 |---|---|---|
-| 0.1.0 | Pacote 1 — Fundamentos e Governança | Aprovado |
+| 0.1.0 | Pacote 1 — Fundamentos e Governança Inicial | Aprovado |
 | 0.2.0 | Pacote 2 — Missão, Visão e Valores | Aprovado |
 | 0.3.0 | Pacote 3 — Princípios Arquiteturais | Aprovado |
-| 0.4.0 | Pacote 4 — Modelo Arquitetural | Draft para revisão |
-| 0.5.0 em diante | Pacotes incrementais | Planejado |
+| 0.4.0 | Pacote 4 — Modelo Arquitetural | Aprovado |
+| 0.5.0 | Pacote 5 — Governança Arquitetural | Draft para revisão |
+| 0.6.0 em diante | Pacotes incrementais | Planejado |
 | 1.0.0 | Constituição Oficial Consolidada | Planejado |
 
 ## Histórico resumido
@@ -26,7 +27,8 @@
 - 2026-07-27 — Baseline corrigida para 0.1.0 e separada da versão global da plataforma.
 - 2026-07-27 — Pacote 2 materializado e posteriormente aprovado.
 - 2026-07-27 — Pacote 3 materializado e posteriormente aprovado.
-- 2026-07-27 — Princípio de Evolução Arquitetural Controlada autorizado e Pacote 4 materializado.
+- 2026-07-27 — Princípio de Evolução Arquitetural Controlada autorizado; Pacote 4 materializado e posteriormente aprovado.
+- 2026-07-27 — Pacote 5 materializado com governança arquitetural ampliada.
 
 ## Regra de independência
 
