@@ -2,8 +2,5 @@ node_modules/
 dist/
 coverage/
 .nx/
-.env
-.env.*
-!.env.example
+tmp/
 packages/infrastructure/database/src/generated/
-*.log

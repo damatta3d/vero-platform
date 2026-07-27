@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "jest"],
+    "noEmit": true
+  },
+  "include": ["apps/**/*.ts", "packages/**/*.ts", "tests/**/*.ts", "prisma.config.ts"],
+  "exclude": ["node_modules", "dist", "packages/infrastructure/database/src/generated/**"]
+}

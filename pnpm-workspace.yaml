@@ -1,0 +1,28 @@
+packages:
+  - apps/*
+  - packages/*
+  - packages/core/*
+  - packages/platform/*
+  - packages/infrastructure/*
+
+allowBuilds:
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  nx: true
+  prisma: true
+  protobufjs: true
+  unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - '@prisma/adapter-pg@7.9.1'
+  - '@prisma/client-runtime-utils@7.9.1'
+  - '@prisma/client@7.9.1'
+  - '@prisma/config@7.9.1'
+  - '@prisma/debug@7.9.1'
+  - '@prisma/dev@0.24.17'
+  - '@prisma/driver-adapter-utils@7.9.1'
+  - '@prisma/engines@7.9.1'
+  - '@prisma/fetch-engine@7.9.1'
+  - '@prisma/get-platform@7.9.1'
+  - prisma@7.9.1
