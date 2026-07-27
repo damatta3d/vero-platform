@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-002 |
 | Título | Runtime e Framework — Node.js, TypeScript, NestJS e Fastify |
-| Versão | 0.1.0 |
-| Estado | Proposed — aguardando revisão arquitetural |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -168,3 +168,4 @@ Node.js e TypeScript formam a baseline prevista nos Blueprints. NestJS oferece c
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de runtime, linguagem e framework | Proposed |
+| 1.0.0 | 2026-07-27 | Decisão arquitetural revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
