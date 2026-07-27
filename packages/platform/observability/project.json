@@ -1,0 +1,37 @@
+{
+  "name": "platform-observability",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/platform/observability/src",
+  "projectType": "library",
+  "tags": ["type:infrastructure", "scope:platform", "runtime:node", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/platform/observability",
+        "main": "packages/platform/observability/src/public-api.ts",
+        "tsConfig": "packages/platform/observability/tsconfig.lib.json",
+        "platform": "node",
+        "format": ["cjs"],
+        "bundle": true,
+        "thirdParty": false,
+        "generatePackageJson": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/platform/observability/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/platform/observability/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "packages/platform/observability/jest.config.cjs" }
+    }
+  }
+}

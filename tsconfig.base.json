@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "useUnknownInCatchVariables": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@vero/shared-kernel": ["packages/shared-kernel/src/public-api.ts"],
+      "@vero/core-configuration": ["packages/core/configuration/src/public-api.ts"],
+      "@vero/platform-observability": ["packages/platform/observability/src/public-api.ts"],
+      "@vero/infrastructure-database": ["packages/infrastructure/database/src/public-api.ts"],
+      "@vero/infrastructure-cache": ["packages/infrastructure/cache/src/public-api.ts"],
+      "@vero/infrastructure-messaging": ["packages/infrastructure/messaging/src/public-api.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

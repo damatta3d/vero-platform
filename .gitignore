@@ -58,5 +58,8 @@ Thumbs.db
 .nx/cache/
 .nx/workspace-data/
 
+# Generated clients
+packages/infrastructure/database/src/generated/
+
 # Miscellaneous
 *.local

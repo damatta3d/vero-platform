@@ -1,0 +1,35 @@
+{
+  "name": "infrastructure-cache",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/infrastructure/cache/src",
+  "projectType": "library",
+  "tags": ["type:infrastructure", "scope:platform", "runtime:node", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/infrastructure/cache",
+        "main": "packages/infrastructure/cache/src/public-api.ts",
+        "tsConfig": "packages/infrastructure/cache/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/infrastructure/cache/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/infrastructure/cache/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/infrastructure/cache/jest.config.cjs",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "infrastructure-messaging",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/infrastructure/messaging/src",
+  "projectType": "library",
+  "tags": ["type:infrastructure", "scope:platform", "runtime:node", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/infrastructure/messaging",
+        "main": "packages/infrastructure/messaging/src/public-api.ts",
+        "tsConfig": "packages/infrastructure/messaging/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/infrastructure/messaging/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/infrastructure/messaging/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/infrastructure/messaging/jest.config.cjs",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

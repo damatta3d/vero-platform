@@ -1,0 +1,30 @@
+{
+  "name": "core-configuration",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core/configuration/src",
+  "projectType": "library",
+  "tags": ["type:infrastructure", "scope:core", "runtime:node", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/core/configuration",
+        "main": "packages/core/configuration/src/public-api.ts",
+        "tsConfig": "packages/core/configuration/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/core/configuration/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p packages/core/configuration/tsconfig.lib.json --noEmit" }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "packages/core/configuration/jest.config.cjs" }
+    }
+  }
+}

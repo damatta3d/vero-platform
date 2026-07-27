@@ -8,6 +8,14 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Fundação executável da Sprint 0 com workspace Nx/pnpm, API NestJS/Fastify, worker e oito projetos.
+- Configuração Zod, logging Pino, OpenTelemetry, health checks e propagação de correlação.
+- Adapters de saúde para PostgreSQL, Redis e RabbitMQ, schema Prisma técnico vazio e execução Docker.
+- Quality gates, testes arquiteturais/unitários/de integração, auditoria de dependências e GitHub Actions.
+- Relatório técnico final da Sprint 0 em `docs/12-Sprints/SPRINT-0-RELATORIO-FINAL.md`.
+
+- Registro oficial da MISSÃO 002 e da Sprint 0 — Fundação Executável em `docs/12-Sprints/SPRINT-0-FUNDACAO-EXECUTAVEL.md`.
+- Backlog, critérios de conclusão e decisões reservadas da Sprint 0.
 - ADR-001 a ADR-006 v1.0.0 aprovados, cobrindo arquitetura geral, runtime, persistência, configuração, observabilidade, Core Platform e Shared Kernel.
 - Índice de Architecture Decision Records em `docs/02-ADR/README.md`, com estado e gate de aprovação.
 
@@ -34,6 +42,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Branch `agent/sprint-0-foundation` sincronizada com a baseline arquitetural aprovada na `main`.
+- Bloqueios cobertos pelos ADR-001 a ADR-006 removidos do backlog da Sprint 0.
 - ADRs corrigidos após revisão técnica: topologia física, limites da baseline de dados, escopo de secrets, criticidade de readiness, dependências e ownership do Shared Kernel.
 - VERO-BLP-002 v0.1.0 materializado como `Approved` nesta linha de integração.
 - `PROJECT_STATUS.md` atualizado para registrar os seis ADRs em estado `Approved` e o próximo gate da Sprint 0.
