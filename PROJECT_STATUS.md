@@ -3,60 +3,77 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v1.0.0  
-**Fase:** Constituição Consolidada e Fundação da Plataforma  
-**Estado:** Constituição Arquitetural 1.0.0 Approved  
+**Constituição:** VERO-CONST-001 v1.0.0 — Approved  
+**Blueprint Volume I:** VERO-BLP-001 v0.1.0 — Approved  
+**Blueprint Volume II:** VERO-BLP-002 v0.1.0 — Approved  
+**Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
+**Engineering Playbook:** v1.0.0 — Ativo  
+**Fase:** Sprint 0 — Fundação Executável  
+**Estado:** Autorizada; implementação técnica aguardando decisões arquiteturais reservadas  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
 
-- Bootstrap do repositório.
-- Estrutura oficial de documentação.
-- Índice central de documentação.
-- Pacote 1 da Constituição Arquitetural.
-- Engineering Playbook.
-- Controles iniciais de versão e changelog.
-- Baseline documental da Constituição normalizada e separada da versão da plataforma.
-- Pacote 2 — Missão, Visão e Valores — aprovado.
-- Pacote 3 — Princípios Arquiteturais — aprovado.
-- Princípio de Evolução Arquitetural Controlada incorporado.
-- Modelo editorial único para capítulos constitucionais.
-- Pacote 4 — Modelo Arquitetural — aprovado.
-- Pacote 5 — Governança Arquitetural — aprovado.
-- Registro ampliado de referências cruzadas para o Blueprint.
-- Pacote 6 — Evolução e Gestão de Mudanças — aprovado.
-- Pacote 7 — Glossário e Consolidação — aprovado.
-- Revisão Final de Consistência concluída, sem conflito normativo pendente.
-- Constituição `VERO-CONST-001 v1.0.0` promovida para `Approved`.
-- Política de exceções temporárias e indicadores mínimos de governança materializados.
+- Bootstrap do repositório e estrutura oficial de documentação.
+- Constituição Arquitetural VERO-CONST-001 v1.0.0 consolidada e aprovada.
+- Blueprint Volume I — Visão Geral e Estrutura Física — aprovado.
+- Blueprint Volume II — Core Platform e Shared Kernel — aprovado.
+- Canonical Domain Model VERO-CDM-001 v0.1.0 aprovado.
+- Engineering Playbook e controles iniciais de versão e changelog materializados.
+- MISSÃO 002 e Sprint 0 formalmente autorizadas.
+- Branch `agent/sprint-0-foundation` criada para a execução.
 
 ## Escopo autorizado nesta fase
 
-- Constituição Arquitetural;
-- preparação de referências para o Blueprint;
-- documentação preparatória do Canonical Domain Model;
-- preparação de ADRs;
-- documentação da fundação da plataforma.
+- Nx Workspace, pnpm e TypeScript;
+- NestJS e Fastify;
+- Prisma e PostgreSQL;
+- Redis e RabbitMQ;
+- Docker e Docker Compose;
+- Shared Kernel, Core Platform e Infrastructure;
+- configuração centralizada;
+- logging, observabilidade básica e health checks;
+- ESLint, Prettier, Husky, Commitlint e Jest;
+- CI inicial;
+- testes, documentação e rastreabilidade da fundação.
 
 ## Fora do escopo nesta fase
 
-- início do Blueprint sem autorização expressa do Arquiteto-Chefe após consolidação da Constituição;
-- implementação de módulos de negócio;
 - CRM;
 - Financeiro;
-- Produção;
-- Compras;
 - Estoque;
-- demais módulos funcionais.
+- Compras;
+- Produção;
+- RH;
+- Fiscal;
+- Vendas;
+- Workflow;
+- Automation;
+- Business Rules;
+- IA;
+- qualquer módulo ou regra de negócio.
+
+## Bloqueios atuais
+
+O VERO-BLP-002 § 23 reserva decisões que não podem ser incorporadas implicitamente ao código. Antes da implementação correspondente, são necessárias propostas e ADRs aprovadas para, no mínimo:
+
+- validação de configuração e contratos;
+- logging estruturado;
+- observabilidade e propagação de contexto;
+- catálogo inicial efetivo do Shared Kernel;
+- decomposição definitiva do Core Platform;
+- Result versus exceptions e identificadores globais.
+
+A precedência oficial permanece a definida na Constituição: Constituição, Blueprint, ADRs, Canonical Domain Model, Engineering Playbook e código.
 
 ## Observações de estrutura
 
-Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram preservados conforme a política de não remoção. As localizações oficiais atuais são `docs/10-UX`, `docs/11-Backlog` e `docs/12-Sprints`.
+Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` permanecem preservados. As localizações oficiais são `docs/10-UX`, `docs/11-Backlog` e `docs/12-Sprints`.
 
 ## Próximos marcos
 
-1. Iniciar o Blueprint conforme a Constituição 1.0.0.
-2. Iniciar a Sprint 0 — Fundação Executável em paralelo, preservando a precedência documental.
-3. Construir o Canonical Domain Model.
-4. Criar os ADRs exigidos pelas decisões estruturais.
-5. Manter módulos de negócio fora do escopo até a conclusão da fundação técnica.
+1. Aprovar as ADRs necessárias para as decisões reservadas da Sprint 0.
+2. Inicializar o workspace Nx, pnpm e TypeScript na branch da Sprint.
+3. Implementar a fundação executável em unidades lógicas com testes e documentação.
+4. Abrir Pull Request para revisão arquitetural e técnica.
+5. Concluir a Sprint 0 somente após aprovação do Arquiteto-Chefe.
