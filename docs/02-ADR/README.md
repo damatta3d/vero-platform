@@ -16,13 +16,13 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 
 | ADR | Título | Versão | Estado |
 |---|---|---:|---|
-| [ADR-001](ADR-001-ARQUITETURA-GERAL.md) | Arquitetura Geral — Modular Monolith, Monorepo, Nx e pnpm | 0.1.0 | Proposed |
-| [ADR-002](ADR-002-RUNTIME-E-FRAMEWORK.md) | Runtime e Framework — Node.js, TypeScript, NestJS e Fastify | 0.1.0 | Proposed |
-| [ADR-003](ADR-003-PERSISTENCIA-E-MENSAGERIA.md) | Persistência e Mensageria — PostgreSQL, Prisma, Redis e RabbitMQ | 0.1.0 | Proposed |
-| [ADR-004](ADR-004-CONFIGURACAO-CENTRALIZADA.md) | Configuração Centralizada — Environment, Validation, Secrets e Feature Flags | 0.1.0 | Proposed |
-| [ADR-005](ADR-005-OBSERVABILIDADE.md) | Observabilidade — Logging, Metrics, Tracing, Context Propagation e Health Checks | 0.1.0 | Proposed |
-| [ADR-006](ADR-006-CORE-PLATFORM-E-SHARED-KERNEL.md) | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão | 0.1.0 | Proposed |
+| [ADR-001](ADR-001-ARQUITETURA-GERAL.md) | Arquitetura Geral — Modular Monolith, Monorepo, Nx e pnpm | 1.0.0 | Approved |
+| [ADR-002](ADR-002-RUNTIME-E-FRAMEWORK.md) | Runtime e Framework — Node.js, TypeScript, NestJS e Fastify | 1.0.0 | Approved |
+| [ADR-003](ADR-003-PERSISTENCIA-E-MENSAGERIA.md) | Persistência e Mensageria — PostgreSQL, Prisma, Redis e RabbitMQ | 1.0.0 | Approved |
+| [ADR-004](ADR-004-CONFIGURACAO-CENTRALIZADA.md) | Configuração Centralizada — Environment, Validation, Secrets e Feature Flags | 1.0.0 | Approved |
+| [ADR-005](ADR-005-OBSERVABILIDADE.md) | Observabilidade — Logging, Metrics, Tracing, Context Propagation e Health Checks | 1.0.0 | Approved |
+| [ADR-006](ADR-006-CORE-PLATFORM-E-SHARED-KERNEL.md) | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão | 1.0.0 | Approved |
 
 ## Gate atual
 
-Os seis ADRs estão em revisão arquitetural. Nenhum está `Approved`, nenhum autoriza implementação e a Sprint 0 permanece bloqueada até a aprovação formal e integração em `main`.
+Os seis ADRs foram revisados e aprovados formalmente pelo Arquiteto-Chefe. As decisões entram em vigor após integração em `main`; a implementação da Sprint 0 deve permanecer na branch própria e respeitar os temas explicitamente reservados por ADR posterior.
