@@ -6,13 +6,13 @@
 |---|---|
 | Identificador | ADR-006 |
 | Título | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão |
-| Versão | 0.1.0 |
+| Versão | 0.2.0 |
 | Estado | Proposed — aguardando revisão arquitetural |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Decisão estrutural | Sim |
-| Depende de | ADR-001, ADR-002 e VERO-CDM-001 |
+| Depende de | ADR-001, ADR-002, ADR-004, ADR-005 e VERO-CDM-001 |
 | Substitui | Nenhum ADR |
 
 ## 1. Contexto
@@ -46,7 +46,7 @@ Se aprovado, este ADR estabelece:
 
 ### 3.2 Shared Kernel
 
-8. Shared Kernel conterá somente semântica universal, estável, agnóstica de framework e necessariamente idêntica entre múltiplos contextos.
+8. Shared Kernel conterá somente semântica universal, estável, agnóstica de framework e necessariamente idêntica entre múltiplos contextos. O próprio Shared Kernel terá owner arquitetural explícito, responsável por compatibilidade, revisão e depreciação.
 9. O catálogo inicial autorizado para avaliação e implementação incremental será:
    - contrato de identificador tipado e opaco;
    - base semântica de `Entity`;
@@ -56,10 +56,10 @@ Se aprovado, este ADR estabelece:
    - abstração pura de `Specification`;
    - `Result` para sucesso ou falha esperada sem transporte;
    - metadados agnósticos de correlação e causalidade.
-10. O catálogo autoriza famílias, não obriga a criação imediata de todas as abstrações. Cada item somente será materializado com caso de uso da fundação, semântica precisa e testes.
+10. Este ADR autoriza exclusivamente as famílias listadas, mas não obriga a criação imediata de todas as abstrações. Cada item somente será materializado com caso de uso da fundação, semântica precisa, owner, superfície mínima e testes. Novo item fora do catálogo exige ADR própria.
 11. Shared Kernel não dependerá de qualquer projeto interno, NestJS, Fastify, Prisma, Redis, RabbitMQ, OpenTelemetry, Pino, filesystem, rede ou configuração de runtime.
 12. `public-api.ts` será a única superfície externa. Deep imports serão proibidos.
-13. Classes base serão rasas, sem I/O, relógio, UUID, contexto global, serialização, persistência ou hooks.
+13. Classes base serão rasas, sem I/O, relógio, geração de UUID, contexto global, serialização, persistência ou hooks. O formato concreto e a geração de identificadores globais permanecem reservados; a fundação poderá apenas encapsular valores opacos já validados.
 14. Identificadores concretos de domínio, schemas, DTOs, repositories e contratos de provider permanecerão no owner apropriado.
 15. Context metadata do Shared Kernel conterá somente valores agnósticos; armazenamento em AsyncLocalStorage pertencerá à plataforma de observabilidade.
 
@@ -68,7 +68,7 @@ Se aprovado, este ADR estabelece:
 Um item somente poderá entrar no Shared Kernel se todos os critérios forem atendidos:
 
 1. semântica única e estável;
-2. ausência de owner mais adequado;
+2. ausência de bounded context proprietário mais adequado; o owner do Shared Kernel permanece obrigatório;
 3. uso legítimo por mais de um contexto ou necessidade fundacional comprovada;
 4. independência de framework, provider e transporte;
 5. API mínima;
@@ -245,3 +245,4 @@ Separar capacidades Core de semântica universal reduz acoplamento e preserva ow
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de limites e catálogo do Core Platform e Shared Kernel | Proposed |
+| 0.2.0 | 2026-07-27 | Ownership, dependências e escopo do catálogo inicial refinados | Proposed |
