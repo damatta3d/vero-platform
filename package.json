@@ -15,6 +15,7 @@
     "test:integration": "jest --config tests/integration/jest.config.cjs --runInBand",
     "test:architecture": "node tools/validation/architecture.mjs",
     "typecheck": "tsc -p tsconfig.check.json --noEmit",
+    "audit": "pnpm audit --audit-level high",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:architecture && pnpm build",

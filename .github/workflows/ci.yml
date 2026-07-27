@@ -26,6 +26,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec prisma validate
+      - run: pnpm audit --audit-level high
       - run: pnpm verify
 
   integration:
