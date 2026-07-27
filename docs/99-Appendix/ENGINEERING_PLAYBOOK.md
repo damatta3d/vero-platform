@@ -4,7 +4,8 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Identificador | VERO-ENG-001 |
+| Versão | 1.1.0 |
 | Estado | Ativo |
 | Data | 2026-07-27 |
 | Escopo | Engenharia e assistentes de IA |
@@ -85,6 +86,17 @@ A plataforma usa Semantic Versioning:
 
 Documentos normativos mantêm versão própria e histórico de revisões. A versão global do projeto fica em `VERSION`.
 
+Cada documento mestre deve manter:
+
+- identificador único;
+- controle de versão independente;
+- estado documental (`Draft`, `Review`, `Approved` ou `Superseded`);
+- data e responsável;
+- histórico de revisões próprio;
+- rastreabilidade para decisões, commits e documentos relacionados.
+
+O incremento da versão de um documento não implica incremento automático da versão da plataforma nem de outro documento.
+
 ## 8. Padrão para ADRs
 
 Cada ADR deve conter:
@@ -142,3 +154,10 @@ Estados permitidos: Proposto, Aprovado, Rejeitado, Substituído e Descontinuado.
 - Não usar GitHub CLI neste projeto; usar o conector GitHub autorizado.
 - Informar arquivos criados, alterados, commit e hash.
 - Interromper a execução e pedir aprovação quando houver divergência normativa.
+
+## 13. Histórico de revisões
+
+| Versão | Data | Alteração |
+|---|---|---|
+| 1.0.0 | 2026-07-27 | Publicação inicial do Engineering Playbook |
+| 1.1.0 | 2026-07-27 | Instituição da política de versionamento documental independente |

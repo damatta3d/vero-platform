@@ -25,6 +25,8 @@ Este diretório é a fonte oficial da documentação arquitetural, de engenharia
 
 A Constituição Arquitetural e as decisões formalizadas em ADR são normativas. Alterações arquiteturais dependem de aprovação do Arquiteto-Chefe e atualização dos controles de versão e mudança.
 
+Cada documento mestre deve possuir identificador único, versão independente, estado documental, histórico de revisões e rastreabilidade. A versão global da plataforma permanece no arquivo `VERSION` da raiz; a Constituição `VERO-CONST-001` mantém seu controle próprio em [`00-Constituicao-Arquitetural/VERSION.md`](00-Constituicao-Arquitetural/VERSION.md).
+
 ## Diretórios legados preservados
 
 Os diretórios `04-UX/`, `05-Backlog/` e `06-Sprints/` pertencem ao bootstrap inicial. Permanecem preservados para manter o histórico, mas novos documentos devem usar `10-UX/`, `11-Backlog/` e `12-Sprints/`.

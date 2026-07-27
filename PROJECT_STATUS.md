@@ -2,9 +2,10 @@
 
 ## Situação atual
 
-**Versão:** 0.1.0  
+**Versão da plataforma:** 0.1.0  
+**Constituição:** VERO-CONST-001 v0.1.0  
 **Fase:** Consolidação Arquitetural  
-**Estado:** Pacote 1 da Constituição materializado  
+**Estado:** Baseline normalizada; Pacote 1 aprovado  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -15,6 +16,7 @@
 - Pacote 1 da Constituição Arquitetural.
 - Engineering Playbook.
 - Controles iniciais de versão e changelog.
+- Baseline documental da Constituição normalizada e separada da versão da plataforma.
 
 ## Escopo autorizado nesta fase
 

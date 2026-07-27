@@ -4,23 +4,29 @@
 
 | Campo | Valor |
 |---|---|
+| Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Pacote | 1 — Fundamentos e Governança |
-| Versão | 1.0.0 |
-| Estado | Aprovado para materialização |
+| Versão atual | 0.1.0 |
+| Estado | Draft — Pacote 1 aprovado |
 | Autoridade | Arquiteto-Chefe |
+| Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
+| Controle de versão | [VERSION.md](VERSION.md) |
 
 ## Finalidade
 
 A Constituição Arquitetural estabelece os princípios normativos, a autoridade decisória e as regras de evolução da VERO Platform. Ela orienta o Blueprint, o Canonical Domain Model, os ADRs, a fundação técnica e todos os módulos.
 
-## Conteúdo do Pacote 1
+## Conteúdo aprovado — Pacote 1
 
 1. [Fundamentos e Escopo](01-FUNDAMENTOS-E-ESCOPO.md)
 2. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md)
 3. [Governança e Autoridade](03-GOVERNANCA-E-AUTORIDADE.md)
 4. [Histórico de Revisões](HISTORICO-DE-REVISOES.md)
+
+## Linha evolutiva
+
+A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
 
 ## Ordem normativa
 

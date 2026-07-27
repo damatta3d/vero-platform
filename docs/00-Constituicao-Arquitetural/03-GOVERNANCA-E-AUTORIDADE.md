@@ -4,9 +4,9 @@
 
 | Campo | Valor |
 |---|---|
-| Identificador | CONST-P1-03 |
-| Versão | 1.0.0 |
-| Estado | Normativo |
+| Identificador | VERO-CONST-001-CH03 |
+| Versão | 0.1.0 |
+| Estado | Draft — Pacote 1 aprovado |
 | Autoridade | Arquiteto-Chefe |
 | Data | 2026-07-27 |
 

@@ -6,6 +6,15 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ## [Unreleased]
 
+### Added
+
+- Controle de versão independente da Constituição em `docs/00-Constituicao-Arquitetural/VERSION.md`.
+- Política de ciclo de vida, estado documental, identificador único, histórico próprio e rastreabilidade para documentos normativos.
+
+### Changed
+
+- Separação explícita entre a versão global da plataforma e a versão da Constituição Arquitetural.
+- Baseline de `VERO-CONST-001` normalizada para `0.1.0`, em estado Draft, com o Pacote 1 aprovado.
 ## [0.1.0] - 2026-07-27
 
 ### Added
