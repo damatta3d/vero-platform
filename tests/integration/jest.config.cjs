@@ -6,6 +6,7 @@ module.exports = {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/../../tsconfig.base.json' }]
   },
   moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@vero/infrastructure-database$':
       '<rootDir>/../../packages/infrastructure/database/src/public-api.ts',
     '^@vero/infrastructure-cache$':
