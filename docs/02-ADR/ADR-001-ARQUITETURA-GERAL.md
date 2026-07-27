@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-001 |
 | Título | Arquitetura Geral — Modular Monolith, Monorepo, Nx e pnpm |
-| Versão | 0.2.0 |
-| Estado | Proposed — aguardando revisão arquitetural |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -176,3 +176,4 @@ Revisar este ADR quando ocorrer ao menos uma condição:
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial da arquitetura geral, monorepo e toolchain | Proposed |
 | 0.2.0 | 2026-07-27 | Correção da topologia afetada para aderência ao VERO-BLP-001 | Proposed |
+| 1.0.0 | 2026-07-27 | Decisão arquitetural revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
