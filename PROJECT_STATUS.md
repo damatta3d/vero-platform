@@ -2,32 +2,46 @@
 
 ## Situação atual
 
-**Fase:** Fundação  
-**Estado:** Bootstrap do repositório  
+**Versão:** 0.1.0  
+**Fase:** Consolidação Arquitetural  
+**Estado:** Pacote 1 da Constituição materializado  
 **Atualizado em:** 2026-07-27
+
+## Concluído
+
+- Bootstrap do repositório.
+- Estrutura oficial de documentação.
+- Índice central de documentação.
+- Pacote 1 da Constituição Arquitetural.
+- Engineering Playbook.
+- Controles iniciais de versão e changelog.
 
 ## Escopo autorizado nesta fase
 
-- Estrutura do monorepo
-- Toolchain de desenvolvimento
-- Infraestrutura e serviços-base
-- Capacidades transversais
-- Testes de arquitetura
-- Documentação e ADRs
+- Constituição Arquitetural;
+- Blueprint;
+- Canonical Domain Model;
+- ADRs;
+- documentação da fundação da plataforma.
 
 ## Fora do escopo nesta fase
 
-- CRM
-- Financeiro
-- Produção
-- Compras
-- Estoque
-- Demais módulos funcionais de negócio
+- implementação de módulos de negócio;
+- CRM;
+- Financeiro;
+- Produção;
+- Compras;
+- Estoque;
+- demais módulos funcionais.
+
+## Observações de estrutura
+
+Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram preservados conforme a política de não remoção. As localizações oficiais atuais são `docs/10-UX`, `docs/11-Backlog` e `docs/12-Sprints`.
 
 ## Próximos marcos
 
-1. Consolidar a Constituição Arquitetural e o Blueprint no repositório.
-2. Definir o toolchain Nx, pnpm, NestJS e TypeScript.
-3. Criar os limites iniciais de aplicações, pacotes e serviços.
-4. Implantar qualidade, testes, segurança e observabilidade da fundação.
-5. Registrar decisões complementares em ADRs.
+1. Receber e materializar os próximos pacotes da Constituição Arquitetural.
+2. Consolidar o Blueprint.
+3. Construir o Canonical Domain Model.
+4. Criar os ADRs aprovados.
+5. Somente após autorização, iniciar a fundação técnica.
