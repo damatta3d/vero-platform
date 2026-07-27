@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-005 |
 | Título | Observabilidade — Logging, Metrics, Tracing, Context Propagation e Health Checks |
-| Versão | 0.2.0 |
-| Estado | Proposed — aguardando revisão arquitetural |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -181,3 +181,4 @@ Pino alinha logging ao Fastify. OpenTelemetry e OTLP mantêm portabilidade de ba
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial da baseline de observabilidade | Proposed |
 | 0.2.0 | 2026-07-27 | Dependências, contexto mínimo e readiness refinados por criticidade | Proposed |
+| 1.0.0 | 2026-07-27 | Decisão arquitetural revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
