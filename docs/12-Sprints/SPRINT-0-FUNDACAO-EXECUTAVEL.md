@@ -5,10 +5,11 @@
 | Campo | Valor |
 |---|---|
 | Missão | MISSÃO 002 |
-| Estado | In Progress — baseline arquitetural aprovada e integrada |
+| Estado | Ready for Approval |
 | Data de autorização | 2026-07-27 |
 | Autoridade | Arquiteto-Chefe |
 | Branch de execução | `agent/sprint-0-foundation` |
+| PR | #3 |
 | Versão da plataforma | 0.1.0 |
 
 ## Base normativa
@@ -21,105 +22,54 @@
 6. VERO-ENG-001 v1.1.0 — Ativo;
 7. código e artefatos operacionais.
 
-Em conflito, o documento superior prevalece. Código divergente deve ser corrigido. Mudança normativa ocorre somente pelo processo formal aplicável e nunca por adaptação silenciosa da documentação ao código.
-
 ## Objetivo
 
 Construir exclusivamente a fundação técnica executável da VERO Platform, sem implementar módulos ou regras de negócio.
 
-## Escopo autorizado
-
-- Nx Workspace, pnpm e TypeScript;
-- NestJS e Fastify;
-- Prisma e PostgreSQL;
-- Redis e RabbitMQ;
-- Docker e Docker Compose;
-- Shared Kernel mínimo e governado;
-- Core Platform e Infrastructure;
-- configuração centralizada;
-- logging, observabilidade básica e health checks;
-- ESLint, Prettier, Husky e Commitlint;
-- Jest e estrutura inicial de testes;
-- CI inicial;
-- documentação, rastreabilidade e controles de status.
-
-## Fora do escopo
-
-- CRM;
-- Financeiro;
-- Estoque;
-- Compras;
-- Produção;
-- RH;
-- Fiscal;
-- Vendas;
-- Workflow;
-- Automation;
-- Business Rules;
-- IA;
-- qualquer outro módulo ou regra de negócio.
-
-## Regras de execução
-
-1. Todo desenvolvimento ocorre em branch própria.
-2. Nenhum commit é realizado diretamente em `main`.
-3. Commits seguem Conventional Commits e representam uma unidade lógica.
-4. Cada etapa inclui código, testes, documentação aplicável, CHANGELOG, PROJECT_STATUS e descrição técnica.
-5. A Engenharia não altera Constituição, Blueprint, CDM ou ADR aprovado por iniciativa própria.
-6. Decisão arquitetural não especificada bloqueia a implementação correspondente.
-7. Quando houver bloqueio, a Engenharia registra contexto, alternativas, recomendação e ADR necessária, aguardando aprovação.
-8. Nenhum módulo de negócio será materializado nesta Sprint.
-
-## Backlog autorizado
+## Backlog executado
 
 | ID | Entrega | Estado |
 |---|---|---|
-| S0-00 | Governança, autorização e rastreabilidade | Em andamento |
-| S0-01 | Workspace Nx, pnpm e TypeScript | Pendente |
-| S0-02 | Qualidade: ESLint, Prettier, Husky e Commitlint | Pendente |
-| S0-03 | Aplicação NestJS com Fastify | Pendente |
-| S0-04 | Configuração centralizada e validada | Pendente |
-| S0-05 | Shared Kernel mínimo | Pendente |
-| S0-06 | Estrutura Core Platform | Pendente |
-| S0-07 | Prisma e PostgreSQL | Pendente |
-| S0-08 | Redis | Pendente |
-| S0-09 | RabbitMQ | Pendente |
-| S0-10 | Logging estruturado | Pendente |
-| S0-11 | Observabilidade básica | Pendente |
-| S0-12 | Health checks | Pendente |
-| S0-13 | Docker e Docker Compose | Pendente |
-| S0-14 | Testes arquiteturais, unitários e integração | Pendente |
-| S0-15 | CI inicial | Pendente |
-| S0-16 | Documentação e relatório final | Pendente |
+| S0-00 | Governança, autorização e rastreabilidade | Concluído |
+| S0-01 | Workspace Nx, pnpm e TypeScript | Concluído |
+| S0-02 | ESLint, Prettier, Husky e Commitlint | Concluído |
+| S0-03 | Aplicação NestJS com Fastify | Concluído |
+| S0-04 | Configuração centralizada e validada | Concluído |
+| S0-05 | Shared Kernel mínimo | Concluído |
+| S0-06 | Estrutura Core Platform fundacional | Concluído |
+| S0-07 | Prisma e PostgreSQL | Concluído |
+| S0-08 | Redis | Concluído |
+| S0-09 | RabbitMQ | Concluído |
+| S0-10 | Logging estruturado | Concluído |
+| S0-11 | Observabilidade básica | Concluído |
+| S0-12 | Health checks | Concluído |
+| S0-13 | Docker e Docker Compose | Concluído |
+| S0-14 | Testes arquiteturais, unitários e integração | Concluído |
+| S0-15 | CI inicial | Concluído |
+| S0-16 | Documentação e relatório final | Concluído |
 
-## Decisões reservadas identificadas
+## Evidências de conclusão
 
-O VERO-BLP-002 § 23 exige decisão formal antes da implementação correspondente para, entre outros pontos:
+- instalação reproduzível com lockfile congelado;
+- lint, formatação, typecheck, testes, validação arquitetural e build aprovados;
+- oito projetos Nx compilados;
+- cinco testes unitários aprovados em quatro suítes;
+- três testes de integração contra PostgreSQL, Redis e RabbitMQ no CI;
+- schema Prisma técnico vazio validado;
+- API inicializada e endpoints `/health/live` e `/health/ready` verificados;
+- header `x-correlation-id` propagado no smoke test;
+- auditoria bloqueando vulnerabilidades altas;
+- relatório técnico final em `SPRINT-0-RELATORIO-FINAL.md`.
 
-- biblioteca de validação de configuração e contratos;
-- biblioteca e formato operacional de logging;
-- SDK, exporters e sampling de observabilidade;
-- padrão de propagação de contexto assíncrono;
-- catálogo inicial efetivo do Shared Kernel;
-- divisão definitiva dos módulos Core;
-- estratégia de Result versus exceptions;
-- formato concreto de identificadores globais;
-- outbox/inbox e publicação de eventos;
-- schema registry e contract testing.
+## Decisões reservadas preservadas
 
-Os ADR-001 a ADR-006 resolveram as escolhas necessárias à fundação. Os temas ainda reservados — formato e geração de identificadores globais, outbox/inbox, publicação transacional, Unit of Work, schemas Prisma modulares definitivos, schema registry, contract testing, topologia definitiva de mensageria e secret store compartilhado — permanecem fora do escopo implementável desta Sprint.
+Permanecem fora do escopo: formato e geração de identificadores globais, outbox/inbox,
+publicação transacional, Unit of Work, schemas Prisma modulares definitivos, schema
+registry, contract testing, topologia definitiva de mensageria e secret store
+compartilhado.
 
-## Critérios de conclusão
+## Gate de encerramento
 
-- instalação reproduzível por pnpm;
-- lint, testes e build aprovados;
-- API NestJS/Fastify inicializada sem módulos de negócio;
-- PostgreSQL, Redis e RabbitMQ executáveis via Docker Compose;
-- liveness e readiness verificáveis;
-- configuração inválida impedindo startup com erro seguro;
-- logs estruturados e correlação conforme decisão aprovada;
-- limites arquiteturais fiscalizados automaticamente;
-- CI executando quality gates;
-- CHANGELOG, PROJECT_STATUS e documentação sincronizados;
-- relatório final com árvore, arquivos, dependências, testes, cobertura, riscos, pendências, commits, hashes e branches;
-- aprovação final do Arquiteto-Chefe.
+A implementação técnica está concluída. A Sprint 0 somente será encerrada e integrada à
+`main` após aprovação final do Arquiteto-Chefe no PR #3.
+

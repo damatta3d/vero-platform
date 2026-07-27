@@ -8,6 +8,12 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Fundação executável da Sprint 0 com workspace Nx/pnpm, API NestJS/Fastify, worker e oito projetos.
+- Configuração Zod, logging Pino, OpenTelemetry, health checks e propagação de correlação.
+- Adapters de saúde para PostgreSQL, Redis e RabbitMQ, schema Prisma técnico vazio e execução Docker.
+- Quality gates, testes arquiteturais/unitários/de integração, auditoria de dependências e GitHub Actions.
+- Relatório técnico final da Sprint 0 em `docs/12-Sprints/SPRINT-0-RELATORIO-FINAL.md`.
+
 - Registro oficial da MISSÃO 002 e da Sprint 0 — Fundação Executável em `docs/12-Sprints/SPRINT-0-FUNDACAO-EXECUTAVEL.md`.
 - Backlog, critérios de conclusão e decisões reservadas da Sprint 0.
 - ADR-001 a ADR-006 v1.0.0 aprovados, cobrindo arquitetura geral, runtime, persistência, configuração, observabilidade, Core Platform e Shared Kernel.
