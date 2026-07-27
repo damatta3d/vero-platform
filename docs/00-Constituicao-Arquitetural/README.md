@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.3.0 |
-| Estado | Draft — Pacotes 1 e 2 aprovados; Pacote 3 materializado para revisão |
+| Versão atual | 0.4.0 |
+| Estado | Draft — Pacotes 1, 2 e 3 aprovados; Pacote 4 materializado para revisão |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -21,23 +21,23 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 
 1. [Fundamentos e Escopo](01-FUNDAMENTOS-E-ESCOPO.md) — Pacote 1;
 2. [Governança e Autoridade](03-GOVERNANCA-E-AUTORIDADE.md) — Pacote 1;
-3. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md) — Pacote 2.
+3. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md) — Pacote 2;
+4. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md) — Pacote 3, incluindo a emenda autorizada de Evolução Arquitetural Controlada.
 
-## Conteúdo em revisão — Pacote 3
+## Conteúdo em revisão — Pacote 4
 
-1. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md);
-2. [Modelo de Capítulo](MODELO-DE-CAPITULO.md);
-3. [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md).
+1. [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md).
 
 ## Controles
 
 - [Versão da Constituição](VERSION.md);
 - [Histórico de Revisões](HISTORICO-DE-REVISOES.md);
-- [Modelo editorial obrigatório](MODELO-DE-CAPITULO.md).
+- [Modelo editorial obrigatório](MODELO-DE-CAPITULO.md);
+- [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md).
 
 ## Linha evolutiva
 
-A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
+A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
 
 ## Ordem normativa
 

@@ -7,8 +7,8 @@
 | Identificador | VERO-CONST-001-CH02 |
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 3 — Princípios Arquiteturais |
-| Versão | 0.3.0 |
-| Estado | Draft — materializado para revisão |
+| Versão | 0.4.0 |
+| Estado | Approved — Pacote 3; emenda de evolução controlada autorizada no Pacote 4 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -100,6 +100,14 @@ Logs, métricas, traces, health checks e auditoria são capacidades obrigatória
 
 Observabilidade operacional e auditoria possuem finalidades complementares e não intercambiáveis. Registros de auditoria devem preservar integridade, autoria, ação, alvo, tempo e resultado.
 
+### 3.11 Evolução Arquitetural Controlada
+
+A evolução da VERO Platform deve preservar a coerência entre a Constituição, os documentos derivados e a implementação. A Constituição prevalece sobre Blueprint, Canonical Domain Model, ADRs, especificações, código e demais artefatos quando houver conflito.
+
+Nenhuma mudança arquitetural pode contrariar esta Constituição sem aprovação formal do Arquiteto-Chefe e atualização do próprio texto constitucional. Alterações estruturais, interpretações com impacto arquitetural e exceções devem possuir ADR correspondente, justificativa, análise de impacto, autoridade aprovadora e rastreabilidade.
+
+Exceções são temporárias e não criam precedente automático. Devem declarar escopo, riscos, controles compensatórios, prazo de revisão e condição de encerramento.
+
 ## 4. Regras Obrigatórias
 
 1. Toda decisão de implementação deve demonstrar conformidade com os princípios deste capítulo.
@@ -114,6 +122,7 @@ Observabilidade operacional e auditoria possuem finalidades complementares e nã
 10. Segurança, observabilidade e auditoria devem integrar critérios de aceite e definição de pronto.
 11. Exceções arquiteturais exigem justificativa, análise de impacto, ADR e aprovação do Arquiteto-Chefe.
 12. O Blueprint pode detalhar estes princípios, mas não flexibilizá-los.
+13. Mudanças estruturais e exceções arquiteturais devem ser formalizadas por ADR e não podem contrariar a Constituição sem aprovação e emenda constitucional.
 
 ## 5. Justificativa Arquitetural
 
@@ -129,6 +138,7 @@ Essas regras preservam coerência, autonomia modular, integridade do domínio, i
 - **Segurança:** Zero Trust, menor privilégio, gestão de segredos e criptografia incorporados.
 - **Operação:** telemetria, saúde, correlação e auditoria como requisitos de primeira classe.
 - **Engenharia:** testes arquiteturais e critérios de conformidade deverão verificar as fronteiras estabelecidas.
+- **Governança:** mudanças estruturais, exceções e conflitos documentais exigem decisão formal, ADR e rastreabilidade.
 
 ## 7. Referências Cruzadas
 
@@ -137,11 +147,12 @@ Essas regras preservam coerência, autonomia modular, integridade do domínio, i
 - [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md);
 - [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md).
 
-O Blueprint deverá detalhar topologia modular, camadas, propagação de tenant, taxonomia e contratos de eventos, responsabilidades das engines, AI Gateway e providers, Integration Hub e ACLs, controles de segurança e arquitetura de observabilidade.
+O Blueprint deverá detalhar topologia modular, camadas, propagação de tenant, taxonomia e contratos de eventos, responsabilidades das engines, AI Gateway e providers, Integration Hub e ACLs, controles de segurança, arquitetura de observabilidade e mecanismos verificáveis de conformidade arquitetural.
 
 ## 8. Histórico do Capítulo
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Princípios obrigatórios e capacidades centrais publicados no Pacote 1 | Aprovado no contexto do Pacote 1 |
-| 0.3.0 | 2026-07-27 | Princípios ampliados e organizados no modelo normativo do Pacote 3 | Draft para revisão |
+| 0.3.0 | 2026-07-27 | Princípios ampliados e organizados no modelo normativo do Pacote 3 | Aprovado |
+| 0.4.0 | 2026-07-27 | Princípio de Evolução Arquitetural Controlada acrescentado por autorização do Arquiteto-Chefe | Approved |

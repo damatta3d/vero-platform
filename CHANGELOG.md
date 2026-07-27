@@ -8,6 +8,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Pacote 4 da Constituição Arquitetural com modelo conceitual de camadas, núcleo, módulos, comunicação, contratos e dependências.
+- Diagramas conceituais de camadas e organização do núcleo arquitetural.
+- Referências rastreáveis para o detalhamento técnico do Modelo Arquitetural no Blueprint.
 - Modelo editorial obrigatório para capítulos da Constituição em `MODELO-DE-CAPITULO.md`.
 - Pacote 3 da Constituição Arquitetural com princípios completos de domínio, modularidade, multi-tenancy, eventos, engines, IA, integrações, segurança e observabilidade.
 - Referências cruzadas granulares para os tópicos a detalhar posteriormente no Blueprint.
@@ -18,6 +21,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Pacote 3 registrado como aprovado pelo Arquiteto-Chefe.
+- Princípio de Evolução Arquitetural Controlada incorporado à Constituição.
+- Constituição `VERO-CONST-001` evoluída para `0.4.0`, mantendo estado Draft e o Pacote 4 para revisão.
 - Pacote 2 registrado como aprovado pelo Arquiteto-Chefe.
 - Constituição `VERO-CONST-001` evoluída para `0.3.0`, mantendo estado Draft e o Pacote 3 para revisão.
 - Capítulo de Princípios Arquiteturais reorganizado segundo o modelo normativo único, preservando o histórico do Pacote 1.

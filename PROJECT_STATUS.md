@@ -3,9 +3,9 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v0.3.0  
+**Constituição:** VERO-CONST-001 v0.4.0  
 **Fase:** Consolidação Arquitetural  
-**Estado:** Pacotes 1 e 2 aprovados; Pacote 3 materializado para revisão  
+**Estado:** Pacotes 1, 2 e 3 aprovados; Pacote 4 materializado para revisão  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -18,21 +18,23 @@
 - Controles iniciais de versão e changelog.
 - Baseline documental da Constituição normalizada e separada da versão da plataforma.
 - Pacote 2 — Missão, Visão e Valores — aprovado.
-- Pacote 3 — Princípios Arquiteturais — materializado.
+- Pacote 3 — Princípios Arquiteturais — aprovado.
+- Princípio de Evolução Arquitetural Controlada incorporado.
 - Modelo editorial único para capítulos constitucionais.
 - Registro ampliado de referências cruzadas para o Blueprint.
+- Pacote 4 — Modelo Arquitetural — materializado para revisão.
 
 ## Escopo autorizado nesta fase
 
 - Constituição Arquitetural;
 - preparação de referências para o Blueprint;
-- Canonical Domain Model;
-- ADRs;
+- documentação preparatória do Canonical Domain Model;
+- preparação de ADRs;
 - documentação da fundação da plataforma.
 
 ## Fora do escopo nesta fase
 
-- início do Blueprint antes da aprovação do Pacote 3;
+- início do Blueprint sem autorização expressa do Arquiteto-Chefe após consolidação da Constituição;
 - implementação de módulos de negócio;
 - CRM;
 - Financeiro;
@@ -47,9 +49,10 @@ Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram
 
 ## Próximos marcos
 
-1. Submeter o Pacote 3 à aprovação do Arquiteto-Chefe.
-2. Após aprovação expressa, continuar a Constituição; não iniciar o Blueprint sem autorização.
-3. Consolidar o Blueprint quando autorizado.
-4. Construir o Canonical Domain Model.
-5. Criar os ADRs aprovados.
-6. Somente após autorização, iniciar a fundação técnica.
+1. Submeter o Pacote 4 à aprovação do Arquiteto-Chefe.
+2. Após aprovação, materializar o Pacote 5 — Governança Arquitetural.
+3. Concluir e consolidar a Constituição até 1.0.0.
+4. Iniciar o Blueprint somente após autorização expressa.
+5. Construir o Canonical Domain Model.
+6. Criar os ADRs aprovados.
+7. Somente após autorização, iniciar a fundação técnica.

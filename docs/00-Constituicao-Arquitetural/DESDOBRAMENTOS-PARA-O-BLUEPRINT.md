@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | VERO-CONST-001-TR01 |
 | Documento de origem | VERO-CONST-001 |
-| Versão | 0.3.0 |
+| Versão | 0.4.0 |
 | Estado | Draft |
 | Data | 2026-07-27 |
 | Responsável | Engenharia Oficial |
@@ -21,7 +21,13 @@ Manter rastreabilidade dos temas constitucionais que deverão ser detalhados tec
 |---|---|---|---|
 | Resultados e capacidades empresariais | CH04 — Missão; valor empresarial e humano | Mapear capacidades, atores, resultados e limites de responsabilidade | Pendente |
 | Atributos de qualidade | CH04 — Visão; qualidade e observabilidade | Definir cenários e métricas de segurança, confiabilidade, desempenho, escalabilidade e operabilidade | Pendente |
-| Bounded contexts e topologia modular | CH02 §§ 3.1–3.3 | Definir módulos, camadas, dependências permitidas, contratos públicos e testes de fronteira | Pendente |
+| Bounded contexts e topologia modular | CH02 §§ 3.1–3.3; CH05 §§ 3.2–3.3 | Definir catálogo, fronteiras, responsabilidades, propriedade e testes de módulos | Pendente |
+| Realização das camadas | CH05 § 3.1 | Definir estrutura física, projetos, portas, adaptadores, composição e testes de dependência | Pendente |
+| Composição do núcleo arquitetural | CH05 § 3.2 | Detalhar Core Platform, Shared Kernel, Cross-Cutting Services, Engines, AI Gateway e Integration Hub | Pendente |
+| Classificação e catálogo de módulos | CH05 § 3.3 | Definir módulos Core, Platform, Business e Integrations, com responsabilidades e contratos | Pendente |
+| Comunicação síncrona | CH05 § 3.4 | Definir padrões de comandos, consultas, APIs, timeouts, autorização, erros e observabilidade | Pendente |
+| Matriz de dependências | CH05 § 3.5 | Especificar dependências permitidas, restrições automatizadas e testes arquiteturais | Pendente |
+| Governança de contratos e propriedade | CH05 § 3.6 | Definir ownership, compatibilidade, depreciação, validação e rastreabilidade de APIs, eventos e dados | Pendente |
 | Estratégia do Modular Monolith | CH02 § 3.1 | Detalhar composição, implantação, modularização física e critérios futuros de extração | Pendente |
 | Contexto e isolamento multi-tenant | CH02 § 3.4 | Definir resolução e propagação de tenant, isolamento de dados, permissões, administração e testes | Pendente |
 | Taxonomia e contratos de eventos | CH02 § 3.5 | Definir domínio versus integração, envelope, schema registry, compatibilidade, idempotência, causalidade e entrega | Pendente |
@@ -35,7 +41,7 @@ Manter rastreabilidade dos temas constitucionais que deverão ser detalhados tec
 | Segurança Zero Trust | CH02 § 3.9 | Definir identidade, autenticação, autorização, least privilege, criptografia, segredos e threat model | Pendente |
 | Arquitetura de observabilidade | CH02 § 3.10 | Definir logs, métricas, traces, correlação, health checks, SLOs, retenção e proteção de dados | Pendente |
 | Auditoria e conformidade | CH02 §§ 3.9–3.10 | Definir eventos auditáveis, integridade, retenção, acesso, evidências e consultas | Pendente |
-| Governança e rastreabilidade | CH03 e CH04 | Definir ligação entre requisitos, ADRs, contratos, testes, telemetria e evidências | Pendente |
+| Governança e rastreabilidade | CH02 § 3.11; CH03; CH04; CH05 § 3.6 | Definir ligação entre requisitos, ADRs, contratos, testes, telemetria, exceções e evidências | Pendente |
 
 ## Regra de rastreabilidade
 
@@ -43,4 +49,4 @@ Cada tópico deverá apontar, quando materializado no Blueprint, para o capítul
 
 ## Restrição de início
 
-O Blueprint não deve ser iniciado antes da aprovação formal do Pacote 3 pelo Arquiteto-Chefe.
+O Blueprint não deve ser iniciado sem autorização expressa do Arquiteto-Chefe após a consolidação da Constituição.
