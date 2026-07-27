@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Registro oficial da MISSÃO 002 e da Sprint 0 — Fundação Executável em `docs/12-Sprints/SPRINT-0-FUNDACAO-EXECUTAVEL.md`.
+- Backlog, critérios de conclusão e bloqueios por decisões arquiteturais reservadas para a Sprint 0.
 - Pacote 7 da Constituição Arquitetural com glossário oficial, siglas, índice consolidado, matriz de referências cruzadas e critérios objetivos para a versão 1.0.0.
 - Política operacional de validade máxima e renovação de exceções arquiteturais temporárias.
 - Indicadores mínimos de governança arquitetural e referências para sua operacionalização no Blueprint.
@@ -31,6 +33,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- VERO-BLP-002 v0.1.0 promovido para `Approved` por autorização do Arquiteto-Chefe.
+- `PROJECT_STATUS.md` atualizado para registrar a autorização da Sprint 0 e os ADRs pendentes.
 - Constituição Arquitetural `VERO-CONST-001` promovida para `1.0.0 — Approved` em commit exclusivo, sem alteração normativa.
 - Pacote 7 registrado como aprovado pelo Arquiteto-Chefe.
 - Revisão Final de Consistência concluída, com links internos e controles documentais validados.
