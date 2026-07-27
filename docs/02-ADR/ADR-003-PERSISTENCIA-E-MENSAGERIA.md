@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | ADR-003 |
 | Título | Persistência e Mensageria — PostgreSQL, Prisma, Redis e RabbitMQ |
-| Versão | 0.1.0 |
+| Versão | 0.2.0 |
 | Estado | Proposed — aguardando revisão arquitetural |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -39,7 +39,7 @@ Se aprovado, este ADR estabelece:
 10. Exchanges, queues, bindings, retries e dead-letter serão detalhes operacionais de Infrastructure.
 11. Contratos de integração pertencerão ao publicador e permanecerão agnósticos do RabbitMQ.
 12. Idempotência e redelivery serão considerados desde o desenho dos consumers.
-13. A Sprint 0 poderá criar somente baseline técnica, adapters, configuração, conectividade e health checks, sem schemas ou mensagens de negócio.
+13. A Sprint 0 poderá criar somente baseline técnica, adapters, configuração, conectividade, schema Prisma técnico vazio e health checks, sem tabelas, migrations, schemas persistentes ou mensagens de negócio.
 14. Este ADR **não decide**:
     - organização definitiva de schemas Prisma por módulo;
     - transações entre módulos ou Unit of Work;
@@ -47,7 +47,7 @@ Se aprovado, este ADR estabelece:
     - entrega exatamente uma vez;
     - schema registry e contract testing;
     - topologia definitiva de exchanges e filas.
-   Esses temas exigirão ADR antes da implementação correspondente.
+   A Sprint 0 poderá usar apenas topologia efêmera de conectividade em testes, sem criar contrato público ou promessa operacional. Esses temas exigirão ADR antes da implementação correspondente.
 
 ## 4. Alternativas consideradas
 
@@ -97,7 +97,7 @@ A decisão fixa providers da baseline e a obrigação de adapters, ownership e i
 - Prisma schema e migrations técnicas;
 - composition roots;
 - configuração e secrets;
-- health/readiness;
+- health/readiness por processo e dependência essencial aplicável;
 - testes de integração;
 - Docker Compose;
 - CI;
@@ -184,3 +184,4 @@ A combinação fornece persistência ACID, acesso tipado, cache compartilhado e 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de persistência, cache e mensageria | Proposed |
+| 0.2.0 | 2026-07-27 | Delimitação da baseline técnica, schema vazio e topologia efêmera de testes | Proposed |
