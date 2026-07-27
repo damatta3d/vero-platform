@@ -1,0 +1,52 @@
+name: vero-platform
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${VERO_POSTGRES_USER:-vero}
+      POSTGRES_PASSWORD: ${VERO_POSTGRES_PASSWORD:?set VERO_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${VERO_POSTGRES_DB:-vero}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${VERO_POSTGRES_USER:-vero} -d ${VERO_POSTGRES_DB:-vero}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${VERO_RABBITMQ_USER:-vero}
+      RABBITMQ_DEFAULT_PASS: ${VERO_RABBITMQ_PASSWORD:?set VERO_RABBITMQ_PASSWORD}
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:

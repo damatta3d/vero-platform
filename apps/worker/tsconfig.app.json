@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["node"],
+    "rootDir": "../.."
+  },
+  "include": ["src/**/*.ts", "../../packages/**/*.ts"],
+  "exclude": ["src/**/*.spec.ts", "../../packages/**/*.spec.ts"]
+}
