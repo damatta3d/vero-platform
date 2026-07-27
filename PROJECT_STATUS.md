@@ -3,9 +3,9 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v0.7.0  
+**Constituição:** VERO-CONST-001 v0.7.1  
 **Fase:** Consolidação Arquitetural  
-**Estado:** Pacotes 1 a 6 aprovados; Pacote 7 materializado para revisão  
+**Estado:** Pacotes 1 a 7 aprovados; revisão final concluída; promoção para 1.0.0 pendente  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -25,7 +25,8 @@
 - Pacote 5 — Governança Arquitetural — aprovado.
 - Registro ampliado de referências cruzadas para o Blueprint.
 - Pacote 6 — Evolução e Gestão de Mudanças — aprovado.
-- Pacote 7 — Glossário e Consolidação — materializado para revisão.
+- Pacote 7 — Glossário e Consolidação — aprovado.
+- Revisão Final de Consistência concluída, sem conflito normativo pendente.
 - Política de exceções temporárias e indicadores mínimos de governança materializados.
 
 ## Escopo autorizado nesta fase
@@ -53,9 +54,9 @@ Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram
 
 ## Próximos marcos
 
-1. Submeter o Pacote 7 à aprovação do Arquiteto-Chefe.
-2. Executar a revisão final de consistência e os critérios de promoção.
-3. Promover a Constituição para 1.0.0 em commit exclusivo após aprovação formal.
+1. Promover a Constituição para 1.0.0 em commit exclusivo.
+2. Registrar a Constituição como Approved e referência normativa oficial.
+3. Preparar o início do Blueprint conforme autorização do Arquiteto-Chefe.
 4. Iniciar o Blueprint somente após autorização expressa.
 5. Construir o Canonical Domain Model.
 6. Criar os ADRs aprovados.

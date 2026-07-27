@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.7.0 |
-| Estado | Draft — Pacotes 1 a 6 aprovados; Pacote 7 materializado para revisão |
+| Versão atual | 0.7.1 |
+| Estado | Draft — Pacotes 1 a 7 aprovados; revisão final concluída; promoção pendente |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -24,11 +24,12 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 3. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md) — Pacote 3, incluindo a emenda autorizada de Evolução Arquitetural Controlada;
 4. [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md) — Pacote 4;
 5. [Governança Arquitetural](03-GOVERNANCA-E-AUTORIDADE.md) — Pacote 5;
-6. [Evolução e Gestão de Mudanças](06-EVOLUCAO-E-GESTAO-DE-MUDANCAS.md) — Pacote 6.
+6. [Evolução e Gestão de Mudanças](06-EVOLUCAO-E-GESTAO-DE-MUDANCAS.md) — Pacote 6;
+7. [Glossário e Consolidação](07-GLOSSARIO-E-CONSOLIDACAO.md) — Pacote 7.
 
-## Conteúdo em revisão — Pacote 7
+## Revisão final
 
-1. [Glossário e Consolidação](07-GLOSSARIO-E-CONSOLIDACAO.md).
+A [Revisão Final de Consistência](REVISAO-FINAL-DE-CONSISTENCIA.md) foi concluída com todos os critérios de promoção atendidos. A Constituição permanece em Draft até o commit exclusivo de promoção.
 
 ## Controles
 
@@ -36,7 +37,8 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 - [Histórico de Revisões](HISTORICO-DE-REVISOES.md);
 - [Modelo editorial obrigatório](MODELO-DE-CAPITULO.md);
 - [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md);
-- [Glossário, índice consolidado e critérios para 1.0.0](07-GLOSSARIO-E-CONSOLIDACAO.md).
+- [Glossário, índice consolidado e critérios para 1.0.0](07-GLOSSARIO-E-CONSOLIDACAO.md);
+- [Revisão Final de Consistência](REVISAO-FINAL-DE-CONSISTENCIA.md).
 
 ## Linha evolutiva
 
@@ -48,9 +50,9 @@ A evolução oficial segue esta sequência:
 
 1. Constituição Arquitetural;
 2. Blueprint;
-3. Canonical Domain Model;
-4. ADRs;
-5. Fundação da Plataforma;
-6. Implementação dos módulos.
+3. ADRs;
+4. Canonical Domain Model;
+5. Engineering Playbook;
+6. código e implementação.
 
 Nenhuma etapa posterior pode contrariar uma etapa normativa anterior sem decisão arquitetural formal aprovada.

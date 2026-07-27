@@ -31,6 +31,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Pacote 7 registrado como aprovado pelo Arquiteto-Chefe.
+- Revisão Final de Consistência concluída, com links internos e controles documentais validados.
+- Ordem de precedência sincronizada para Constituição, Blueprint, ADRs, Canonical Domain Model, Engineering Playbook e código.
+- Constituição `VERO-CONST-001` evoluída editorialmente para `0.7.1`, mantendo estado Draft até o commit exclusivo de promoção.
 - Pacote 6 registrado como aprovado pelo Arquiteto-Chefe.
 - Constituição `VERO-CONST-001` evoluída para `0.7.0`, mantendo estado Draft e o Pacote 7 para revisão final.
 - Pacote 5 registrado como aprovado pelo Arquiteto-Chefe.

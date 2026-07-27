@@ -23,7 +23,7 @@ Este diretório é a fonte oficial da documentação arquitetural, de engenharia
 
 ## Governança
 
-A Constituição Arquitetural e as decisões formalizadas em ADR são normativas. Alterações arquiteturais dependem de aprovação do Arquiteto-Chefe e atualização dos controles de versão e mudança.
+A precedência documental oficial é: Constituição Arquitetural; Blueprint aprovado; ADRs vigentes; Canonical Domain Model aprovado; Engineering Playbook e documentos especializados; código e implementação. Um documento inferior não pode contrariar um superior. Alterações arquiteturais dependem de aprovação do Arquiteto-Chefe e atualização dos controles de versão e mudança.
 
 Cada documento mestre deve possuir identificador único, versão independente, estado documental, histórico de revisões e rastreabilidade. A versão global da plataforma permanece no arquivo `VERSION` da raiz; a Constituição `VERO-CONST-001` mantém seu controle próprio em [`00-Constituicao-Arquitetural/VERSION.md`](00-Constituicao-Arquitetural/VERSION.md).
 

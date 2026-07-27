@@ -8,7 +8,7 @@
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 5 — Governança Arquitetural |
 | Versão | 0.7.0 |
-| Estado | Approved — Pacote 5; emenda operacional do Pacote 7 materializada para revisão |
+| Estado | Approved — Pacote 5 e emenda operacional do Pacote 7 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -105,10 +105,10 @@ Os documentos normativos possuem identificador, versão, estado, autoridade, his
 
 1. Constituição Arquitetural;
 2. Blueprint aprovado;
-3. Canonical Domain Model aprovado;
-4. ADRs vigentes;
-5. documentos especializados e padrões;
-6. implementação e artefatos operacionais.
+3. ADRs vigentes;
+4. Canonical Domain Model aprovado;
+5. Engineering Playbook e demais documentos especializados;
+6. código, implementação e artefatos operacionais.
 
 Um documento inferior detalha, mas não pode contrariar, um documento superior. Em conflito, prevalece o documento superior e a divergência deve ser registrada. ADR não modifica silenciosamente a Constituição; mudança constitucional exige o rito próprio.
 
@@ -211,4 +211,4 @@ O Blueprint deverá detalhar gates, papéis operacionais, automações, evidênc
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Autoridade, responsabilidade da Engenharia, inconsistências, mudança arquitetural e proteção documental publicadas no Pacote 1 | Aprovado no contexto do Pacote 1 |
 | 0.5.0 | 2026-07-27 | Governança ampliada com papéis, ADRs, conformidade, exceções, precedência, qualidade, Shared Kernel, módulos e contratos | Aprovado no contexto do Pacote 5 |
-| 0.7.0 | 2026-07-27 | Prazo máximo para exceções temporárias e indicadores mínimos de governança materializados | Draft para revisão no Pacote 7 |
+| 0.7.0 | 2026-07-27 | Prazo máximo para exceções temporárias e indicadores mínimos de governança materializados | Aprovado no contexto do Pacote 7 |

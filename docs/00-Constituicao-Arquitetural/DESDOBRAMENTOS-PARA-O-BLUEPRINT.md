@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | VERO-CONST-001-TR01 |
 | Documento de origem | VERO-CONST-001 |
-| Versão | 0.7.0 |
+| Versão | 0.7.1 |
 | Estado | Draft |
 | Data | 2026-07-27 |
 | Responsável | Engenharia Oficial |

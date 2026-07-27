@@ -8,7 +8,7 @@
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 7 — Glossário e Consolidação |
 | Versão | 0.7.0 |
-| Estado | Draft — materializado para revisão |
+| Estado | Approved — Pacote 7 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -172,4 +172,4 @@ O Blueprint deverá detalhar catálogos, ownership, métricas, exceções e vali
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
-| 0.7.0 | 2026-07-27 | Glossário, siglas, índice, referências e critérios para 1.0.0 materializados | Draft para revisão |
+| 0.7.0 | 2026-07-27 | Glossário, siglas, índice, referências e critérios para 1.0.0 materializados | Aprovado no contexto do Pacote 7 |

@@ -8,7 +8,7 @@
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 4 — Modelo Arquitetural |
 | Versão | 0.4.0 |
-| Estado | Draft — materializado para revisão |
+| Estado | Approved — Pacote 4 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -161,4 +161,4 @@ O Blueprint deverá detalhar topologia física, estrutura de projetos, portas e 
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
-| 0.4.0 | 2026-07-27 | Modelo conceitual de camadas, núcleo, módulos, comunicação e dependências materializado | Draft para revisão |
+| 0.4.0 | 2026-07-27 | Modelo conceitual de camadas, núcleo, módulos, comunicação e dependências materializado | Aprovado no contexto do Pacote 4 |

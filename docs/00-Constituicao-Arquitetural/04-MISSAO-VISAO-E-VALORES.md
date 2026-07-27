@@ -8,7 +8,7 @@
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 2 — Missão, Visão e Valores |
 | Versão | 0.2.0 |
-| Estado | Draft — materializado para revisão |
+| Estado | Approved — Pacote 2 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
