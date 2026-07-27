@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | VERO-CONST-001-TR01 |
 | Documento de origem | VERO-CONST-001 |
-| Versão | 0.6.0 |
+| Versão | 0.7.0 |
 | Estado | Draft |
 | Data | 2026-07-27 |
 | Responsável | Engenharia Oficial |
@@ -43,6 +43,8 @@ Manter rastreabilidade dos temas constitucionais que deverão ser detalhados tec
 | Auditoria e conformidade | CH02 §§ 3.9–3.10; CH03 § 3.5 | Definir eventos auditáveis, integridade, retenção, acesso, evidências, consultas e revisões periódicas | Pendente |
 | Operating model de governança | CH03 §§ 3.1–3.4; CH06 §§ 3.2–3.6 | Definir gates, papéis operacionais, RACI, fluxos, classes e criticidade de mudanças, SLAs e automações | Pendente |
 | Evidências e fiscalização | CH03 §§ 3.5–3.8; CH06 § 3.11 | Definir repositório de evidências, checklists, métricas, testes, alertas e tratamento de desvios | Pendente |
+| Exceções arquiteturais | CH03 § 3.6; CH07 §§ 3.5–3.6 | Definir registro, alertas de vencimento, renovação, controles compensatórios e relatórios de exceções | Pendente |
+| Indicadores de governança | CH03 § 3.8; CH07 § 3.5 | Definir fórmulas, fontes, periodicidade, baselines, metas e painéis dos indicadores constitucionais | Pendente |
 | Catálogo do Shared Kernel | CH03 § 3.9; CH05 §§ 3.2 e 3.5 | Definir ownership, itens permitidos, consumidores, versionamento e testes de compatibilidade | Pendente |
 | Ciclo de vida de módulos | CH03 §§ 3.10–3.11; CH06 §§ 3.7, 3.9–3.10 | Definir proposta, aprovação, catálogo, migração, depreciação, fusão, extração e encerramento | Pendente |
 | Política técnica de compatibilidade | CH06 §§ 3.7–3.9 | Definir regras verificáveis por classe de API, evento, schema, integração e dado; janelas mínimas e testes automatizados | Pendente |

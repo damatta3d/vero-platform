@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | Identificador do documento | VERO-CONST-001 |
-| Versão atual | 0.6.0 |
+| Versão atual | 0.7.0 |
 | Estado | Draft |
 | Data | 2026-07-27 |
 | Responsável | Arquiteto-Chefe |
-| Situação | Pacotes 1 a 5 aprovados; Pacote 6 materializado para revisão |
+| Situação | Pacotes 1 a 6 aprovados; Pacote 7 materializado para revisão |
 
 ## Linha evolutiva
 
@@ -18,8 +18,8 @@
 | 0.3.0 | Pacote 3 — Princípios Arquiteturais | Aprovado |
 | 0.4.0 | Pacote 4 — Modelo Arquitetural | Aprovado |
 | 0.5.0 | Pacote 5 — Governança Arquitetural | Aprovado |
-| 0.6.0 | Pacote 6 — Evolução e Gestão de Mudanças | Draft para revisão |
-| 0.7.0 em diante | Pacotes incrementais | Planejado |
+| 0.6.0 | Pacote 6 — Evolução e Gestão de Mudanças | Aprovado |
+| 0.7.0 | Pacote 7 — Glossário e Consolidação | Draft para revisão |
 | 1.0.0 | Constituição Oficial Consolidada | Planejado |
 
 ## Histórico resumido
@@ -30,7 +30,8 @@
 - 2026-07-27 — Pacote 3 materializado e posteriormente aprovado.
 - 2026-07-27 — Princípio de Evolução Arquitetural Controlada autorizado; Pacote 4 materializado e posteriormente aprovado.
 - 2026-07-27 — Pacote 5 materializado e posteriormente aprovado.
-- 2026-07-27 — Pacote 6 materializado com evolução, mudanças, criticidade, compatibilidade e rastreabilidade.
+- 2026-07-27 — Pacote 6 materializado e posteriormente aprovado.
+- 2026-07-27 — Pacote 7 materializado com glossário, siglas, índice, referências e critérios de promoção para 1.0.0.
 
 ## Regra de independência
 

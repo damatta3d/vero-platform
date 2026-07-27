@@ -8,7 +8,7 @@
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 6 — Evolução e Gestão de Mudanças |
 | Versão | 0.6.0 |
-| Estado | Draft — materializado para revisão |
+| Estado | Approved — Pacote 6 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -226,4 +226,4 @@ O Blueprint deverá detalhar o workflow operacional de mudanças, gates por crit
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
-| 0.6.0 | 2026-07-27 | Processo de evolução, gestão de mudanças, criticidade de ADRs, versionamento, compatibilidade, depreciação, migração e rastreabilidade materializados | Draft para revisão |
+| 0.6.0 | 2026-07-27 | Processo de evolução, gestão de mudanças, criticidade de ADRs, versionamento, compatibilidade, depreciação, migração e rastreabilidade materializados | Aprovado no contexto do Pacote 6 |

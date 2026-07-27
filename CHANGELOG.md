@@ -8,6 +8,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Pacote 7 da Constituição Arquitetural com glossário oficial, siglas, índice consolidado, matriz de referências cruzadas e critérios objetivos para a versão 1.0.0.
+- Política operacional de validade máxima e renovação de exceções arquiteturais temporárias.
+- Indicadores mínimos de governança arquitetural e referências para sua operacionalização no Blueprint.
 - Pacote 6 da Constituição Arquitetural com evolução contínua controlada, fluxo de mudanças, avaliação de impacto, versionamento, compatibilidade, depreciação, migração e rastreabilidade.
 - Níveis de criticidade Crítica, Estratégica, Tática e Local para decisões e ADRs.
 - Política constitucional de backward compatibility, breaking changes, comunicação, coexistência e retirada.
@@ -28,6 +31,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
+- Pacote 6 registrado como aprovado pelo Arquiteto-Chefe.
+- Constituição `VERO-CONST-001` evoluída para `0.7.0`, mantendo estado Draft e o Pacote 7 para revisão final.
 - Pacote 5 registrado como aprovado pelo Arquiteto-Chefe.
 - Constituição `VERO-CONST-001` evoluída para `0.6.0`, mantendo estado Draft e o Pacote 6 para revisão.
 - Pacote 4 registrado como aprovado pelo Arquiteto-Chefe.

@@ -7,8 +7,8 @@
 | Identificador | VERO-CONST-001-CH03 |
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 5 — Governança Arquitetural |
-| Versão | 0.5.0 |
-| Estado | Draft — aprovado no contexto do Pacote 5 |
+| Versão | 0.7.0 |
+| Estado | Approved — Pacote 5; emenda operacional do Pacote 7 materializada para revisão |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -95,7 +95,9 @@ Revisões de conformidade devem ocorrer antes de mudanças estruturais, antes de
 
 Uma exceção deve declarar regra afetada, justificativa, escopo, riscos, controles compensatórios, responsável, data de expiração, condição de encerramento e autoridade aprovadora. Exceções são temporárias, restritas e não criam precedente automático.
 
-Exceções expiradas são não conformidades. Renovação exige nova análise. Exceções que contrariem a Constituição somente podem existir após aprovação formal do Arquiteto-Chefe e ADR correspondente; quando a mudança for permanente, a Constituição deve ser alterada pelo processo próprio.
+A validade máxima padrão de uma exceção é de 90 dias corridos ou até a release explicitamente indicada, prevalecendo o que ocorrer primeiro. Risco, requisito regulatório ou decisão aprovadora podem impor prazo menor. Renovação não é automática: exige nova análise de causa, risco, controles, plano de remoção e aprovação antes do vencimento.
+
+Exceções expiradas são não conformidades. Exceções que contrariem a Constituição somente podem existir após aprovação formal do Arquiteto-Chefe e ADR correspondente; quando a mudança for permanente, a Constituição deve ser alterada pelo processo próprio.
 
 ### 3.7 Governança documental e precedência
 
@@ -116,7 +118,15 @@ Documentos em Draft orientam elaboração e revisão, mas sua força normativa d
 
 Revisões arquiteturais devem avaliar, no mínimo: alinhamento ao domínio, fronteiras, dependências, contratos, multi-tenancy, segurança, privacidade, observabilidade, resiliência, dados, operação, testabilidade, migração e reversibilidade.
 
-Checklists antes de commit e merge são obrigatórios conforme o Engineering Playbook. Métricas podem medir violações de dependência, cobertura de testes arquiteturais, contratos incompatíveis, exceções abertas e vencidas, idade de ADRs pendentes, falhas de ownership e tempo de correção. Métricas apoiam decisões, mas não substituem julgamento e aprovação.
+Checklists antes de commit e merge são obrigatórios conforme o Engineering Playbook. A governança deve acompanhar, no mínimo:
+
+- percentual de conformidade arquitetural;
+- ADRs abertas, aprovadas e implementadas;
+- contratos depreciados em coexistência;
+- exceções arquiteturais ativas, próximas do vencimento e vencidas;
+- tempo médio de regularização de mudanças emergenciais.
+
+Cada indicador deve possuir owner, definição, fórmula, fonte, periodicidade, meta ou limite e evidência histórica. O Blueprint definirá mecanismos de coleta, painéis, baselines e limites operacionais. Métricas apoiam decisões, mas não substituem julgamento e aprovação.
 
 ### 3.9 Governança do Shared Kernel
 
@@ -188,6 +198,8 @@ A governança protege coerência sem impedir evolução. Papéis claros, decisõ
 - [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md);
 - [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md);
 - [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md);
+- [Evolução e Gestão de Mudanças](06-EVOLUCAO-E-GESTAO-DE-MUDANCAS.md);
+- [Glossário e Consolidação](07-GLOSSARIO-E-CONSOLIDACAO.md);
 - [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md);
 - [Engineering Playbook](../99-Appendix/ENGINEERING_PLAYBOOK.md).
 
@@ -199,3 +211,4 @@ O Blueprint deverá detalhar gates, papéis operacionais, automações, evidênc
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Autoridade, responsabilidade da Engenharia, inconsistências, mudança arquitetural e proteção documental publicadas no Pacote 1 | Aprovado no contexto do Pacote 1 |
 | 0.5.0 | 2026-07-27 | Governança ampliada com papéis, ADRs, conformidade, exceções, precedência, qualidade, Shared Kernel, módulos e contratos | Aprovado no contexto do Pacote 5 |
+| 0.7.0 | 2026-07-27 | Prazo máximo para exceções temporárias e indicadores mínimos de governança materializados | Draft para revisão no Pacote 7 |
