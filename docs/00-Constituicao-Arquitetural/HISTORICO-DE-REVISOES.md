@@ -11,6 +11,7 @@
 | 0.6.0 | 2026-07-27 | Pacote 6 | Evolução, fluxo de mudanças, criticidade das ADRs, versionamento, compatibilidade, depreciação, migração e rastreabilidade materializados e posteriormente aprovados | Arquiteto-Chefe |
 | 0.7.0 | 2026-07-27 | Pacote 7 | Glossário, siglas, estrutura consolidada, referências cruzadas, exceções temporárias, indicadores e critérios para 1.0.0 materializados e posteriormente aprovados | Arquiteto-Chefe |
 | 0.7.1 | 2026-07-27 | Revisão Final | Consistência, terminologia, estados, precedência, referências, links e controles validados; correções editoriais sem alteração normativa | Arquiteto-Chefe |
+| 1.0.0 | 2026-07-27 | Promoção | Constituição Oficial Consolidada promovida de Draft para Approved, sem alteração de conteúdo normativo | Arquiteto-Chefe |
 
 > O registro 1.0.0 acima é mantido como evidência da publicação original. Para fins de vigência documental, ele foi superseded pela baseline 0.1.0 estabelecida na normalização.
 

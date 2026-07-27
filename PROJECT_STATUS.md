@@ -3,9 +3,9 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v0.7.1  
-**Fase:** Consolidação Arquitetural  
-**Estado:** Pacotes 1 a 7 aprovados; revisão final concluída; promoção para 1.0.0 pendente  
+**Constituição:** VERO-CONST-001 v1.0.0  
+**Fase:** Constituição Consolidada e Fundação da Plataforma  
+**Estado:** Constituição Arquitetural 1.0.0 Approved  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -27,6 +27,7 @@
 - Pacote 6 — Evolução e Gestão de Mudanças — aprovado.
 - Pacote 7 — Glossário e Consolidação — aprovado.
 - Revisão Final de Consistência concluída, sem conflito normativo pendente.
+- Constituição `VERO-CONST-001 v1.0.0` promovida para `Approved`.
 - Política de exceções temporárias e indicadores mínimos de governança materializados.
 
 ## Escopo autorizado nesta fase
@@ -54,10 +55,8 @@ Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram
 
 ## Próximos marcos
 
-1. Promover a Constituição para 1.0.0 em commit exclusivo.
-2. Registrar a Constituição como Approved e referência normativa oficial.
-3. Preparar o início do Blueprint conforme autorização do Arquiteto-Chefe.
-4. Iniciar o Blueprint somente após autorização expressa.
-5. Construir o Canonical Domain Model.
-6. Criar os ADRs aprovados.
-7. Somente após autorização, iniciar a fundação técnica.
+1. Iniciar o Blueprint conforme a Constituição 1.0.0.
+2. Iniciar a Sprint 0 — Fundação Executável em paralelo, preservando a precedência documental.
+3. Construir o Canonical Domain Model.
+4. Criar os ADRs exigidos pelas decisões estruturais.
+5. Manter módulos de negócio fora do escopo até a conclusão da fundação técnica.

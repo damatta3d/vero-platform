@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | Identificador do documento | VERO-CONST-001 |
-| Versão atual | 0.7.1 |
-| Estado | Draft |
+| Versão atual | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Responsável | Arquiteto-Chefe |
-| Situação | Pacotes 1 a 7 aprovados; revisão final concluída; promoção pendente |
+| Situação | Constituição Oficial Consolidada e vigente |
 
 ## Linha evolutiva
 
@@ -21,7 +21,7 @@
 | 0.6.0 | Pacote 6 — Evolução e Gestão de Mudanças | Aprovado |
 | 0.7.0 | Pacote 7 — Glossário e Consolidação | Aprovado |
 | 0.7.1 | Revisão Final de Consistência | Concluída |
-| 1.0.0 | Constituição Oficial Consolidada | Planejado |
+| 1.0.0 | Constituição Oficial Consolidada | Approved |
 
 ## Histórico resumido
 
@@ -34,6 +34,7 @@
 - 2026-07-27 — Pacote 6 materializado e posteriormente aprovado.
 - 2026-07-27 — Pacote 7 materializado e posteriormente aprovado.
 - 2026-07-27 — Revisão final concluída; estados editoriais, precedência documental, links e controles sincronizados para a promoção.
+- 2026-07-27 — Constituição promovida para 1.0.0 Approved em commit exclusivo, sem alteração normativa.
 
 ## Regra de independência
 

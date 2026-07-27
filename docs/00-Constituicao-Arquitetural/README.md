@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.7.1 |
-| Estado | Draft — Pacotes 1 a 7 aprovados; revisão final concluída; promoção pendente |
+| Versão atual | 1.0.0 |
+| Estado | Approved |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -29,7 +29,7 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 
 ## Revisão final
 
-A [Revisão Final de Consistência](REVISAO-FINAL-DE-CONSISTENCIA.md) foi concluída com todos os critérios de promoção atendidos. A Constituição permanece em Draft até o commit exclusivo de promoção.
+A [Revisão Final de Consistência](REVISAO-FINAL-DE-CONSISTENCIA.md) foi concluída com todos os critérios atendidos. A Constituição foi promovida para 1.0.0 e passa a ser a referência normativa oficial da VERO Platform.
 
 ## Controles
 
@@ -42,7 +42,7 @@ A [Revisão Final de Consistência](REVISAO-FINAL-DE-CONSISTENCIA.md) foi conclu
 
 ## Linha evolutiva
 
-A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), 0.5.0 (Pacote 5), 0.6.0 (Pacote 6), 0.7.0 (Pacote 7), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
+A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), 0.5.0 (Pacote 5), 0.6.0 (Pacote 6), 0.7.0 (Pacote 7), 0.7.1 (revisão final) e 1.0.0 (Constituição Oficial Consolidada).
 
 ## Ordem normativa
 
