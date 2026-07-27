@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.5.0 |
-| Estado | Draft — Pacotes 1, 2, 3 e 4 aprovados; Pacote 5 materializado para revisão |
+| Versão atual | 0.6.0 |
+| Estado | Draft — Pacotes 1 a 5 aprovados; Pacote 6 materializado para revisão |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -22,11 +22,12 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 1. [Fundamentos e Escopo](01-FUNDAMENTOS-E-ESCOPO.md) — Pacote 1;
 2. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md) — Pacote 2;
 3. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md) — Pacote 3, incluindo a emenda autorizada de Evolução Arquitetural Controlada;
-4. [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md) — Pacote 4.
+4. [Modelo Arquitetural](05-MODELO-ARQUITETURAL.md) — Pacote 4;
+5. [Governança Arquitetural](03-GOVERNANCA-E-AUTORIDADE.md) — Pacote 5.
 
-## Conteúdo em revisão — Pacote 5
+## Conteúdo em revisão — Pacote 6
 
-1. [Governança Arquitetural](03-GOVERNANCA-E-AUTORIDADE.md), ampliando as disposições iniciais aprovadas no Pacote 1.
+1. [Evolução e Gestão de Mudanças](06-EVOLUCAO-E-GESTAO-DE-MUDANCAS.md).
 
 ## Controles
 
@@ -37,7 +38,7 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 
 ## Linha evolutiva
 
-A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), 0.5.0 (Pacote 5), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
+A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), 0.4.0 (Pacote 4), 0.5.0 (Pacote 5), 0.6.0 (Pacote 6), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
 
 ## Ordem normativa
 

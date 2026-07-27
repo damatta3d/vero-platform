@@ -8,7 +8,7 @@
 | Documento mestre | VERO-CONST-001 |
 | Pacote | 5 — Governança Arquitetural |
 | Versão | 0.5.0 |
-| Estado | Draft — materializado para revisão |
+| Estado | Draft — aprovado no contexto do Pacote 5 |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -191,11 +191,11 @@ A governança protege coerência sem impedir evolução. Papéis claros, decisõ
 - [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md);
 - [Engineering Playbook](../99-Appendix/ENGINEERING_PLAYBOOK.md).
 
-O Blueprint deverá detalhar gates, papéis operacionais, automações, evidências, catálogo de ownership, Shared Kernel, ciclo de módulos, ciclo de contratos, métricas e testes. O Pacote 6 deverá formalizar o processo constitucional de evolução, versionamento e mudanças.
+O Blueprint deverá detalhar gates, papéis operacionais, automações, evidências, catálogo de ownership, Shared Kernel, ciclo de módulos, ciclo de contratos, métricas e testes. O Pacote 6 formaliza o processo constitucional de evolução, versionamento e mudanças.
 
 ## 8. Histórico do Capítulo
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Autoridade, responsabilidade da Engenharia, inconsistências, mudança arquitetural e proteção documental publicadas no Pacote 1 | Aprovado no contexto do Pacote 1 |
-| 0.5.0 | 2026-07-27 | Governança ampliada com papéis, ADRs, conformidade, exceções, precedência, qualidade, Shared Kernel, módulos e contratos | Draft para revisão |
+| 0.5.0 | 2026-07-27 | Governança ampliada com papéis, ADRs, conformidade, exceções, precedência, qualidade, Shared Kernel, módulos e contratos | Aprovado no contexto do Pacote 5 |

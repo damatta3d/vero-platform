@@ -7,7 +7,8 @@
 | 0.2.0 | 2026-07-27 | Pacote 2 | Missão, Visão e Valores materializados e posteriormente aprovados; registro de desdobramentos para o Blueprint criado | Arquiteto-Chefe |
 | 0.3.0 | 2026-07-27 | Pacote 3 | Princípios arquiteturais ampliados, modelo editorial criado e pacote posteriormente aprovado | Arquiteto-Chefe |
 | 0.4.0 | 2026-07-27 | Pacote 4 | Evolução Arquitetural Controlada incorporada; Modelo Arquitetural materializado e posteriormente aprovado | Arquiteto-Chefe |
-| 0.5.0 | 2026-07-27 | Pacote 5 | Governança ampliada com papéis, decisões, ADRs, conformidade, exceções, precedência, qualidade e ciclos de vida arquiteturais | Arquiteto-Chefe |
+| 0.5.0 | 2026-07-27 | Pacote 5 | Governança ampliada com papéis, decisões, ADRs, conformidade, exceções, precedência, qualidade e ciclos de vida arquiteturais; pacote posteriormente aprovado | Arquiteto-Chefe |
+| 0.6.0 | 2026-07-27 | Pacote 6 | Evolução, fluxo de mudanças, criticidade das ADRs, versionamento, compatibilidade, depreciação, migração e rastreabilidade materializados | Arquiteto-Chefe |
 
 > O registro 1.0.0 acima é mantido como evidência da publicação original. Para fins de vigência documental, ele foi superseded pela baseline 0.1.0 estabelecida na normalização.
 
