@@ -4,6 +4,7 @@
 |---|---|---|---|---|
 | 1.0.0 | 2026-07-27 | Pacote 1 | Publicação inicial de fundamentos, princípios e governança | Arquiteto-Chefe |
 | 0.1.0 | 2026-07-27 | Normalização | Baseline documental corrigida; identificador VERO-CONST-001 e ciclo de vida independente instituídos, preservando o registro e os commits anteriores | Arquiteto-Chefe |
+| 0.2.0 | 2026-07-27 | Pacote 2 | Missão, Visão e Valores materializados; registro de desdobramentos para o Blueprint criado | Arquiteto-Chefe |
 
 > O registro 1.0.0 acima é mantido como evidência da publicação original. Para fins de vigência documental, ele foi superseded pela baseline 0.1.0 estabelecida na normalização.
 

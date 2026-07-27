@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.1.0 |
-| Estado | Draft — Pacote 1 aprovado |
+| Versão atual | 0.2.0 |
+| Estado | Draft — Pacote 1 aprovado; Pacote 2 materializado para revisão |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -23,6 +23,11 @@ A Constituição Arquitetural estabelece os princípios normativos, a autoridade
 2. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md)
 3. [Governança e Autoridade](03-GOVERNANCA-E-AUTORIDADE.md)
 4. [Histórico de Revisões](HISTORICO-DE-REVISOES.md)
+
+## Conteúdo em revisão — Pacote 2
+
+1. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md)
+2. [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md)
 
 ## Linha evolutiva
 

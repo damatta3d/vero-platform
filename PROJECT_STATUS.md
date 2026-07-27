@@ -3,9 +3,9 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v0.1.0  
+**Constituição:** VERO-CONST-001 v0.2.0  
 **Fase:** Consolidação Arquitetural  
-**Estado:** Baseline normalizada; Pacote 1 aprovado  
+**Estado:** Pacote 1 aprovado; Pacote 2 materializado para revisão  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -17,6 +17,7 @@
 - Engineering Playbook.
 - Controles iniciais de versão e changelog.
 - Baseline documental da Constituição normalizada e separada da versão da plataforma.
+- Pacote 2 — Missão, Visão e Valores — materializado com rastreabilidade para o Blueprint.
 
 ## Escopo autorizado nesta fase
 
@@ -42,7 +43,7 @@ Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram
 
 ## Próximos marcos
 
-1. Receber e materializar os próximos pacotes da Constituição Arquitetural.
+1. Submeter o Pacote 2 à aprovação do Arquiteto-Chefe e materializar os próximos pacotes da Constituição Arquitetural.
 2. Consolidar o Blueprint.
 3. Construir o Canonical Domain Model.
 4. Criar os ADRs aprovados.
