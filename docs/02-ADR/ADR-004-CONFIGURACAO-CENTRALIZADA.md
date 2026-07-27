@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-004 |
 | Título | Configuração Centralizada — Environment, Validation, Secrets e Feature Flags |
-| Versão | 0.2.0 |
-| Estado | Proposed — aguardando revisão arquitetural |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -180,3 +180,4 @@ A validação centralizada e tipada reduz estados inválidos e vazamento de segr
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial de configuração, secrets e feature flags | Proposed |
 | 0.2.0 | 2026-07-27 | Restrição de overrides de teste e exposição de secrets por menor privilégio | Proposed |
+| 1.0.0 | 2026-07-27 | Decisão arquitetural revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
