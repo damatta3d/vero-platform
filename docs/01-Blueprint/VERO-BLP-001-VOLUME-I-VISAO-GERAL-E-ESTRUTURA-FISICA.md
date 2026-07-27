@@ -12,7 +12,7 @@
 | Documento | Blueprint Arquitetural da VERO Platform |
 | Volume | I — Visão Geral e Estrutura Física |
 | Versão | 0.1.0 |
-| Estado | Draft — aguardando aprovação do Arquiteto-Chefe |
+| Estado | Approved |
 | Documento normativo superior | VERO-CONST-001 v1.0.0 — Approved |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
@@ -1021,19 +1021,20 @@ Este volume não fecha decisões que exigem evidência adicional. Devem ser trat
 
 Registrar uma decisão como reservada impede que a implementação a estabeleça informalmente.
 
-## 21. Condição de aprovação
+## 21. Registro de aprovação
 
-Este Volume I permanece em `Draft` até aprovação expressa do Arquiteto-Chefe. Após aprovação:
+Este Volume I foi aprovado expressamente pelo Arquiteto-Chefe em 2026-07-27.
 
-- seu estado será atualizado para `Approved`;
-- o controle de versão e o histórico do Blueprint serão sincronizados;
-- eventuais correções aprovadas serão registradas;
-- somente então poderá ser iniciado o Volume II.
+A aprovação:
 
-Nenhum conteúdo do Volume II foi produzido nesta missão.
+- estabelece o estado `Approved`;
+- mantém a versão documental `0.1.0`;
+- não altera a versão da plataforma;
+- autoriza o início controlado do Volume II;
+- preserva integralmente o conteúdo técnico aprovado.
 
 ## Histórico do documento
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
-| 0.1.0 | 2026-07-27 | Primeira materialização do Volume I — visão geral, estrutura física, dependências, testes, configuração, ambientes, build, deploy e versionamento | Draft — aguardando aprovação |
+| 0.1.0 | 2026-07-27 | Primeira materialização e aprovação do Volume I — visão geral, estrutura física, dependências, testes, configuração, ambientes, build, deploy e versionamento | Approved |
