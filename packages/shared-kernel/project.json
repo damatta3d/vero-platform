@@ -1,0 +1,30 @@
+{
+  "name": "shared-kernel",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/shared-kernel/src",
+  "projectType": "library",
+  "tags": ["type:contract", "scope:shared-kernel", "runtime:agnostic", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/shared-kernel",
+        "main": "packages/shared-kernel/src/public-api.ts",
+        "tsConfig": "packages/shared-kernel/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/shared-kernel/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": { "command": "tsc -p packages/shared-kernel/tsconfig.lib.json --noEmit" }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": { "jestConfig": "packages/shared-kernel/jest.config.cjs" }
+    }
+  }
+}
