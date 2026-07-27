@@ -8,7 +8,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
-- ADR-001 a ADR-006 propostos para revisão arquitetural, cobrindo arquitetura geral, runtime, persistência, configuração, observabilidade, Core Platform e Shared Kernel.
+- ADR-001 a ADR-006 v1.0.0 aprovados, cobrindo arquitetura geral, runtime, persistência, configuração, observabilidade, Core Platform e Shared Kernel.
 - Índice de Architecture Decision Records em `docs/02-ADR/README.md`, com estado e gate de aprovação.
 
 - Pacote 7 da Constituição Arquitetural com glossário oficial, siglas, índice consolidado, matriz de referências cruzadas e critérios objetivos para a versão 1.0.0.
@@ -34,7 +34,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
-- `PROJECT_STATUS.md` atualizado para registrar a MISSÃO 004, os seis ADRs em estado `Proposed` e o bloqueio da Sprint 0 até aprovação formal.
+- ADRs corrigidos após revisão técnica: topologia física, limites da baseline de dados, escopo de secrets, criticidade de readiness, dependências e ownership do Shared Kernel.
+- VERO-BLP-002 v0.1.0 materializado como `Approved` nesta linha de integração.
+- `PROJECT_STATUS.md` atualizado para registrar os seis ADRs em estado `Approved` e o próximo gate da Sprint 0.
 
 - Constituição Arquitetural `VERO-CONST-001` promovida para `1.0.0 — Approved` em commit exclusivo, sem alteração normativa.
 - Pacote 7 registrado como aprovado pelo Arquiteto-Chefe.
