@@ -6,13 +6,13 @@
 |---|---|
 | Identificador | ADR-005 |
 | Título | Observabilidade — Logging, Metrics, Tracing, Context Propagation e Health Checks |
-| Versão | 0.1.0 |
+| Versão | 0.2.0 |
 | Estado | Proposed — aguardando revisão arquitetural |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Decisão estrutural | Sim |
-| Depende de | ADR-001, ADR-002 e ADR-004 |
+| Depende de | ADR-001, ADR-002, ADR-003 e ADR-004 |
 | Substitui | Nenhum ADR |
 
 ## 1. Contexto
@@ -35,13 +35,13 @@ Se aprovado, este ADR estabelece:
 6. Domain não dependerá de logger, meter, tracer, SDK, exporter ou contexto de runtime.
 7. **W3C Trace Context** será o formato interoperável de propagação de trace em HTTP e mensageria quando aplicável.
 8. **AsyncLocalStorage** do Node.js sustentará o contexto interno por fluxo assíncrono, encapsulado por uma porta da plataforma.
-9. O contexto mínimo poderá conter `correlationId`, `traceId`, `spanId`, `requestId`, `causationId`, `tenantId`, `workspaceId`, `userId`, `module` e `operation`, somente quando validados, necessários e permitidos.
-10. IDs recebidos externamente serão validados; valores ausentes ou inválidos serão gerados na borda. Headers externos nunca serão considerados identidade ou tenant confiáveis sem autenticação e resolução próprias.
+9. O schema de contexto poderá conter `correlationId`, `traceId`, `spanId`, `requestId`, `causationId`, `tenantId`, `workspaceId`, `userId`, `module` e `operation`; cada campo será opcional e somente será propagado quando validado, necessário e permitido. O contexto mínimo efetivo de cada fluxo será o menor conjunto requerido.
+10. IDs técnicos recebidos externamente serão validados por formato, tamanho e conjunto de caracteres; valores ausentes ou inválidos serão gerados na borda. Headers externos nunca serão considerados identidade ou tenant confiáveis sem autenticação e resolução próprias.
 11. Campos mínimos de log seguirão o VERO-BLP-002: timestamp, level, message, service, environment e version, mais contexto aplicável.
 12. Tokens, credenciais, segredos, payloads sensíveis e dados pessoais desnecessários serão removidos ou mascarados.
 13. Métricas terão owner, nome, unidade e labels controladas. IDs de tenant, workspace e user serão proibidos como labels por padrão.
 14. Liveness verificará somente a capacidade do processo de executar.
-15. Readiness verificará a capacidade de atender e as dependências essenciais aplicáveis, incluindo PostgreSQL, Redis e RabbitMQ.
+15. Readiness verificará a capacidade de atender apenas com as dependências essenciais ao processo e à capability exposta. PostgreSQL, Redis e RabbitMQ serão incluídos somente onde a indisponibilidade de cada recurso impedir atendimento correto; dependências opcionais serão sinalizadas por telemetria sem derrubar readiness.
 16. **`@nestjs/terminus`** será a integração oficial de health checks, com indicadores próprios quando necessário.
 17. Endpoints de health não revelarão credenciais, topologia sensível, stack traces ou detalhes internos.
 18. Logging não substituirá audit log, Domain Event, Integration Event ou métrica.
@@ -180,3 +180,4 @@ Pino alinha logging ao Fastify. OpenTelemetry e OTLP mantêm portabilidade de ba
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial da baseline de observabilidade | Proposed |
+| 0.2.0 | 2026-07-27 | Dependências, contexto mínimo e readiness refinados por criticidade | Proposed |
