@@ -7,7 +7,7 @@
 | Identificador | VERO-CDM-001 |
 | Título | Canonical Domain Model da VERO Platform |
 | Versão | 0.1.0 |
-| Estado | Draft — materializado para revisão |
+| Estado | Approved |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -820,4 +820,4 @@ Expressar regras de seleção, validação ou elegibilidade com linguagem de dom
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
-| 0.1.0 | 2026-07-27 | Modelo canônico inicial dos conceitos fundamentais da plataforma | Draft para revisão |
+| 0.1.0 | 2026-07-27 | Modelo canônico inicial dos conceitos fundamentais da plataforma | Approved |
