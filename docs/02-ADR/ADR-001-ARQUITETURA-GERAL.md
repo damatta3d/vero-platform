@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | ADR-001 |
 | Título | Arquitetura Geral — Modular Monolith, Monorepo, Nx e pnpm |
-| Versão | 0.1.0 |
+| Versão | 0.2.0 |
 | Estado | Proposed — aguardando revisão arquitetural |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -88,7 +88,7 @@ A decisão define a unidade inicial de desenvolvimento e implantação, a topolo
 - raiz do workspace;
 - `apps/`;
 - `packages/`;
-- `services/`;
+- `infrastructure/`;
 - `tests/`;
 - `tools/`;
 - configuração Nx;
@@ -175,3 +175,4 @@ Revisar este ADR quando ocorrer ao menos uma condição:
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial da arquitetura geral, monorepo e toolchain | Proposed |
+| 0.2.0 | 2026-07-27 | Correção da topologia afetada para aderência ao VERO-BLP-001 | Proposed |
