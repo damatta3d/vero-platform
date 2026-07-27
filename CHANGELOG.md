@@ -8,6 +8,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Modelo editorial obrigatório para capítulos da Constituição em `MODELO-DE-CAPITULO.md`.
+- Pacote 3 da Constituição Arquitetural com princípios completos de domínio, modularidade, multi-tenancy, eventos, engines, IA, integrações, segurança e observabilidade.
+- Referências cruzadas granulares para os tópicos a detalhar posteriormente no Blueprint.
 - Pacote 2 da Constituição Arquitetural com Missão, Visão e Valores.
 - Registro rastreável dos tópicos constitucionais a detalhar no Blueprint.
 - Controle de versão independente da Constituição em `docs/00-Constituicao-Arquitetural/VERSION.md`.
@@ -15,9 +18,12 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Changed
 
-- Constituição `VERO-CONST-001` evoluída para `0.2.0`, mantendo estado Draft e o Pacote 2 para revisão.
+- Pacote 2 registrado como aprovado pelo Arquiteto-Chefe.
+- Constituição `VERO-CONST-001` evoluída para `0.3.0`, mantendo estado Draft e o Pacote 3 para revisão.
+- Capítulo de Princípios Arquiteturais reorganizado segundo o modelo normativo único, preservando o histórico do Pacote 1.
 - Separação explícita entre a versão global da plataforma e a versão da Constituição Arquitetural.
 - Baseline de `VERO-CONST-001` normalizada para `0.1.0`, em estado Draft, com o Pacote 1 aprovado.
+
 ## [0.1.0] - 2026-07-27
 
 ### Added

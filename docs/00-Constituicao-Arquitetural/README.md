@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | VERO-CONST-001 |
 | Documento | Constituição Arquitetural |
-| Versão atual | 0.2.0 |
-| Estado | Draft — Pacote 1 aprovado; Pacote 2 materializado para revisão |
+| Versão atual | 0.3.0 |
+| Estado | Draft — Pacotes 1 e 2 aprovados; Pacote 3 materializado para revisão |
 | Autoridade | Arquiteto-Chefe |
 | Responsável pela materialização | Engenharia Oficial |
 | Data | 2026-07-27 |
@@ -17,21 +17,27 @@
 
 A Constituição Arquitetural estabelece os princípios normativos, a autoridade decisória e as regras de evolução da VERO Platform. Ela orienta o Blueprint, o Canonical Domain Model, os ADRs, a fundação técnica e todos os módulos.
 
-## Conteúdo aprovado — Pacote 1
+## Conteúdo aprovado
 
-1. [Fundamentos e Escopo](01-FUNDAMENTOS-E-ESCOPO.md)
-2. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md)
-3. [Governança e Autoridade](03-GOVERNANCA-E-AUTORIDADE.md)
-4. [Histórico de Revisões](HISTORICO-DE-REVISOES.md)
+1. [Fundamentos e Escopo](01-FUNDAMENTOS-E-ESCOPO.md) — Pacote 1;
+2. [Governança e Autoridade](03-GOVERNANCA-E-AUTORIDADE.md) — Pacote 1;
+3. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md) — Pacote 2.
 
-## Conteúdo em revisão — Pacote 2
+## Conteúdo em revisão — Pacote 3
 
-1. [Missão, Visão e Valores](04-MISSAO-VISAO-E-VALORES.md)
-2. [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md)
+1. [Princípios Arquiteturais](02-PRINCIPIOS-ARQUITETURAIS.md);
+2. [Modelo de Capítulo](MODELO-DE-CAPITULO.md);
+3. [Desdobramentos para o Blueprint](DESDOBRAMENTOS-PARA-O-BLUEPRINT.md).
+
+## Controles
+
+- [Versão da Constituição](VERSION.md);
+- [Histórico de Revisões](HISTORICO-DE-REVISOES.md);
+- [Modelo editorial obrigatório](MODELO-DE-CAPITULO.md).
 
 ## Linha evolutiva
 
-A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
+A Constituição evolui independentemente da plataforma: 0.1.0 (Pacote 1), 0.2.0 (Pacote 2), 0.3.0 (Pacote 3), incrementos subsequentes e 1.0.0 quando a Constituição Oficial Consolidada for aprovada.
 
 ## Ordem normativa
 

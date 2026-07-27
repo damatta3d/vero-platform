@@ -3,9 +3,9 @@
 ## Situação atual
 
 **Versão da plataforma:** 0.1.0  
-**Constituição:** VERO-CONST-001 v0.2.0  
+**Constituição:** VERO-CONST-001 v0.3.0  
 **Fase:** Consolidação Arquitetural  
-**Estado:** Pacote 1 aprovado; Pacote 2 materializado para revisão  
+**Estado:** Pacotes 1 e 2 aprovados; Pacote 3 materializado para revisão  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
@@ -17,18 +17,22 @@
 - Engineering Playbook.
 - Controles iniciais de versão e changelog.
 - Baseline documental da Constituição normalizada e separada da versão da plataforma.
-- Pacote 2 — Missão, Visão e Valores — materializado com rastreabilidade para o Blueprint.
+- Pacote 2 — Missão, Visão e Valores — aprovado.
+- Pacote 3 — Princípios Arquiteturais — materializado.
+- Modelo editorial único para capítulos constitucionais.
+- Registro ampliado de referências cruzadas para o Blueprint.
 
 ## Escopo autorizado nesta fase
 
 - Constituição Arquitetural;
-- Blueprint;
+- preparação de referências para o Blueprint;
 - Canonical Domain Model;
 - ADRs;
 - documentação da fundação da plataforma.
 
 ## Fora do escopo nesta fase
 
+- início do Blueprint antes da aprovação do Pacote 3;
 - implementação de módulos de negócio;
 - CRM;
 - Financeiro;
@@ -43,8 +47,9 @@ Os diretórios legados `docs/04-UX`, `docs/05-Backlog` e `docs/06-Sprints` foram
 
 ## Próximos marcos
 
-1. Submeter o Pacote 2 à aprovação do Arquiteto-Chefe e materializar os próximos pacotes da Constituição Arquitetural.
-2. Consolidar o Blueprint.
-3. Construir o Canonical Domain Model.
-4. Criar os ADRs aprovados.
-5. Somente após autorização, iniciar a fundação técnica.
+1. Submeter o Pacote 3 à aprovação do Arquiteto-Chefe.
+2. Após aprovação expressa, continuar a Constituição; não iniciar o Blueprint sem autorização.
+3. Consolidar o Blueprint quando autorizado.
+4. Construir o Canonical Domain Model.
+5. Criar os ADRs aprovados.
+6. Somente após autorização, iniciar a fundação técnica.
