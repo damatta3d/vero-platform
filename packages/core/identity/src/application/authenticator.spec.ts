@@ -1,5 +1,8 @@
 import { AuthenticationEvidence } from '../domain/authentication-evidence.js';
-import { AuthenticationFailedError } from '../domain/identity-errors.js';
+import {
+  AuthenticationFailedError,
+  IdentityContextRequiredError
+} from '../domain/identity-errors.js';
 import { promoteVerifiedSubject } from '../internal/trusted-authentication.js';
 import {
   authenticationFailed,
@@ -9,7 +12,6 @@ import {
   type Authenticator
 } from './authenticator.js';
 import { requireIdentityContext } from './identity-context.js';
-import { IdentityContextRequiredError } from '../domain/identity-errors.js';
 
 describe('authentication trust boundary', () => {
   it('accepts only internally promoted authenticated results', () => {
@@ -50,12 +52,8 @@ describe('authentication trust boundary', () => {
   });
 
   it('rejects forged contexts at trusted promotion and required-context boundaries', () => {
-    expect(() => createTrustedAuthenticationResult({} as never)).toThrow(
-      AuthenticationFailedError
-    );
-    expect(() => requireIdentityContext(undefined)).toThrow(
-      IdentityContextRequiredError
-    );
+    expect(() => createTrustedAuthenticationResult({} as never)).toThrow(AuthenticationFailedError);
+    expect(() => requireIdentityContext(undefined)).toThrow(IdentityContextRequiredError);
   });
 
   it('represents authentication failure without credential detail', () => {
