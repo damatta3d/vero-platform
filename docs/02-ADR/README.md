@@ -24,7 +24,7 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 | [ADR-006](ADR-006-CORE-PLATFORM-E-SHARED-KERNEL.md) | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão | 1.0.0 | Approved |
 | [ADR-007](ADR-007-FUNDACAO-DE-TENANCY.md) | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito | 1.0.0 | Approved |
 | [ADR-008](ADR-008-FUNDACAO-DE-IDENTITY-E-AUTENTICACAO.md) | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito | 1.0.0 | Approved |
-| [ADR-009](ADR-009-FUNDACAO-DE-ACCESS-E-AUTORIZACAO.md) | Fundação de Access — decisão contextual, negação por padrão e fronteira confiável | 0.1.0 | Proposed |
+| [ADR-009](ADR-009-FUNDACAO-DE-ACCESS-E-AUTORIZACAO.md) | Fundação de Access — decisão contextual, negação por padrão e fronteira confiável | 0.1.1 | Proposed |
 
 ## Gate atual
 
