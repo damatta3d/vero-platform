@@ -9,6 +9,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 ### Added
 
 - ADR-009 proposto para a Fundação de Access e autorização contextual.
+- ADR-009 v0.1.1 com promoção interna, namespaces de ação/recurso e ciclo antirreplay.
 - Controle e backlog da MISSÃO 007, com implementação bloqueada até aprovação arquitetural.
 
 - ADR-008 proposto para a Fundação de Identity e autenticação.
