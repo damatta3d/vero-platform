@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-B concluída e validada no CI do PR #8
+**Estado:** M008-C implementada localmente; aguardando CI do PR #8
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -31,6 +31,8 @@
 - M008-B implementada com entradas de compra, ledger imutável, consumo, ajustes, saldo e custo médio móvel.
 - Compra de 25 kg de batata por R$ 100 validada com custo normalizado de R$ 4/kg.
 - CI da M008-B aprovado no run `30399611181`, incluindo migration e integração PostgreSQL.
+- M008-C implementada com venda nativa, snapshot histórico, baixa transacional, CMV realizado e margem.
+- 94 testes e build dos 14 projetos aprovados localmente.
 
 ## Estado das linhas GitHub
 
@@ -42,7 +44,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-B concluída e aprovada no CI; PR #8 permanece em rascunho |
+| `agent/missao-008-santo-parma-mvp` | M008-C implementada localmente; PR #8 permanece em rascunho |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -77,6 +79,17 @@
 - isolamento por Tenant em consultas, chaves e relacionamentos;
 - 79 testes aprovados localmente e build dos 13 projetos.
 
+## Entrega atual — M008-C
+
+- venda manual nativa independente de integrações externas;
+- idempotência para impedir venda e baixa duplicadas;
+- snapshot imutável do produto, ficha, preço e custos utilizados;
+- consumo dos insumos pelo rendimento da ficha;
+- CMV estimado e realizado, faturamento e margem;
+- persistência da venda e baixa no ledger na mesma transação serializável;
+- API, histórico e resumo operacional na interface responsiva;
+- 94 testes aprovados localmente e build dos 14 projetos.
+
 ## Fora do escopo vigente
 
 - integrações automáticas com iFood e Anote Aí;
@@ -89,6 +102,6 @@
 
 ## Próximo gate
 
-1. Avançar para M008-C — Produção, Venda, CMV e Margem.
-2. Consumir o custo médio e o ledger aprovados na M008-B.
-3. Manter o PR em rascunho até o fluxo completo e o parecer final da MISSÃO 008.
+1. Publicar M008-C e validar os jobs `quality` e `integration` no PR #8.
+2. Confirmar migration, idempotência, baixa e snapshot histórico com PostgreSQL real no CI.
+3. Executar M008-D com dados reais da Parmegiana de Alcatra individual.

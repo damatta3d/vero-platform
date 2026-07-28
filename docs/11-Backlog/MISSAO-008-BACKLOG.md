@@ -25,11 +25,11 @@
 
 ## Prioridade P0 — M008-C: Produção, venda, CMV e margem
 
-- [ ] Registrar produção ou venda simplificada.
-- [ ] Fixar snapshot da ficha técnica e dos custos utilizados.
-- [ ] Baixar insumos conforme rendimento e quantidade.
-- [ ] Calcular CMV, margem em centavos e margem percentual.
-- [ ] Expor resumo operacional.
+- [x] Registrar produção ou venda simplificada.
+- [x] Fixar snapshot da ficha técnica e dos custos utilizados.
+- [x] Baixar insumos conforme rendimento e quantidade.
+- [x] Calcular CMV, margem em centavos e margem percentual.
+- [x] Expor resumo operacional.
 
 ## Prioridade P1 — M008-D: Interface
 

@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- M008-C com venda nativa idempotente, snapshot da ficha e custos, baixa automática de estoque, CMV realizado e margem.
+- Histórico imutável de vendas e custos por insumo, persistido na mesma transação serializável do ledger.
+- API e painel responsivo para registrar vendas e consultar faturamento, CMV e margem realizados.
+- Testes de domínio e integração para rendimento, estoque insuficiente, idempotência, isolamento e imutabilidade.
 - M008-B com entradas de compra, consumo, ajustes, ledger imutável, posição de estoque e custo médio móvel.
 - Persistência transacional serializável de estoque com relações compostas por Tenant e proteção do ledger contra alteração ou exclusão.
 - API e interface responsiva para registrar compras e movimentações e consultar saldos.

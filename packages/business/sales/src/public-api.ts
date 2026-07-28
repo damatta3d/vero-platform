@@ -1,0 +1,23 @@
+export {
+  InvalidSaleDataError,
+  SaleProductNotFoundError,
+  SalesAuthorizationError,
+  SalesError
+} from './domain/sales-errors.js';
+export {
+  completeSale,
+  type CompleteSaleInput,
+  type Sale,
+  type SaleCostLine,
+  type SalePosting,
+  type SalePreparation,
+  type SaleRecipeLineSnapshot,
+  type SalesSummary
+} from './domain/sales-model.js';
+export type { SalePostingDecision, SalesRepository } from './application/sales-repository.js';
+export {
+  SalesService,
+  type RecordSaleInput,
+  type SalesClock,
+  type SalesIdGenerator
+} from './application/sales-service.js';
