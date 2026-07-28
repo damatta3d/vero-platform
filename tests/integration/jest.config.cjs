@@ -18,6 +18,7 @@ module.exports = {
       '<rootDir>/../../packages/infrastructure/messaging/src/public-api.ts',
     '^@vero/business-catalog$': '<rootDir>/../../packages/business/catalog/src/public-api.ts',
     '^@vero/business-inventory$': '<rootDir>/../../packages/business/inventory/src/public-api.ts',
+    '^@vero/business-production$': '<rootDir>/../../packages/business/production/src/public-api.ts',
     '^@vero/business-sales$': '<rootDir>/../../packages/business/sales/src/public-api.ts'
   },
   moduleFileExtensions: ['ts', 'js']

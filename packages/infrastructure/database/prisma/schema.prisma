@@ -34,6 +34,7 @@ model CatalogIngredient {
   stockPosition         InventoryStockPosition?
   stockMovements        InventoryStockMovement[]
   saleCostLines         SalesCostLine[]
+  productionCostLines   ProductionCostLine[]
 
   @@id([tenantId, id])
   @@index([tenantId, name])
@@ -81,6 +82,7 @@ model CatalogProduct {
   updatedAt      DateTime        @db.Timestamptz(3)
   recipes        CatalogRecipe[]
   sales          SalesRecord[]
+  productions    ProductionRecord[]
 
   @@id([tenantId, id])
   @@index([tenantId, name])
@@ -98,6 +100,7 @@ model CatalogRecipe {
   product    CatalogProduct      @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
   lines      CatalogRecipeLine[]
   sales      SalesRecord[]
+  productions ProductionRecord[]
 
   @@id([tenantId, id])
   @@unique([tenantId, productId, version])
@@ -159,4 +162,46 @@ model SalesCostLine {
   @@id([tenantId, saleId, ingredientId])
   @@unique([tenantId, movementId])
   @@map("sales_cost_lines")
+}
+
+model ProductionRecord {
+  id                 String               @db.Uuid
+  tenantId           String               @db.VarChar(128)
+  idempotencyKey     String               @db.VarChar(160)
+  productId          String               @db.Uuid
+  productName        String               @db.VarChar(160)
+  recipeId           String               @db.Uuid
+  recipeVersion      Int
+  yieldUnits         Int
+  quantity           Int
+  estimatedCmvCents  Int
+  realizedCmvCents   Int
+  authoredBy         String               @db.VarChar(256)
+  producedAt         DateTime             @db.Timestamptz(3)
+  product            CatalogProduct       @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
+  recipe             CatalogRecipe        @relation(fields: [tenantId, recipeId], references: [tenantId, id], onDelete: Restrict)
+  costLines          ProductionCostLine[]
+
+  @@id([tenantId, id])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, producedAt])
+  @@map("production_records")
+}
+
+model ProductionCostLine {
+  tenantId                String            @db.VarChar(128)
+  productionId            String            @db.Uuid
+  ingredientId            String            @db.Uuid
+  movementId              String            @db.Uuid
+  quantityMicros          BigInt
+  estimatedUnitCostMicros BigInt
+  realizedUnitCostMicros  BigInt
+  estimatedCostCents      Int
+  realizedCostCents       Int
+  production              ProductionRecord  @relation(fields: [tenantId, productionId], references: [tenantId, id], onDelete: Restrict)
+  ingredient              CatalogIngredient @relation(fields: [tenantId, ingredientId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, productionId, ingredientId])
+  @@unique([tenantId, movementId])
+  @@map("production_cost_lines")
 }
