@@ -7,7 +7,7 @@
 | Missão | 006 |
 | Branch | `agent/core-identity-foundation` |
 | Base | `main` em `addb8d7a8e5bd50007ae323d446c197230202502` |
-| Estado | ADR aprovado; implementação concluída; validação em andamento |
+| Estado | Implementação e CI concluídos; aprovação de merge pendente |
 | ADR | ADR-008 v1.0.0 — Approved |
 | Owner | Core Platform — Identity |
 | Data | 2026-07-27 |
@@ -89,11 +89,11 @@ Nenhum código funcional de Identity será criado antes do passo 4.
 - [x] Implementações externas de `Authenticator` não conseguem fabricar resultados confiáveis.
 - [x] Autenticação não concede autorização.
 - [x] Principal não confundido com User.
-- [ ] Cobertura de statements, branches, functions e lines ≥ 90%.
-- [ ] Quality gates locais aprovados.
-- [ ] CI `quality` e `integration` aprovados.
-- [ ] Nenhuma vulnerabilidade alta nova.
-- [ ] Relatório técnico final publicado.
+- [x] Cobertura de statements, branches, functions e lines ≥ 90%.
+- [x] Quality gates aprovados no CI.
+- [x] CI `quality` e `integration` aprovados.
+- [x] Nenhuma vulnerabilidade alta nova.
+- [x] Relatório técnico final publicado.
 - [ ] PR aprovado para merge pelo Arquiteto-Chefe.
 
 ## Evidências obrigatórias
