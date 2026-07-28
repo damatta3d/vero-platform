@@ -12,7 +12,8 @@ module.exports = {
     '^@vero/infrastructure-cache$':
       '<rootDir>/../../packages/infrastructure/cache/src/public-api.ts',
     '^@vero/infrastructure-messaging$':
-      '<rootDir>/../../packages/infrastructure/messaging/src/public-api.ts'
+      '<rootDir>/../../packages/infrastructure/messaging/src/public-api.ts',
+    '^@vero/business-catalog$': '<rootDir>/../../packages/business/catalog/src/public-api.ts'
   },
   moduleFileExtensions: ['ts', 'js']
 };
