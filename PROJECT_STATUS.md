@@ -7,7 +7,7 @@
 **Blueprint Volumes I e II:** v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
 **ADRs vigentes na `main`:** ADR-001 a ADR-008 v1.0.0 — Approved  
-**ADR em revisão na branch:** ADR-009 v0.1.0 — Proposed  
+**ADR em revisão na branch:** ADR-009 v0.1.1 — Proposed  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 007 — Core Platform: Fundação de Access e Autorização  
 **Estado:** Gate documental; implementação bloqueada até aprovação do ADR-009  
