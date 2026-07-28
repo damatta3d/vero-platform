@@ -7,57 +7,50 @@
 **Blueprint Volume I:** VERO-BLP-001 v0.1.0 — Approved  
 **Blueprint Volume II:** VERO-BLP-002 v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
-**ADRs:** ADR-001 a ADR-006 v1.0.0 — Approved e integrados em `main`  
+**ADRs vigentes:** ADR-001 a ADR-006 v1.0.0 — Approved  
+**ADR em revisão:** ADR-007 v0.1.0 — Proposed  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
-**Fase:** Sprint 0 — Fundação Executável  
-**Estado:** Implementação concluída; aguardando aprovação final no PR #3  
-**Branch:** `agent/sprint-0-foundation`  
-**Baseline integrada em main:** `ab75ecf431ca6eb2f59defd7f00a40953c9d73a9`  
-**Head técnico validado:** `54e65425ac64fd87acdefebbd1c7bf19f44b065c`  
+**Fase:** MISSÃO 005 — Core Platform: Fundação de Tenancy  
+**Estado:** Gate arquitetural em revisão; implementação bloqueada até aprovação do ADR-007  
+**Branch:** `agent/core-tenancy-foundation`  
+**Baseline integrada em main:** `a707a30ebbcea1b91c5dfdb801f8b21203a98a7b`  
 **Atualizado em:** 2026-07-27
 
 ## Concluído
 
 - Constituição, Blueprints I e II e CDM aprovados.
-- ADR-001 a ADR-006 revisados, corrigidos, aprovados e integrados à `main`.
-- Branch da Sprint 0 sincronizada com a baseline arquitetural.
-- Workspace Nx/pnpm/TypeScript strict materializado com oito projetos.
-- API NestJS/Fastify e worker executáveis, sem módulos ou regras de negócio.
-- Configuração validada com Zod e falha segura.
-- Shared Kernel mínimo com metadados agnósticos de contexto.
-- Logging Pino, OpenTelemetry/OTLP, W3C Trace Context e AsyncLocalStorage.
-- Liveness, readiness e correlação HTTP validados por smoke test.
-- Adapters de saúde para PostgreSQL, Redis e RabbitMQ.
-- Prisma restrito à Infrastructure, com schema técnico vazio e válido.
-- Dockerfile e Docker Compose para API, worker e dependências locais.
-- ESLint, Prettier, TypeScript, Jest, regras Nx e validação arquitetural.
-- GitHub Actions com jobs independentes de qualidade e integração.
-- CI run `30314540363` aprovado nos jobs `quality` e `integration`.
-- Auditoria sem vulnerabilidades altas; uma vulnerabilidade moderada transitiva permanece registrada.
+- ADR-001 a ADR-006 aprovados e integrados.
+- Sprint 0 — Fundação Executável concluída, validada e integrada à `main`.
+- Workspace Nx/pnpm/TypeScript strict com API, worker e oito projetos.
+- Configuração, observabilidade, health, adapters técnicos, Docker e CI materializados.
+- CI da Sprint 0 aprovado em quality e integration.
+- Branch da MISSÃO 005 criada diretamente da baseline oficial.
+- ADR-007 e controle da MISSÃO 005 elaborados para revisão.
 
 ## Estado das linhas GitHub
 
 | Linha | Estado |
 |---|---|
-| `main` | Baseline documental aprovada no commit `ab75ecf` |
-| PR #4 | Merged; ADR-001 a ADR-006 aprovados |
-| `agent/sprint-0-foundation` | Fundação executável concluída e em revisão |
-| PR #3 | Aberto; aguarda aprovação final e merge |
+| `main` | Sprint 0 integrada no commit `a707a30` |
+| PR #3 | Merged; Fundação Executável integrada |
+| `agent/core-tenancy-foundation` | Gate arquitetural da MISSÃO 005 em elaboração |
+| ADR-007 | `Proposed`; implementação ainda não autorizada |
 
 ## Fora do escopo vigente
 
-- Core Platform funcional;
-- Identity, Access, Tenancy, Organization, User, Workspace e Configuration de domínio;
+- Identity e autenticação;
+- Access e autorização concreta;
+- User, Organization e Workspace;
+- persistência e ciclo de vida de Tenant;
 - módulos empresariais;
-- outbox/inbox, Unit of Work e publicação transacional;
-- schemas Prisma modulares definitivos;
-- schema registry e contract testing;
-- topologia definitiva de mensageria;
-- secret store compartilhado;
+- outbox/inbox e eventos de Tenant;
+- estratégia física definitiva de isolamento;
 - formato e geração concreta de identificadores globais.
 
 ## Próximo gate
 
-1. Aprovação final do relatório e do PR #3 pelo Arquiteto-Chefe.
-2. Merge do PR #3 em `main`.
-3. Definição formal da primeira missão controlada do Core Platform.
+1. Revisão técnica do ADR-007.
+2. Aprovação explícita do Arquiteto-Chefe.
+3. Promoção do ADR-007 para `Approved` na branch da missão.
+4. Implementação e validação da fundação de Tenancy.
+5. Parecer técnico e aprovação antes do merge.
