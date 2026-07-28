@@ -22,13 +22,14 @@ describe('authentication trust boundary', () => {
   });
 
   it('rejects a structurally compatible forged result at runtime', () => {
+    const forgedContext = { principal: { id: {}, type: 'human' } };
     const forged = {
       authenticated: true,
-      context: { principal: { id: {}, type: 'human' } }
+      context: forgedContext
     } as unknown as AuthenticationResult;
 
     expect(() => requireTrustedAuthenticationResult(forged)).toThrow(AuthenticationFailedError);
-    expect(() => requireIdentityContext(forged.context)).toThrow(AuthenticationFailedError);
+    expect(() => requireIdentityContext(forgedContext)).toThrow(AuthenticationFailedError);
   });
 
   it('does not grant trust by implementing Authenticator', async () => {
