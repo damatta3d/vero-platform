@@ -24,7 +24,10 @@ const environmentSchema = z
     VERO_RABBITMQ_ENABLED: booleanFromEnvironment,
     VERO_RABBITMQ_URL: z.string().url().optional(),
     VERO_OTEL_ENABLED: booleanFromEnvironment,
-    VERO_OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional()
+    VERO_OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
+    VERO_MVP_ENABLED: booleanFromEnvironment,
+    VERO_MVP_API_KEY: z.string().min(24).optional(),
+    VERO_MVP_TENANT_ID: z.string().min(1).max(128).optional()
   })
   .superRefine((value, context) => {
     const required: Array<[boolean, string | undefined, keyof typeof value]> = [
@@ -46,6 +49,21 @@ const environmentSchema = z
         });
       }
     }
+    if (value.VERO_MVP_ENABLED) {
+      for (const [configured, path] of [
+        [value.VERO_POSTGRES_ENABLED, 'VERO_POSTGRES_ENABLED'],
+        [Boolean(value.VERO_MVP_API_KEY), 'VERO_MVP_API_KEY'],
+        [Boolean(value.VERO_MVP_TENANT_ID), 'VERO_MVP_TENANT_ID']
+      ] as const) {
+        if (!configured) {
+          context.addIssue({
+            code: 'custom',
+            path: [path],
+            message: `${path} is required when the MVP is enabled`
+          });
+        }
+      }
+    }
   });
 
 export interface AppConfig {
@@ -58,6 +76,11 @@ export interface AppConfig {
   readonly redis: { readonly enabled: boolean; readonly url: string };
   readonly rabbitmq: { readonly enabled: boolean; readonly url: string };
   readonly telemetry: { readonly enabled: boolean; readonly endpoint: string };
+  readonly mvp: {
+    readonly enabled: boolean;
+    readonly apiKey: string;
+    readonly tenantId: string;
+  };
 }
 
 export class ConfigurationError extends Error {
@@ -98,6 +121,11 @@ export function parseConfiguration(
     telemetry: Object.freeze({
       enabled: value.VERO_OTEL_ENABLED,
       endpoint: value.VERO_OTEL_EXPORTER_OTLP_ENDPOINT ?? ''
+    }),
+    mvp: Object.freeze({
+      enabled: value.VERO_MVP_ENABLED,
+      apiKey: value.VERO_MVP_API_KEY ?? '',
+      tenantId: value.VERO_MVP_TENANT_ID ?? ''
     })
   });
 }

@@ -9,6 +9,7 @@ describe('core-identity public API', () => {
       'IdentityContextRequiredError',
       'IdentityError',
       'InvalidAuthenticationEvidenceError',
+      'createAuthenticator',
       'requireIdentityContext',
       'requireTrustedAuthenticationResult'
     ]);

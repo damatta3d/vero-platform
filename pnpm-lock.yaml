@@ -60,6 +60,9 @@ importers:
       amqplib:
         specifier: 0.10.9
         version: 0.10.9
+      fastify:
+        specifier: 5.10.0
+        version: 5.10.0
       ioredis:
         specifier: 5.8.2
         version: 5.8.2
