@@ -1,0 +1,39 @@
+{
+  "name": "core-identity",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core/identity/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:core", "runtime:agnostic", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/core/identity",
+        "main": "packages/core/identity/src/public-api.ts",
+        "tsConfig": "packages/core/identity/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/core/identity/src/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "tsc -p packages/core/identity/tsconfig.lib.json --noEmit",
+          "tsc -p packages/core/identity/tsconfig.contract.json --noEmit"
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/core/identity/jest.config.cjs",
+        "coverage": true
+      }
+    }
+  }
+}
