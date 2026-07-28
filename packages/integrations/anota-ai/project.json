@@ -1,0 +1,40 @@
+{
+  "name": "integration-anota-ai",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/integrations/anota-ai/src",
+  "projectType": "library",
+  "tags": ["type:integration", "scope:integration", "runtime:node", "stability:experimental"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/integrations/anota-ai",
+        "main": "packages/integrations/anota-ai/src/public-api.ts",
+        "tsConfig": "packages/integrations/anota-ai/tsconfig.lib.json",
+        "platform": "node",
+        "format": ["cjs"],
+        "bundle": true,
+        "thirdParty": false,
+        "generatePackageJson": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/integrations/anota-ai/src/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/integrations/anota-ai/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/integrations/anota-ai/jest.config.cjs",
+        "coverage": true
+      }
+    }
+  }
+}
