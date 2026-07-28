@@ -20,12 +20,17 @@ export function createTrustedIdentityContext(
   return context;
 }
 
-export function isTrustedIdentityContext(value: unknown): value is IdentityContext {
-  return typeof value === 'object' && value !== null && trustedContexts.has(value);
+export function isTrustedIdentityContext(
+  value: unknown
+): value is IdentityContext {
+  return (
+    typeof value === 'object' && value !== null && trustedContexts.has(value)
+  );
 }
 
 export function requireIdentityContext(value: unknown): IdentityContext {
-  if (value === undefined || value === null) throw new IdentityContextRequiredError();
+  if (value === undefined || value === null)
+    throw new IdentityContextRequiredError();
   if (!isTrustedIdentityContext(value)) throw new AuthenticationFailedError();
   return value;
 }
