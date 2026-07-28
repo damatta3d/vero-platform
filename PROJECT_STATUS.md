@@ -8,7 +8,7 @@
 **Blueprint Volume II:** VERO-BLP-002 v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
 **ADRs vigentes na `main`:** ADR-001 a ADR-007 v1.0.0 — Approved  
-**ADR em revisão na branch:** ADR-008 v0.1.0 — Proposed  
+**ADR em revisão na branch:** ADR-008 v0.1.1 — Proposed  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 006 — Core Platform: Fundação de Identity e Autenticação  
 **Estado:** Gate arquitetural em revisão; implementação não autorizada  
@@ -29,6 +29,7 @@
 - Nenhum PR permanecia aberto após o merge da MISSÃO 005.
 - Dependência seguinte confirmada pela hierarquia documental: Identity antes de Access.
 - ADR-008 e controle da MISSÃO 006 elaborados para revisão, sem código funcional.
+- Revisão do ADR-008 concluída; dois achados altos e um médio corrigidos na v0.1.1.
 
 ## Estado das linhas GitHub
 
