@@ -23,6 +23,7 @@
       "@vero/core-tenancy": ["packages/core/tenancy/src/public-api.ts"],
       "@vero/core-identity": ["packages/core/identity/src/public-api.ts"],
       "@vero/core-access": ["packages/core/access/src/public-api.ts"],
+      "@vero/business-catalog": ["packages/business/catalog/src/public-api.ts"],
       "@vero/platform-observability": ["packages/platform/observability/src/public-api.ts"],
       "@vero/infrastructure-database": ["packages/infrastructure/database/src/public-api.ts"],
       "@vero/infrastructure-cache": ["packages/infrastructure/cache/src/public-api.ts"],

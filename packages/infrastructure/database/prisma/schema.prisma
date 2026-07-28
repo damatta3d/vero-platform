@@ -1,8 +1,73 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum CatalogUnitOfMeasure {
+  UNIT
+  GRAM
+  KILOGRAM
+  MILLILITER
+  LITER
+}
+
+model CatalogIngredient {
+  id                    String               @db.Uuid
+  tenantId              String               @db.VarChar(128)
+  name                  String               @db.VarChar(160)
+  unit                  CatalogUnitOfMeasure
+  packageQuantityMicros BigInt
+  packageCostCents      Int
+  createdAt             DateTime             @db.Timestamptz(3)
+  updatedAt             DateTime             @db.Timestamptz(3)
+  recipeLines           CatalogRecipeLine[]
+
+  @@id([tenantId, id])
+  @@index([tenantId, name])
+  @@map("catalog_ingredients")
+}
+
+model CatalogProduct {
+  id             String          @db.Uuid
+  tenantId       String          @db.VarChar(128)
+  name           String          @db.VarChar(160)
+  salePriceCents Int
+  createdAt      DateTime        @db.Timestamptz(3)
+  updatedAt      DateTime        @db.Timestamptz(3)
+  recipes        CatalogRecipe[]
+
+  @@id([tenantId, id])
+  @@index([tenantId, name])
+  @@map("catalog_products")
+}
+
+model CatalogRecipe {
+  id         String              @db.Uuid
+  tenantId   String              @db.VarChar(128)
+  productId  String              @db.Uuid
+  version    Int
+  yieldUnits Int
+  authoredBy String              @db.VarChar(256)
+  createdAt  DateTime            @db.Timestamptz(3)
+  product    CatalogProduct      @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
+  lines      CatalogRecipeLine[]
+
+  @@id([tenantId, id])
+  @@unique([tenantId, productId, version])
+  @@map("catalog_recipes")
+}
+
+model CatalogRecipeLine {
+  tenantId       String            @db.VarChar(128)
+  recipeId       String            @db.Uuid
+  ingredientId   String            @db.Uuid
+  quantityMicros BigInt
+  recipe         CatalogRecipe     @relation(fields: [tenantId, recipeId], references: [tenantId, id], onDelete: Cascade)
+  ingredient     CatalogIngredient @relation(fields: [tenantId, ingredientId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, recipeId, ingredientId])
+  @@map("catalog_recipe_lines")
 }
