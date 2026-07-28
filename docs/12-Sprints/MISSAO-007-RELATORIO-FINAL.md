@@ -28,7 +28,7 @@ Executado em 2026-07-28:
 | Prettier | Aprovado |
 | ESLint dos 11 projetos | Aprovado |
 | TypeScript strict | Aprovado |
-| Testes da plataforma | 49 aprovados |
+| Testes da plataforma | 54 aprovados |
 | Testes novos de Access | 11 aprovados |
 | Testes de Tenancy | 17 aprovados |
 | Cobertura de Access ≥ 90% | Aprovada |

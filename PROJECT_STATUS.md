@@ -29,7 +29,7 @@
 - ADR-009 aprovado e `core-access` mínimo implementado.
 - `ResolvedTenantContext` endurecido contra objetos forjados.
 - Estratégia alterada para desenvolvimento vertical do MVP do Santo Parma após a MISSÃO 007.
-- Quality gates locais da MISSÃO 007 aprovados; 49 testes, arquitetura e build dos 11 projetos validados.
+- Quality gates locais da MISSÃO 007 aprovados; 54 testes, arquitetura e build dos 11 projetos validados.
 - CI da MISSÃO 007 aprovado nos jobs `quality` e `integration`, run `30367257964`.
 
 ## Estado das linhas GitHub

@@ -14,7 +14,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - ADR-009 v1.0.0 aprovado e Fundação mínima de Access implementada.
 - Proteção de `ResolvedTenantContext` contra identificadores e contextos forjados.
 - Backlog vertical do MVP Santo Parma para catálogo, ficha técnica, estoque e CMV.
-- Relatório técnico da MISSÃO 007 com 49 testes e build dos 11 projetos aprovados localmente.
+- Relatório técnico da MISSÃO 007 com 54 testes e build dos 11 projetos aprovados localmente.
 
 - ADR-008 proposto para a Fundação de Identity e autenticação.
 - ADR-008 v0.1.1 com capability interna de promoção, sujeito qualificado por autoridade e ciclo seguro da evidência.
