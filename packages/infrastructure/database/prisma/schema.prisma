@@ -14,6 +14,13 @@ enum CatalogUnitOfMeasure {
   LITER
 }
 
+enum InventoryStockMovementType {
+  PURCHASE_IN
+  CONSUMPTION_OUT
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+}
+
 model CatalogIngredient {
   id                    String               @db.Uuid
   tenantId              String               @db.VarChar(128)
@@ -24,10 +31,44 @@ model CatalogIngredient {
   createdAt             DateTime             @db.Timestamptz(3)
   updatedAt             DateTime             @db.Timestamptz(3)
   recipeLines           CatalogRecipeLine[]
+  stockPosition         InventoryStockPosition?
+  stockMovements        InventoryStockMovement[]
 
   @@id([tenantId, id])
   @@index([tenantId, name])
   @@map("catalog_ingredients")
+}
+
+model InventoryStockPosition {
+  tenantId              String            @db.VarChar(128)
+  ingredientId          String            @db.Uuid
+  quantityOnHandMicros  BigInt
+  averageUnitCostMicros BigInt
+  inventoryValueCents   Int
+  lastMovementAt        DateTime?         @db.Timestamptz(3)
+  updatedAt             DateTime          @db.Timestamptz(3)
+  ingredient            CatalogIngredient @relation(fields: [tenantId, ingredientId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, ingredientId])
+  @@map("inventory_stock_positions")
+}
+
+model InventoryStockMovement {
+  id             String                     @db.Uuid
+  tenantId       String                     @db.VarChar(128)
+  ingredientId   String                     @db.Uuid
+  type           InventoryStockMovementType
+  quantityMicros BigInt
+  unitCostMicros BigInt
+  totalCostCents Int
+  reason         String                     @db.VarChar(256)
+  authoredBy     String                     @db.VarChar(256)
+  occurredAt     DateTime                   @db.Timestamptz(3)
+  ingredient     CatalogIngredient          @relation(fields: [tenantId, ingredientId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, ingredientId, occurredAt])
+  @@map("inventory_stock_movements")
 }
 
 model CatalogProduct {
