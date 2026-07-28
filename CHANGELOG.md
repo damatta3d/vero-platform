@@ -8,6 +8,11 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- M008-A com catálogo tenant-aware de insumos e produtos, ficha técnica versionada e cálculo determinístico de custo e margem.
+- Persistência Prisma/PostgreSQL do catálogo com relações compostas por Tenant e migration validada.
+- API MVP protegida por chave, identidade verificada, Tenant resolvido e autorização de uso único.
+- Interface web responsiva para cadastrar insumos, produtos, fichas técnicas e consultar custos.
+- Testes de domínio, aplicação, segurança e integração de persistência do catálogo.
 - ADR-009 proposto para a Fundação de Access e autorização contextual.
 - ADR-009 v0.1.1 com promoção interna, namespaces de ação/recurso e ciclo antirreplay.
 - Controle e backlog da MISSÃO 007, com implementação bloqueada até aprovação arquitetural.

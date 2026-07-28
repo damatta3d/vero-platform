@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** Em execução; M008-A Catálogo e Ficha Técnica iniciada  
+**Estado:** M008-A implementada e validada localmente; aguardando CI do PR #8
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -26,6 +26,8 @@
 - CI da MISSÃO 007 aprovado no run `30367799955`.
 - Sequência de fundações genéricas encerrada.
 - Estratégia alterada para desenvolvimento vertical do MVP do Santo Parma.
+- M008-A implementada com catálogo, ficha técnica, custo, margem, PostgreSQL, API e interface responsiva.
+- Parmegiana de Alcatra validada como cenário real inicial.
 
 ## Estado das linhas GitHub
 
@@ -37,7 +39,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | MISSÃO 008 em execução |
+| `agent/missao-008-santo-parma-mvp` | M008-A implementada; aguardando CI |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -72,7 +74,7 @@
 
 ## Próximo gate
 
-1. Implementar e validar M008-A.
-2. Publicar evidências no PR em rascunho.
-3. Avançar para M008-B somente após M008-A estar tecnicamente estável.
-4. Apresentar o fluxo completo e o parecer antes do merge da MISSÃO 008.
+1. Publicar M008-A e validar os jobs `quality` e `integration` no PR #8.
+2. Confirmar migration, persistência e isolamento em PostgreSQL real no CI.
+3. Avançar para M008-B — Compras e Estoque após o CI verde.
+4. Manter o PR em rascunho até o fluxo completo e o parecer final da MISSÃO 008.

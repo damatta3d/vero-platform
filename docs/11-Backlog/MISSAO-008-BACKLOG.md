@@ -2,17 +2,17 @@
 
 ## Prioridade P0 — M008-A: Catálogo e ficha técnica
 
-- [ ] Definir linguagem do domínio e contratos públicos mínimos.
-- [ ] Criar módulo vertical de catálogo sem dependência de framework.
-- [ ] Implementar `Ingredient`, `Product`, `UnitOfMeasure` e `Recipe`.
-- [ ] Validar nomes, unidades, quantidades e valores monetários.
-- [ ] Calcular custo total e custo por rendimento da ficha técnica.
-- [ ] Garantir isolamento por `tenantId` em comandos e consultas.
-- [ ] Definir portas de repositório e casos de uso.
-- [ ] Persistir catálogo e ficha técnica no PostgreSQL com migrations.
-- [ ] Expor API protegida para criar e consultar os registros.
-- [ ] Cobrir regras e fronteiras com testes.
-- [ ] Validar um prato real do Santo Parma.
+- [x] Definir linguagem do domínio e contratos públicos mínimos.
+- [x] Criar módulo vertical de catálogo sem dependência de framework.
+- [x] Implementar `Ingredient`, `Product`, `UnitOfMeasure` e `Recipe`.
+- [x] Validar nomes, unidades, quantidades e valores monetários.
+- [x] Calcular custo total e custo por rendimento da ficha técnica.
+- [x] Garantir isolamento por `tenantId` em comandos e consultas.
+- [x] Definir portas de repositório e casos de uso.
+- [x] Persistir catálogo e ficha técnica no PostgreSQL com migrations.
+- [x] Expor API protegida para criar e consultar os registros.
+- [x] Cobrir regras e fronteiras com testes.
+- [x] Validar um prato real do Santo Parma.
 
 ## Prioridade P0 — M008-B: Compras e estoque
 
@@ -33,9 +33,9 @@
 
 ## Prioridade P1 — M008-D: Interface
 
-- [ ] Criar interface responsiva do fluxo principal.
-- [ ] Implementar formulários, listas e painel mínimo.
-- [ ] Incluir estados de vazio, erro e confirmação.
+- [x] Criar interface responsiva do fluxo principal.
+- [x] Implementar formulários, listas e painel mínimo.
+- [x] Incluir estados de vazio, erro e confirmação.
 - [ ] Executar validação guiada com dados reais do Santo Parma.
 
 ## Adiados
