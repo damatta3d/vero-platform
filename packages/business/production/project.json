@@ -1,0 +1,40 @@
+{
+  "name": "business-production",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/business/production/src",
+  "projectType": "library",
+  "tags": ["type:business", "scope:business", "runtime:agnostic", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/business/production",
+        "main": "packages/business/production/src/public-api.ts",
+        "tsConfig": "packages/business/production/tsconfig.lib.json",
+        "platform": "node",
+        "format": ["cjs"],
+        "bundle": true,
+        "thirdParty": false,
+        "generatePackageJson": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/business/production/src/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/business/production/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/business/production/jest.config.cjs",
+        "coverage": true
+      }
+    }
+  }
+}
