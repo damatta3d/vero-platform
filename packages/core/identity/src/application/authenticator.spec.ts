@@ -30,7 +30,9 @@ describe('authentication trust boundary', () => {
     expect(() => requireTrustedAuthenticationResult(forged)).toThrow(
       AuthenticationFailedError
     );
-    expect(() => requireIdentityContext(forged.context)).toThrow(AuthenticationFailedError);
+    expect(() => requireIdentityContext(forged.context)).toThrow(
+      AuthenticationFailedError
+    );
   });
 
   it('does not grant trust by implementing Authenticator', async () => {
