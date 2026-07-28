@@ -33,11 +33,11 @@ describe('authentication trust boundary', () => {
 
   it('does not grant trust by implementing Authenticator', async () => {
     const adapter: Authenticator = {
-      async authenticate() {
-        return {
-          authenticated: true,
-          context: { principal: { id: {} as never, type: 'service' } }
-        };
+      authenticate() {
+        return Promise.resolve({
+          authenticated: true as const,
+          context: { principal: { id: {} as never, type: 'service' as const } }
+        });
       }
     };
     const result = await adapter.authenticate(
