@@ -30,8 +30,8 @@
 - [x] Testes arquiteturais.
 - [x] Build Nx.
 - [x] Auditoria de dependências.
-- [ ] CI GitHub Actions.
-- [ ] Relatório técnico final.
+- [x] CI GitHub Actions.
+- [x] Relatório técnico final.
 - [ ] Parecer e aprovação de merge.
 
 ## Dependências futuras não autorizadas

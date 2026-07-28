@@ -7,7 +7,7 @@
 | Missão | 005 |
 | Branch | `agent/core-tenancy-foundation` |
 | Base | `main` em `a707a30ebbcea1b91c5dfdb801f8b21203a98a7b` |
-| Estado | Implementação concluída; CI e parecer final pendentes |
+| Estado | Implementação e CI concluídos; parecer de merge pendente |
 | ADR | ADR-007 v1.0.0 — Approved |
 | Owner | Core Platform — Tenancy |
 | Data | 2026-07-27 |
@@ -76,9 +76,9 @@ Nenhum código funcional de Tenancy será criado antes do passo 3.
 - [x] Resolução não concede autorização.
 - [x] Cobertura de statements, branches, functions e lines ≥ 90%.
 - [x] Quality gates locais aprovados.
-- [ ] CI `quality` aprovado.
+- [x] CI `quality` aprovado.
 - [x] Nenhuma vulnerabilidade alta nova.
-- [ ] Relatório técnico final publicado.
+- [x] Relatório técnico final publicado.
 - [ ] PR pronto para parecer e aprovação do Arquiteto-Chefe.
 
 ## Evidências obrigatórias

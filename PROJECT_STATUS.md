@@ -11,7 +11,7 @@
 **ADR vigente na branch:** ADR-007 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 005 — Core Platform: Fundação de Tenancy  
-**Estado:** Fundação de Tenancy implementada e validada localmente; CI e parecer final pendentes  
+**Estado:** Fundação de Tenancy implementada e validada; parecer de merge pendente  
 **Branch:** `agent/core-tenancy-foundation`  
 **Baseline integrada em main:** `a707a30ebbcea1b91c5dfdb801f8b21203a98a7b`  
 **Atualizado em:** 2026-07-27
@@ -31,6 +31,8 @@
 - API pública protegida por testes de superfície e contratos de compilação.
 - Dezesseis testes aprovados e cobertura de 100% em statements, branches, functions e lines.
 - Verificação completa local e auditoria sem vulnerabilidades altas aprovadas.
+- CI run `30317554087` aprovado nos jobs `quality` e `integration`.
+- Relatório técnico da MISSÃO 005 publicado.
 
 ## Estado das linhas GitHub
 
@@ -38,7 +40,7 @@
 |---|---|
 | `main` | Sprint 0 integrada no commit `a707a30` |
 | PR #3 | Merged; Fundação Executável integrada |
-| `agent/core-tenancy-foundation` | Implementação concluída localmente; CI e parecer pendentes |
+| `agent/core-tenancy-foundation` | Implementação e CI concluídos; parecer de merge pendente |
 | ADR-007 | `Approved`; decisão materializada na branch |
 
 ## Fora do escopo vigente
