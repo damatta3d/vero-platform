@@ -2,11 +2,11 @@
 
 ## Resultado
 
-**Estado:** implementação concluída e validada localmente  
+**Estado:** implementação concluída e validada no CI  
 **Branch remota de destino:** `agent/missao-008-santo-parma-mvp`  
 **PR:** #8 — permanece em rascunho  
 **Baseline:** `9540e55ba966c094639e768a41cf1ea331eb13d9`  
-**Próximo gate:** CI `quality` e `integration`
+**CI:** run `30399611181` — `quality` e `integration` aprovados
 
 ## Fluxo entregue
 
@@ -71,8 +71,9 @@ R$ 4,285714/kg e mantém o valor total do estoque em R$ 150,00.
 - auditoria sem vulnerabilidades altas;
 - uma vulnerabilidade moderada transitiva já conhecida.
 
-O job `integration` do GitHub validará a nova migration, as transações, o ledger imutável e o
-isolamento com PostgreSQL real.
+O job `integration` do GitHub validou a nova migration, as transações, o ledger imutável e o
+isolamento com PostgreSQL real. O job `quality` validou formatação, lint, TypeScript strict, testes,
+arquitetura, auditoria e build integral.
 
 ## Próxima entrega
 

@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-B implementada e validada localmente; aguardando CI do PR #8
+**Estado:** M008-B concluída e validada no CI do PR #8
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -30,6 +30,7 @@
 - Parmegiana de Alcatra validada como cenário real inicial.
 - M008-B implementada com entradas de compra, ledger imutável, consumo, ajustes, saldo e custo médio móvel.
 - Compra de 25 kg de batata por R$ 100 validada com custo normalizado de R$ 4/kg.
+- CI da M008-B aprovado no run `30399611181`, incluindo migration e integração PostgreSQL.
 
 ## Estado das linhas GitHub
 
@@ -41,7 +42,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-B implementada localmente; aguardando publicação e CI |
+| `agent/missao-008-santo-parma-mvp` | M008-B concluída e aprovada no CI; PR #8 permanece em rascunho |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -88,7 +89,6 @@
 
 ## Próximo gate
 
-1. Publicar M008-B e validar os jobs `quality` e `integration` no PR #8.
-2. Confirmar migration, ledger imutável, transação e isolamento em PostgreSQL real no CI.
-3. Avançar para M008-C — Produção, Venda, CMV e Margem após o CI verde.
-4. Manter o PR em rascunho até o fluxo completo e o parecer final da MISSÃO 008.
+1. Avançar para M008-C — Produção, Venda, CMV e Margem.
+2. Consumir o custo médio e o ledger aprovados na M008-B.
+3. Manter o PR em rascunho até o fluxo completo e o parecer final da MISSÃO 008.
