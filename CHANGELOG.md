@@ -10,6 +10,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 - ADR-008 proposto para a Fundação de Identity e autenticação.
 - ADR-008 v0.1.1 com capability interna de promoção, sujeito qualificado por autoridade e ciclo seguro da evidência.
+- ADR-008 v1.0.0 aprovado e Fundação de Identity implementada com API pública protegida, contratos e testes de segurança.
 - Controle e backlog da MISSÃO 006, com implementação bloqueada até aprovação arquitetural.
 
 - Fundação de Tenancy com `TenantId` opaco, candidato não confiável, contexto resolvido explícito, porta de resolução e erros semânticos.
