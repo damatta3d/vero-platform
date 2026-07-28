@@ -12,24 +12,24 @@
 
 ## Implementação — autorizada
 
-- [ ] Criar projeto Nx `core-tenancy`.
-- [ ] Implementar `TenantId` opaco e imutável.
-- [ ] Implementar candidato e resolução sem transporte.
-- [ ] Implementar contexto resolvido explícito.
-- [ ] Implementar erros semânticos mínimos.
-- [ ] Publicar somente a API deliberada.
-- [ ] Integrar regras Nx e validação arquitetural.
-- [ ] Implementar testes com threshold ≥ 90%.
+- [x] Criar projeto Nx `core-tenancy`.
+- [x] Implementar `TenantId` opaco e imutável.
+- [x] Implementar candidato e resolução sem transporte.
+- [x] Implementar contexto resolvido explícito.
+- [x] Implementar erros semânticos mínimos.
+- [x] Publicar somente a API deliberada.
+- [x] Integrar regras Nx e validação arquitetural.
+- [x] Implementar testes com threshold ≥ 90%.
 
 ## Validação
 
-- [ ] Prettier.
-- [ ] ESLint.
-- [ ] TypeScript strict.
-- [ ] Jest e cobertura.
-- [ ] Testes arquiteturais.
-- [ ] Build Nx.
-- [ ] Auditoria de dependências.
+- [x] Prettier.
+- [x] ESLint.
+- [x] TypeScript strict.
+- [x] Jest e cobertura.
+- [x] Testes arquiteturais.
+- [x] Build Nx.
+- [x] Auditoria de dependências.
 - [ ] CI GitHub Actions.
 - [ ] Relatório técnico final.
 - [ ] Parecer e aprovação de merge.

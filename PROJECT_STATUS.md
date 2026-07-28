@@ -11,7 +11,7 @@
 **ADR vigente na branch:** ADR-007 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 005 — Core Platform: Fundação de Tenancy  
-**Estado:** ADR-007 aprovado; implementação da Fundação de Tenancy autorizada  
+**Estado:** Fundação de Tenancy implementada e validada localmente; CI e parecer final pendentes  
 **Branch:** `agent/core-tenancy-foundation`  
 **Baseline integrada em main:** `a707a30ebbcea1b91c5dfdb801f8b21203a98a7b`  
 **Atualizado em:** 2026-07-27
@@ -26,6 +26,11 @@
 - CI da Sprint 0 aprovado em quality e integration.
 - Branch da MISSÃO 005 criada diretamente da baseline oficial.
 - ADR-007 e controle da MISSÃO 005 elaborados para revisão.
+- ADR-007 v1.0.0 aprovado pelo Arquiteto-Chefe.
+- Projeto Nx `core-tenancy` implementado com identidade opaca, candidato não confiável, contexto resolvido, porta e erros semânticos.
+- API pública protegida por testes de superfície e contratos de compilação.
+- Dezesseis testes aprovados e cobertura de 100% em statements, branches, functions e lines.
+- Verificação completa local e auditoria sem vulnerabilidades altas aprovadas.
 
 ## Estado das linhas GitHub
 
@@ -33,8 +38,8 @@
 |---|---|
 | `main` | Sprint 0 integrada no commit `a707a30` |
 | PR #3 | Merged; Fundação Executável integrada |
-| `agent/core-tenancy-foundation` | ADR-007 aprovado; implementação em andamento |
-| ADR-007 | `Approved`; implementação controlada autorizada |
+| `agent/core-tenancy-foundation` | Implementação concluída localmente; CI e parecer pendentes |
+| ADR-007 | `Approved`; decisão materializada na branch |
 
 ## Fora do escopo vigente
 

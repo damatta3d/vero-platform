@@ -8,6 +8,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Fundação de Tenancy com `TenantId` opaco, candidato não confiável, contexto resolvido explícito, porta de resolução e erros semânticos.
+- Testes unitários, de superfície e contratos de compilação do `core-tenancy`, com cobertura integral.
 - ADR-007 proposto para identidade opaca, resolução confiável e contexto explícito de Tenant.
 - Controle da MISSÃO 005 — Core Platform: Fundação de Tenancy, com gate arquitetural, ameaças e critérios de aceite.
 
