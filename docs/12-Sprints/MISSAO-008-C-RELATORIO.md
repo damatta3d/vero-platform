@@ -2,10 +2,10 @@
 
 ## Resultado
 
-**Estado:** implementação concluída e validada localmente  
+**Estado:** implementação concluída e validada no CI  
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **PR:** #8 — permanece em rascunho  
-**Próximo gate:** CI `quality` e `integration`
+**CI:** run `30401419715` — `quality` e `integration` aprovados
 
 ## Fluxo entregue
 
@@ -25,7 +25,7 @@
 - histórico de venda e custo não pode ser alterado ou excluído;
 - conectores futuros usarão este mesmo fluxo, mas a VERO já funciona sem Anota AI ou iFood.
 
-## Evidências locais
+## Evidências
 
 - formatação, lint, TypeScript strict e arquitetura aprovados;
 - 94 testes aprovados;
@@ -33,5 +33,5 @@
 - schema Prisma válido;
 - build dos 14 projetos aprovado.
 
-O CI deverá aplicar a migration e executar o cenário transacional com PostgreSQL real antes da
-conclusão formal desta entrega.
+O CI aplicou a migration e validou idempotência, baixa de estoque, snapshot imutável, isolamento e
+resumo realizado com PostgreSQL real.

@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-C implementada localmente; aguardando CI do PR #8
+**Estado:** M008-C concluída e validada no CI do PR #8
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -33,6 +33,7 @@
 - CI da M008-B aprovado no run `30399611181`, incluindo migration e integração PostgreSQL.
 - M008-C implementada com venda nativa, snapshot histórico, baixa transacional, CMV realizado e margem.
 - 94 testes e build dos 14 projetos aprovados localmente.
+- CI da M008-C aprovado no run `30401419715`, incluindo migration e integração PostgreSQL.
 
 ## Estado das linhas GitHub
 
@@ -44,7 +45,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-C implementada localmente; PR #8 permanece em rascunho |
+| `agent/missao-008-santo-parma-mvp` | M008-C concluída e aprovada no CI; PR #8 permanece em rascunho |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -102,6 +103,6 @@
 
 ## Próximo gate
 
-1. Publicar M008-C e validar os jobs `quality` e `integration` no PR #8.
-2. Confirmar migration, idempotência, baixa e snapshot histórico com PostgreSQL real no CI.
-3. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
+1. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
+2. Validar o fluxo guiado e a usabilidade da interface.
+3. Manter o PR em rascunho até o parecer final da MISSÃO 008.
