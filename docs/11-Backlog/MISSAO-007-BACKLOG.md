@@ -5,10 +5,10 @@
 - [x] Confirmar merge da MISSÃO 006 na `main`.
 - [x] Confirmar Access como próxima dependência.
 - [x] Corrigir o status pós-merge na branch da missão.
-- [x] Elaborar ADR-009 v0.1.0 em estado `Proposed`.
+- [x] Elaborar ADR-009 v0.1.1 em estado `Proposed`.
 - [x] Criar controle formal da MISSÃO 007.
-- [ ] Executar revisão arquitetural completa.
-- [ ] Corrigir achados.
+- [x] Executar revisão arquitetural completa.
+- [x] Corrigir fronteira da porta, namespaces e ciclo antirreplay.
 - [ ] Obter aprovação explícita do Arquiteto-Chefe.
 - [ ] Promover ADR-009 para `Approved`.
 
