@@ -35,6 +35,8 @@ Executado em 2026-07-28:
 | Validação arquitetural | Aprovada |
 | Build dos 11 projetos | Aprovado |
 | Auditoria de dependências altas | Aprovada |
+| CI `quality` | Aprovado — run `30367257964` |
+| CI `integration` | Aprovado — run `30367257964` |
 
 ## Riscos residuais
 
@@ -46,6 +48,6 @@ Executado em 2026-07-28:
 
 ## Próximo passo
 
-Após CI e autorização de merge do PR nº 7:
+Após autorização de merge do PR nº 7:
 
 **MISSÃO 008 — MVP Santo Parma: Catálogo, Ficha Técnica, Estoque e CMV.**

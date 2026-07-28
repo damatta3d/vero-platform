@@ -86,7 +86,7 @@ Materializar somente a segurança indispensável para iniciar o MVP: validar Ide
 - [x] Autorização vinculada ao pedido exato e consumível uma vez.
 - [x] Cobertura ≥ 90% nas quatro métricas.
 - [x] Quality gates locais aprovados.
-- [ ] CI aprovado.
+- [x] CI aprovado no run `30367257964`.
 - [x] Nenhuma vulnerabilidade alta nova.
 - [x] Relatório final publicado.
 - [ ] Merge aprovado explicitamente.

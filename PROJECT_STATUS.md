@@ -10,7 +10,7 @@
 **ADR vigente na branch:** ADR-009 v1.0.0 — Approved
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 007 — Core Platform: Fundação de Access e Autorização  
-**Estado:** Segurança essencial implementada; quality gates e CI pendentes
+**Estado:** Segurança essencial validada; aguardando autorização de merge
 **Branch:** `agent/core-access-foundation`  
 **Baseline oficial da `main`:** `1553b8ea6186788e8ed1632d008c8c8a361b9e50`  
 **Atualizado em:** 2026-07-28
@@ -30,6 +30,7 @@
 - `ResolvedTenantContext` endurecido contra objetos forjados.
 - Estratégia alterada para desenvolvimento vertical do MVP do Santo Parma após a MISSÃO 007.
 - Quality gates locais da MISSÃO 007 aprovados; 49 testes, arquitetura e build dos 11 projetos validados.
+- CI da MISSÃO 007 aprovado nos jobs `quality` e `integration`, run `30367257964`.
 
 ## Estado das linhas GitHub
 
@@ -68,7 +69,6 @@
 
 ## Próximo gate
 
-1. Validar o CI do PR nº 7.
-2. Apresentar parecer técnico.
-3. Aguardar autorização explícita antes do merge.
-4. Após o merge, iniciar a MISSÃO 008 — MVP Santo Parma: Catálogo, Ficha Técnica, Estoque e CMV.
+1. Apresentar parecer técnico.
+2. Aguardar autorização explícita antes do merge.
+3. Após o merge, iniciar a MISSÃO 008 — MVP Santo Parma: Catálogo, Ficha Técnica, Estoque e CMV.

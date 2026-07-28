@@ -35,7 +35,7 @@
 - [x] Testes arquiteturais completos.
 - [x] Build completo.
 - [x] Auditoria de dependências sem vulnerabilidade alta.
-- [ ] CI `quality` e `integration`.
+- [x] CI `quality` e `integration` no run `30367257964`.
 - [ ] Relatório técnico final.
 - [ ] Aprovação explícita antes do merge.
 
