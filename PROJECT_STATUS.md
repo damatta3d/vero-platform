@@ -11,7 +11,7 @@
 **ADR vigente na branch:** ADR-008 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 006 — Core Platform: Fundação de Identity e Autenticação  
-**Estado:** ADR aprovado; Fundação de Identity implementada; validação técnica em andamento  
+**Estado:** Fundação de Identity implementada e validada; aprovação de merge pendente  
 **Branch:** `agent/core-identity-foundation`  
 **Baseline oficial da `main`:** `addb8d7a8e5bd50007ae323d446c197230202502`  
 **Atualizado em:** 2026-07-27
@@ -32,6 +32,9 @@
 - Revisão do ADR-008 concluída; dois achados altos e um médio corrigidos na v0.1.1.
 - ADR-008 v1.0.0 aprovado pelo Arquiteto-Chefe.
 - Projeto Nx `core-identity` implementado com evidência opaca, principal qualificado, contexto explícito e fronteira confiável em runtime.
+- Vinte e um testes de Identity e threshold mínimo de 90% aprovados.
+- CI `30319819450` aprovado nos jobs `quality` e `integration`.
+- Relatório técnico final da MISSÃO 006 publicado.
 
 ## Estado das linhas GitHub
 
@@ -42,7 +45,7 @@
 | PR #4 | Merged; ADR-001 a ADR-006 integrados |
 | PR #5 | Merged; Fundação de Tenancy integrada |
 | `agent/core-tenancy-foundation` | Linha histórica da MISSÃO 005 |
-| `agent/core-identity-foundation` | Trabalho atual; ADR aprovado e implementação em validação |
+| `agent/core-identity-foundation` | Implementação e CI concluídos; parecer de merge pendente |
 | ADR-008 | `Approved`; implementação controlada autorizada |
 
 ## Escopo proposto da MISSÃO 006
