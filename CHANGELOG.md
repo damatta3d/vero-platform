@@ -8,6 +8,11 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- M008-C complementada com produção idempotente, baixa multinsumo pelo rendimento da ficha e CMV
+  estimado/realizado sem receita fictícia.
+- Histórico imutável de produção e custos por insumo, API, resumo e interface operacional.
+- Testes de domínio e integração para atomicidade, idempotência, estoque insuficiente e isolamento
+  da produção.
 - M008-C com venda nativa idempotente, snapshot da ficha e custos, baixa automática de estoque, CMV realizado e margem.
 - Histórico imutável de vendas e custos por insumo, persistido na mesma transação serializável do ledger.
 - API e painel responsivo para registrar vendas e consultar faturamento, CMV e margem realizados.
