@@ -34,6 +34,9 @@ export class MvpSecurityService {
     tenantHeader: string | undefined,
     action: string
   ): Promise<AuthorizedAccessContext> {
+    const resource = action.startsWith('inventory.')
+      ? 'inventory.management'
+      : 'catalog.management';
     const token = authorizationHeader?.startsWith('Bearer ')
       ? authorizationHeader.slice('Bearer '.length)
       : '';
@@ -66,8 +69,10 @@ export class MvpSecurityService {
         evaluate: (request) =>
           Promise.resolve({
             outcome:
-              request.action.value.startsWith('catalog.') &&
-              request.resource.value === 'catalog.management'
+              (request.action.value.startsWith('catalog.') &&
+                request.resource.value === 'catalog.management') ||
+              (request.action.value.startsWith('inventory.') &&
+                request.resource.value === 'inventory.management')
                 ? 'allow'
                 : 'deny',
             reason: 'santo-parma-mvp-owner',
@@ -77,7 +82,7 @@ export class MvpSecurityService {
         identity: authentication.context,
         tenant: resolution.context,
         action: actionRef(action),
-        resource: resourceRef('catalog.management')
+        resource: resourceRef(resource)
       });
     } catch {
       throw new UnauthorizedException();

@@ -2,9 +2,20 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
 
 import { CatalogService, type CatalogRepository } from '@vero/business-catalog';
+import {
+  InventoryService,
+  type InventoryIngredientCatalog,
+  type InventoryRepository
+} from '@vero/business-inventory';
 import type { AppConfig } from '@vero/core-configuration';
-import { createDatabaseClient, PrismaCatalogRepository } from '@vero/infrastructure-database';
+import {
+  createDatabaseClient,
+  PrismaCatalogRepository,
+  PrismaInventoryRepository
+} from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
+import { InventoryController } from '../inventory/inventory.controller.js';
+import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { CatalogController } from './catalog.controller.js';
 import { CATALOG_REPOSITORY, DATABASE_CLIENT } from './catalog.tokens.js';
 import { MvpSecurityService } from './mvp-security.service.js';
@@ -25,7 +36,7 @@ export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
     return {
       module: CatalogModule,
-      controllers: [CatalogController, MvpPageController],
+      controllers: [CatalogController, InventoryController, MvpPageController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         {
@@ -42,6 +53,22 @@ export class CatalogModule {
           inject: [CATALOG_REPOSITORY],
           useFactory: (repository: CatalogRepository) =>
             new CatalogService(repository, { generate: randomUUID }, { now: () => new Date() })
+        },
+        {
+          provide: INVENTORY_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaInventoryRepository(client)
+        },
+        {
+          provide: InventoryService,
+          inject: [INVENTORY_REPOSITORY],
+          useFactory: (repository: InventoryRepository & InventoryIngredientCatalog) =>
+            new InventoryService(
+              repository,
+              repository,
+              { generate: randomUUID },
+              { now: () => new Date() }
+            )
         },
         MvpSecurityService,
         DatabaseLifecycle
