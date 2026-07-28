@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | ADR-008 |
 | Título | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito |
-| Versão | 0.1.0 |
+| Versão | 0.1.1 |
 | Estado | Proposed |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -70,15 +70,21 @@ Autenticação comprova identidade conforme o mecanismo aplicável; não concede
 
 `PrincipalId` será opaco, nominal, estável e imutável. Sua criação confiável ficará interna ao fluxo de autenticação. A API pública não aceitará valor bruto para promover identidade.
 
+Identificadores externos nunca serão `PrincipalId`. Toda identidade autenticada preservará uma referência de sujeito qualificada pela autoridade autenticadora confiável — conceitualmente `authority + subject` — e a autoridade fará parte obrigatória do domínio de unicidade. `subject` isolado, e-mail, nome, claim ou identificador bruto de provider não será considerado globalmente único. Até que exista decisão específica sobre identidade interna canônica e identity linking, será proibida equivalência, vinculação ou mesclagem automática entre sujeitos emitidos por autoridades diferentes.
+
 O principal terá um tipo mínimo explícito, inicialmente `human` ou `service`. Um principal humano não será automaticamente um `User`; a associação com User pertence a missão futura. Claims, e-mail, nome, roles e permissions não compõem sua identidade canônica.
 
 ### 3.4 Evidência e fronteira de confiança
 
 Tokens bearer, cookies, API keys, certificados, headers, payloads e metadados de mensagens permanecerão evidência não verificada até validação por adapter autorizado.
 
-A porta `Authenticator` será agnóstica de protocolo e framework. Adapters futuros poderão implementar OIDC, JWT validado, sessão, mTLS ou credencial de serviço somente após decisão de integração aplicável. Esta missão não seleciona IdP, algoritmo, issuer, audience, formato de token ou biblioteca concreta.
+`AuthenticationEvidence` será opaca, efêmera e minimizada. Não poderá expor o valor original por serialização, enumeração, inspeção, cópia, igualdade, `toString`, erros, snapshots, logs, métricas ou traces. Sua representação segura será sempre redigida. O núcleo não a persistirá nem prolongará sua retenção; adapters concretos deverão descartar referências assim que a validação terminar e aplicar limpeza explícita quando o runtime e o formato permitirem.
 
-Nenhuma API pública poderá construir `AuthenticatedPrincipal` ou `IdentityContext` diretamente de evidência externa.
+A porta `Authenticator` será agnóstica de protocolo e framework. A composição registrará somente adapters autorizados, mas registro ou implementação da porta não concederá capacidade de fabricar resultados confiáveis. A promoção de evidência validada para `PrincipalId`, `AuthenticatedPrincipal` e `IdentityContext` ocorrerá exclusivamente por factory/capability interna, não exportada e controlada por Identity. Implementações externas da interface, objetos estruturalmente compatíveis, casts e fixtures não adquirirão essa capability nem serão aceitos como prova de autenticação em fronteiras de runtime.
+
+Adapters futuros poderão implementar OIDC, JWT validado, sessão, mTLS ou credencial de serviço somente após decisão de integração aplicável. Esta missão não seleciona IdP, algoritmo, issuer, audience, formato de token ou biblioteca concreta.
+
+Nenhuma API pública poderá construir `AuthenticatedPrincipal` ou `IdentityContext` diretamente de evidência externa, implementar um autenticador que fabrique identidade confiável ou promover localmente um resultado estruturalmente compatível.
 
 ### 3.5 Contexto explícito
 
@@ -138,7 +144,9 @@ O projeto terá threshold mínimo de 90% em statements, branches, functions e li
 - testes que provem que autenticação não concede autorização;
 - contratos de compilação contra promoção pública de evidência;
 - testes de superfície pública e dependências proibidas;
-- validação de ausência de dados sensíveis em erros;
+- validação de ausência do valor original da evidência em serialização, inspeção, enumeração, cópia, igualdade, `toString`, snapshots, erros e telemetria;
+- testes de compilação, superfície e runtime que rejeitem autenticadores externos, objetos literais, casts e fixtures como fabricantes de identidade confiável;
+- testes que garantam a qualificação do sujeito por autoridade e proíbam equivalência automática entre autoridades distintas;
 - CI completo da plataforma.
 
 ## 4. Alternativas consideradas
@@ -179,7 +187,9 @@ Rejeitada. Mistura autenticação, autorização e isolamento, aumenta acoplamen
 
 - consumers futuros confundirem principal autenticado com User;
 - adapters concretos validarem tokens de forma incompleta;
-- exposição indevida de identificadores ou claims em telemetria;
+- implementação incorreta da capability interna ou de sua fronteira de runtime;
+- colisão ou vinculação indevida de sujeitos entre autoridades distintas;
+- exposição indevida de evidência, identificadores ou claims em telemetria;
 - composição futura unir Identity e Tenancy sem decisão positiva de Access.
 
 ## 6. Impacto e migração
@@ -194,7 +204,9 @@ Após esta fundação, o próximo gate recomendado será Access e autorização 
 - [ ] Evidência, autenticação e autorização claramente separadas.
 - [ ] Principal não confundido com User.
 - [ ] Principal humano e de serviço contemplados.
-- [ ] Construção confiável inacessível pela superfície pública.
+- [ ] Construção confiável inacessível pela superfície pública e protegida por capability interna em runtime.
+- [ ] Sujeito externo qualificado por autoridade, sem equivalência automática entre autoridades.
+- [ ] Evidência efêmera, não serializável, redigida e ausente de erros e telemetria.
 - [ ] Provider, protocolo, persistência e credenciais fora do escopo.
 - [ ] Integração com Tenancy preserva independência.
 - [ ] Segurança, minimização e observabilidade delimitadas.
@@ -216,4 +228,5 @@ Após esta fundação, o próximo gate recomendado será Access e autorização 
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
+| 0.1.1 | 2026-07-27 | Fecha capability interna de confiança, escopo de autoridade do sujeito e ciclo seguro da evidência | Proposed |
 | 0.1.0 | 2026-07-27 | Proposta inicial da Fundação de Identity e autenticação | Proposed |
