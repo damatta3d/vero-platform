@@ -1,8 +1,5 @@
 import { inspect } from 'node:util';
-import {
-  AuthenticationEvidence,
-  readAuthenticationEvidence
-} from './authentication-evidence.js';
+import { AuthenticationEvidence, readAuthenticationEvidence } from './authentication-evidence.js';
 import {
   AuthenticationEvidenceRequiredError,
   InvalidAuthenticationEvidenceError
