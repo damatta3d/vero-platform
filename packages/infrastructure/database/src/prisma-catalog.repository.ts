@@ -108,23 +108,26 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async saveRecipe(recipe: Recipe): Promise<void> {
-    await this.client.catalogRecipe.create({
-      data: {
-        id: recipe.id,
-        tenantId: recipe.tenantId,
-        productId: recipe.productId,
-        version: recipe.version,
-        yieldUnits: recipe.yieldUnits,
-        authoredBy: recipe.authoredBy,
-        createdAt: recipe.createdAt,
-        lines: {
-          create: recipe.lines.map((line) => ({
-            tenantId: recipe.tenantId,
-            ingredientId: line.ingredientId,
-            quantityMicros: BigInt(line.quantityMicros)
-          }))
+    await this.client.$transaction(async (transaction) => {
+      await transaction.catalogRecipe.create({
+        data: {
+          id: recipe.id,
+          tenantId: recipe.tenantId,
+          productId: recipe.productId,
+          version: recipe.version,
+          yieldUnits: recipe.yieldUnits,
+          authoredBy: recipe.authoredBy,
+          createdAt: recipe.createdAt
         }
-      }
+      });
+      await transaction.catalogRecipeLine.createMany({
+        data: recipe.lines.map((line) => ({
+          tenantId: recipe.tenantId,
+          recipeId: recipe.id,
+          ingredientId: line.ingredientId,
+          quantityMicros: BigInt(line.quantityMicros)
+        }))
+      });
     });
   }
 
