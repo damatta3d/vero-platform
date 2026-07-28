@@ -29,15 +29,15 @@
 
 ## Validação
 
-- [ ] Prettier.
-- [ ] ESLint.
-- [ ] TypeScript strict.
-- [ ] Testes e cobertura mínima de 90%.
-- [ ] Testes arquiteturais.
-- [ ] Build completo.
-- [ ] Auditoria de dependências.
-- [ ] CI `quality` e `integration`.
-- [ ] Relatório técnico final.
+- [x] Prettier.
+- [x] ESLint.
+- [x] TypeScript strict.
+- [x] Testes e cobertura mínima de 90%.
+- [x] Testes arquiteturais.
+- [x] Build completo.
+- [x] Auditoria de dependências.
+- [x] CI `quality` e `integration`.
+- [x] Relatório técnico final.
 - [ ] Aprovação explícita antes do merge.
 
 ## Dependências futuras não autorizadas
