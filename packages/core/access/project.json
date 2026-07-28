@@ -1,0 +1,44 @@
+{
+  "name": "core-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core/access/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:core", "runtime:agnostic", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/core/access",
+        "main": "packages/core/access/src/public-api.ts",
+        "tsConfig": "packages/core/access/tsconfig.lib.json",
+        "platform": "node",
+        "format": ["cjs"],
+        "bundle": true,
+        "thirdParty": false,
+        "generatePackageJson": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/core/access/src/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "tsc -p packages/core/access/tsconfig.lib.json --noEmit",
+          "tsc -p packages/core/access/tsconfig.contract.json --noEmit"
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/core/access/jest.config.cjs",
+        "coverage": true
+      }
+    }
+  }
+}

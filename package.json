@@ -10,7 +10,7 @@
   "scripts": {
     "prepare": "husky",
     "build": "nx run-many -t build",
-    "lint": "nx run-many -t lint",
+    "lint": "nx run-many -t lint --parallel=1",
     "test": "nx run-many -t test",
     "test:integration": "jest --config tests/integration/jest.config.cjs --runInBand",
     "test:architecture": "node tools/validation/architecture.mjs",

@@ -24,7 +24,8 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 | [ADR-006](ADR-006-CORE-PLATFORM-E-SHARED-KERNEL.md) | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão | 1.0.0 | Approved |
 | [ADR-007](ADR-007-FUNDACAO-DE-TENANCY.md) | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito | 1.0.0 | Approved |
 | [ADR-008](ADR-008-FUNDACAO-DE-IDENTITY-E-AUTENTICACAO.md) | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito | 1.0.0 | Approved |
+| [ADR-009](ADR-009-FUNDACAO-DE-ACCESS-E-AUTORIZACAO.md) | Fundação de Access — decisão contextual, negação por padrão e fronteira confiável | 1.0.0 | Approved |
 
 ## Gate atual
 
-Os ADR-001 a ADR-007 estão aprovados e integrados à `main`. O ADR-008 foi aprovado pelo Arquiteto-Chefe na branch `agent/core-identity-foundation` e autoriza a implementação controlada da MISSÃO 006.
+Os ADR-001 a ADR-008 estão aprovados e integrados à `main`. O ADR-009 foi aprovado na branch `agent/core-access-foundation`; a missão implementa somente a segurança essencial antes da transição para o MVP vertical do Santo Parma.
