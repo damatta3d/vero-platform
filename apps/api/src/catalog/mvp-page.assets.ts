@@ -28,6 +28,8 @@ export const mvpPageHtml = `<!doctype html>
       <article class="metric"><small>Insumos</small><strong id="ingredientCount">0</strong></article>
       <article class="metric"><small>Produtos</small><strong id="productCount">0</strong></article>
       <article class="metric"><small>Valor em estoque</small><strong id="stockValue">R$ 0,00</strong></article>
+      <article class="metric"><small>Produções</small><strong id="productionCount">0</strong></article>
+      <article class="metric"><small>CMV produzido</small><strong id="productionCmv">R$ 0,00</strong></article>
       <article class="metric"><small>Vendas</small><strong id="salesCount">0</strong></article>
       <article class="metric"><small>Faturamento</small><strong id="grossRevenue">R$ 0,00</strong></article>
       <article class="metric"><small>Margem realizada</small><strong id="realizedMargin">R$ 0,00</strong></article>
@@ -40,7 +42,8 @@ export const mvpPageHtml = `<!doctype html>
       <button data-panel="products">2. Produtos</button>
       <button data-panel="recipe">3. Ficha técnica</button>
       <button data-panel="inventory">4. Compras e estoque</button>
-      <button data-panel="sales">5. Registrar venda</button>
+      <button data-panel="production">5. Registrar produção</button>
+      <button data-panel="sales">6. Registrar venda</button>
     </nav>
 
     <section id="ingredients" class="panel active">
@@ -112,15 +115,37 @@ export const mvpPageHtml = `<!doctype html>
       <div class="card"><h2>Posição de estoque</h2><div id="stockList" class="list empty">Nenhuma movimentação registrada.</div></div>
     </section>
 
+    <section id="production" class="panel">
+      <div class="card form-card">
+        <div class="section-title"><div><small>PASSO 5</small><h2>Nova produção</h2></div></div>
+        <form id="productionForm" class="grid">
+          <div class="wide"><label>Produto</label><select id="productionProduct" required></select></div>
+          <div><label>Quantidade produzida</label><input name="quantity" type="number" min="1" step="1" value="1" required></div>
+          <button type="submit">Registrar e baixar insumos</button>
+        </form>
+        <p class="hint">A VERO aplica o rendimento da ficha, baixa todos os insumos e fixa o CMV desta produção. Neste MVP, use produção ou venda direta para a mesma porção, nunca ambos.</p>
+        <div id="productionResult" class="result sale-result hidden">
+          <small>PRODUÇÃO REGISTRADA</small>
+          <div class="result-grid">
+            <div><span>Quantidade</span><strong id="productionUnits">—</strong></div>
+            <div><span>CMV estimado</span><strong id="productionEstimatedCmv">—</strong></div>
+            <div><span>CMV realizado</span><strong id="productionRealizedCmv">—</strong></div>
+            <div><span>Ficha utilizada</span><strong id="productionRecipe">—</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="card"><h2>Produções recentes</h2><div id="productionList" class="list empty">Nenhuma produção registrada.</div></div>
+    </section>
+
     <section id="sales" class="panel">
       <div class="card form-card">
-        <div class="section-title"><div><small>PASSO 5</small><h2>Nova venda</h2></div></div>
+        <div class="section-title"><div><small>PASSO 6</small><h2>Nova venda</h2></div></div>
         <form id="saleForm" class="grid">
           <div class="wide"><label>Produto</label><select id="saleProduct" required></select></div>
           <div><label>Quantidade vendida</label><input name="quantity" type="number" min="1" step="1" value="1" required></div>
           <button type="submit">Registrar e baixar estoque</button>
         </form>
-        <p class="hint">A VERO fixa a ficha e os custos desta venda. Alterações futuras não mudam este histórico.</p>
+        <p class="hint">A VERO fixa a ficha e os custos desta venda. Alterações futuras não mudam este histórico. Se a porção já foi registrada como produção, não repita a baixa na venda direta.</p>
         <div id="saleResult" class="result sale-result hidden">
           <small>VENDA REGISTRADA</small>
           <div class="result-grid">
@@ -146,7 +171,7 @@ export const mvpPageCss = `
 `;
 
 export const mvpPageJavaScript = `
-const state={ingredients:[],products:[],positions:[],sales:[],salesSummary:{salesCount:0,grossRevenueCents:0,marginCents:0}};
+const state={ingredients:[],products:[],positions:[],production:[],productionSummary:{productionCount:0,unitsProduced:0,estimatedCmvCents:0,realizedCmvCents:0},sales:[],salesSummary:{salesCount:0,grossRevenueCents:0,marginCents:0}};
 const $=(id)=>document.getElementById(id);
 const money=(cents)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);
 function headers(){return {'content-type':'application/json','authorization':'Bearer '+$('apiKey').value,'x-tenant-id':$('tenantId').value};}
@@ -155,23 +180,26 @@ function toast(message,error=false){const el=$('toast');el.textContent=message;e
 function render(){
   $('ingredientCount').textContent=state.ingredients.length;$('productCount').textContent=state.products.length;
   $('stockValue').textContent=money(state.positions.reduce((total,item)=>total+item.inventoryValueCents,0));
+  $('productionCount').textContent=state.productionSummary.productionCount;$('productionCmv').textContent=money(state.productionSummary.realizedCmvCents);
   $('salesCount').textContent=state.salesSummary.salesCount;$('grossRevenue').textContent=money(state.salesSummary.grossRevenueCents);$('realizedMargin').textContent=money(state.salesSummary.marginCents);
   $('ingredientList').className=state.ingredients.length?'list':'list empty';
   $('ingredientList').innerHTML=state.ingredients.length?state.ingredients.map(i=>'<div class="row"><div><strong>'+escapeHtml(i.name)+'</strong><small>'+escapeHtml(i.unit)+'</small></div><strong>'+money(i.packageCostCents)+'</strong></div>').join(''):'Nenhum insumo cadastrado.';
   $('productList').className=state.products.length?'list':'list empty';
   $('productList').innerHTML=state.products.length?state.products.map(p=>'<div class="row"><div><strong>'+escapeHtml(p.name)+'</strong><small>Preço de venda</small></div><strong>'+money(p.salePriceCents)+'</strong></div>').join(''):'Nenhum produto cadastrado.';
   $('recipeProduct').innerHTML=state.products.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
+  $('productionProduct').innerHTML=state.products.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
   $('saleProduct').innerHTML=state.products.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
   const ingredientOptions=state.ingredients.map(i=>'<option value="'+i.id+'">'+escapeHtml(i.name)+'</option>').join('');$('purchaseIngredient').innerHTML=ingredientOptions;$('movementIngredient').innerHTML=ingredientOptions;
   $('recipeLines').className=state.ingredients.length?'recipe-lines':'recipe-lines empty';
   $('recipeLines').innerHTML=state.ingredients.length?state.ingredients.map(i=>'<div class="recipe-line"><label>'+escapeHtml(i.name)+'<small> · '+escapeHtml(i.unit)+'</small></label><input data-ingredient="'+i.id+'" type="number" min="0" step="0.001" value="0" aria-label="Quantidade usada"></div>').join(''):'Cadastre os insumos primeiro.';
   $('stockList').className=state.positions.length?'list':'list empty';$('stockList').innerHTML=state.positions.length?state.positions.map(p=>{const i=state.ingredients.find(item=>item.id===p.ingredientId);return '<div class="row"><div><strong>'+escapeHtml(i?i.name:p.ingredientId)+'</strong><small>'+formatQuantity(p.quantityOnHandMicros,i?i.unit:'UNIT')+' · custo médio '+formatUnitCost(p.averageUnitCostMicros,i?i.unit:'UNIT')+'</small></div><strong>'+money(p.inventoryValueCents)+'</strong></div>';}).join(''):'Nenhuma movimentação registrada.';
+  $('productionList').className=state.production.length?'list':'list empty';$('productionList').innerHTML=state.production.length?state.production.map(p=>'<div class="row"><div><strong>'+escapeHtml(p.productName)+' · '+p.quantity+' un.</strong><small>'+new Date(p.producedAt).toLocaleString('pt-BR')+' · ficha v'+p.recipeVersion+'</small></div><strong>'+money(p.realizedCmvCents)+'</strong></div>').join(''):'Nenhuma produção registrada.';
   $('saleList').className=state.sales.length?'list':'list empty';$('saleList').innerHTML=state.sales.length?state.sales.map(s=>'<div class="row"><div><strong>'+escapeHtml(s.productName)+' · '+s.quantity+' un.</strong><small>'+new Date(s.soldAt).toLocaleString('pt-BR')+' · CMV '+money(s.realizedCmvCents)+'</small></div><strong>'+money(s.grossRevenueCents)+'</strong></div>').join(''):'Nenhuma venda registrada.';
 }
 function escapeHtml(value){const div=document.createElement('div');div.textContent=value;return div.innerHTML;}
 function formatQuantity(micros,unit){return new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(micros/1000000)+' '+unit;}
 function formatUnitCost(micros,unit){return money(Math.round(micros/1000000))+'/'+unit;}
-async function refresh(){if(!$('apiKey').value)return;try{[state.ingredients,state.products,state.positions,state.sales,state.salesSummary]=await Promise.all([api('/v1/catalog/ingredients'),api('/v1/catalog/products'),api('/v1/inventory/positions'),api('/v1/sales?limit=20'),api('/v1/sales/summary')]);render();}catch(error){toast(error.message,true);}}
+async function refresh(){if(!$('apiKey').value)return;try{[state.ingredients,state.products,state.positions,state.production,state.productionSummary,state.sales,state.salesSummary]=await Promise.all([api('/v1/catalog/ingredients'),api('/v1/catalog/products'),api('/v1/inventory/positions'),api('/v1/production?limit=20'),api('/v1/production/summary'),api('/v1/sales?limit=20'),api('/v1/sales/summary')]);render();}catch(error){toast(error.message,true);}}
 document.querySelectorAll('nav button').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('nav button,.panel').forEach(el=>el.classList.remove('active'));button.classList.add('active');$(button.dataset.panel).classList.add('active');}));
 $('refresh').addEventListener('click',refresh);$('apiKey').addEventListener('change',refresh);$('tenantId').addEventListener('change',refresh);
 $('ingredientForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{await api('/v1/catalog/ingredients',{method:'POST',body:JSON.stringify({name:data.get('name'),unit:data.get('unit'),packageQuantityMicros:Math.round(Number(data.get('quantity'))*1000000),packageCostCents:Math.round(Number(data.get('cost'))*100)})});event.currentTarget.reset();toast('Insumo salvo.');await refresh();}catch(error){toast(error.message,true);}});
@@ -179,6 +207,7 @@ $('productForm').addEventListener('submit',async(event)=>{event.preventDefault()
 $('recipeForm').addEventListener('submit',async(event)=>{event.preventDefault();const productId=$('recipeProduct').value;const lines=[...document.querySelectorAll('[data-ingredient]')].map(input=>({ingredientId:input.dataset.ingredient,quantityMicros:Math.round(Number(input.value)*1000000)})).filter(line=>line.quantityMicros>0);try{await api('/v1/catalog/products/'+productId+'/recipes',{method:'POST',body:JSON.stringify({yieldUnits:Number($('yieldUnits').value),lines})});const cost=await api('/v1/catalog/products/'+productId+'/cost');const product=state.products.find(item=>item.id===productId);$('costProduct').textContent=product?product.name:'Produto';$('costPerUnit').textContent=money(cost.costPerUnitCents);$('salePrice').textContent=money(cost.salePriceCents);$('marginValue').textContent=money(cost.marginCents);$('marginPercent').textContent=(cost.marginBasisPoints/100).toFixed(2).replace('.',',')+'%';$('currentCost').textContent=money(cost.costPerUnitCents);$('currentMargin').textContent=money(cost.marginCents);$('costCard').classList.remove('hidden');toast('Ficha técnica salva e calculada.');}catch(error){toast(error.message,true);}});
 $('purchaseForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{await api('/v1/inventory/purchases',{method:'POST',body:JSON.stringify({ingredientId:$('purchaseIngredient').value,quantityMicros:Math.round(Number(data.get('quantity'))*1000000),totalCostCents:Math.round(Number(data.get('cost'))*100),reference:data.get('reference')})});event.currentTarget.reset();toast('Compra registrada e estoque atualizado.');await refresh();}catch(error){toast(error.message,true);}});
 $('movementForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);const operation=data.get('operation');const common={ingredientId:$('movementIngredient').value,quantityMicros:Math.round(Number(data.get('quantity'))*1000000),reason:data.get('reason')};try{if(operation==='CONSUMPTION'){await api('/v1/inventory/consumptions',{method:'POST',body:JSON.stringify(common)});}else{const input={...common,direction:operation==='ADJUSTMENT_IN'?'IN':'OUT'};if(input.direction==='IN')input.totalCostCents=Math.round(Number(data.get('cost'))*100);await api('/v1/inventory/adjustments',{method:'POST',body:JSON.stringify(input)});}event.currentTarget.reset();toast('Movimento registrado.');await refresh();}catch(error){toast(error.message,true);}});
+$('productionForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{const production=await api('/v1/production',{method:'POST',body:JSON.stringify({productId:$('productionProduct').value,quantity:Number(data.get('quantity')),idempotencyKey:crypto.randomUUID()})});$('productionUnits').textContent=production.quantity;$('productionEstimatedCmv').textContent=money(production.estimatedCmvCents);$('productionRealizedCmv').textContent=money(production.realizedCmvCents);$('productionRecipe').textContent='v'+production.recipeVersion;$('productionResult').classList.remove('hidden');toast('Produção registrada e insumos baixados.');await refresh();}catch(error){toast(error.message,true);}});
 $('saleForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{const sale=await api('/v1/sales',{method:'POST',body:JSON.stringify({productId:$('saleProduct').value,quantity:Number(data.get('quantity')),idempotencyKey:crypto.randomUUID()})});$('saleRevenue').textContent=money(sale.grossRevenueCents);$('saleCmv').textContent=money(sale.realizedCmvCents);$('saleMargin').textContent=money(sale.marginCents);$('saleMarginPercent').textContent=(sale.marginBasisPoints/100).toFixed(2).replace('.',',')+'%';$('saleResult').classList.remove('hidden');toast('Venda registrada e estoque baixado.');await refresh();}catch(error){toast(error.message,true);}});
 render();
 `;

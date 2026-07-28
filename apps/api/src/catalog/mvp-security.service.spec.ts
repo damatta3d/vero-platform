@@ -44,6 +44,12 @@ describe(MvpSecurityService.name, () => {
     expect(trusted.request.resource.value).toBe('sales.management');
   });
 
+  it('creates production access only on the production resource', async () => {
+    const context = await service.authorize(`Bearer ${apiKey}`, 'santo-parma', 'production.create');
+    const trusted = consumeAuthorizedAccess(context);
+    expect(trusted.request.resource.value).toBe('production.management');
+  });
+
   it.each([
     ['Bearer wrong-key-that-is-long-enough', 'santo-parma'],
     [`Bearer ${apiKey}`, 'another-tenant'],

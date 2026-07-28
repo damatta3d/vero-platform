@@ -36,9 +36,11 @@ export class MvpSecurityService {
   ): Promise<AuthorizedAccessContext> {
     const resource = action.startsWith('inventory.')
       ? 'inventory.management'
-      : action.startsWith('sales.')
-        ? 'sales.management'
-        : 'catalog.management';
+      : action.startsWith('production.')
+        ? 'production.management'
+        : action.startsWith('sales.')
+          ? 'sales.management'
+          : 'catalog.management';
     const token = authorizationHeader?.startsWith('Bearer ')
       ? authorizationHeader.slice('Bearer '.length)
       : '';
@@ -75,6 +77,8 @@ export class MvpSecurityService {
                 request.resource.value === 'catalog.management') ||
               (request.action.value.startsWith('inventory.') &&
                 request.resource.value === 'inventory.management') ||
+              (request.action.value.startsWith('production.') &&
+                request.resource.value === 'production.management') ||
               (request.action.value.startsWith('sales.') &&
                 request.resource.value === 'sales.management')
                 ? 'allow'

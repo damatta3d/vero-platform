@@ -7,17 +7,21 @@ import {
   type InventoryIngredientCatalog,
   type InventoryRepository
 } from '@vero/business-inventory';
+import { ProductionService, type ProductionRepository } from '@vero/business-production';
 import { SalesService, type SalesRepository } from '@vero/business-sales';
 import type { AppConfig } from '@vero/core-configuration';
 import {
   createDatabaseClient,
   PrismaCatalogRepository,
   PrismaInventoryRepository,
+  PrismaProductionRepository,
   PrismaSalesRepository
 } from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
+import { ProductionController } from '../production/production.controller.js';
+import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
 import { SalesController } from '../sales/sales.controller.js';
 import { SALES_REPOSITORY } from '../sales/sales.tokens.js';
 import { CatalogController } from './catalog.controller.js';
@@ -40,7 +44,13 @@ export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
     return {
       module: CatalogModule,
-      controllers: [CatalogController, InventoryController, SalesController, MvpPageController],
+      controllers: [
+        CatalogController,
+        InventoryController,
+        ProductionController,
+        SalesController,
+        MvpPageController
+      ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         {
@@ -73,6 +83,17 @@ export class CatalogModule {
               { generate: randomUUID },
               { now: () => new Date() }
             )
+        },
+        {
+          provide: PRODUCTION_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaProductionRepository(client)
+        },
+        {
+          provide: ProductionService,
+          inject: [PRODUCTION_REPOSITORY],
+          useFactory: (repository: ProductionRepository) =>
+            new ProductionService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         {
           provide: SALES_REPOSITORY,
