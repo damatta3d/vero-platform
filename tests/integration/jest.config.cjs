@@ -7,6 +7,9 @@ module.exports = {
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@vero/core-tenancy$': '<rootDir>/../../packages/core/tenancy/src/public-api.ts',
+    '^@vero/core-identity$': '<rootDir>/../../packages/core/identity/src/public-api.ts',
+    '^@vero/core-access$': '<rootDir>/../../packages/core/access/src/public-api.ts',
     '^@vero/infrastructure-database$':
       '<rootDir>/../../packages/infrastructure/database/src/public-api.ts',
     '^@vero/infrastructure-cache$':
