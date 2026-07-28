@@ -8,7 +8,7 @@
 | Branch | `agent/core-access-foundation` |
 | Base | `main` em `1553b8ea6186788e8ed1632d008c8c8a361b9e50` |
 | Estado | Gate documental; implementação bloqueada |
-| ADR | ADR-009 v0.1.0 — Proposed |
+| ADR | ADR-009 v0.1.1 — Proposed |
 | Owner | Core Platform — Access |
 | Data | 2026-07-27 |
 
@@ -72,7 +72,9 @@ Nenhum código funcional de Access será criado antes do passo 5.
 | Confusão entre resolução e autorização | estados e owners separados |
 | Reuso em outro escopo | decisão vinculada ao pedido exato |
 | Falha aberta | negação para ausência, erro, timeout e desconhecido |
-| Adapter malicioso | implementar a porta não concede autoridade |
+| Adapter malicioso | porta devolve resultado não autoritativo; promoção permanece interna |
+| Colisão de ação/recurso | referências qualificadas pelo namespace do módulo owner |
+| Reuso ou replay | decisão efêmera, não serializável e vinculada à avaliação/política |
 | Regra empresarial em Access | separação formal de invariantes |
 | Vazamento em razões | projeções mínimas e redigidas |
 
