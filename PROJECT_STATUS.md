@@ -8,10 +8,10 @@
 **Blueprint Volume II:** VERO-BLP-002 v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
 **ADRs vigentes:** ADR-001 a ADR-006 v1.0.0 — Approved  
-**ADR em revisão:** ADR-007 v0.1.1 — Proposed  
+**ADR vigente na branch:** ADR-007 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 005 — Core Platform: Fundação de Tenancy  
-**Estado:** Gate arquitetural em revisão; implementação bloqueada até aprovação do ADR-007  
+**Estado:** ADR-007 aprovado; implementação da Fundação de Tenancy autorizada  
 **Branch:** `agent/core-tenancy-foundation`  
 **Baseline integrada em main:** `a707a30ebbcea1b91c5dfdb801f8b21203a98a7b`  
 **Atualizado em:** 2026-07-27
@@ -33,8 +33,8 @@
 |---|---|
 | `main` | Sprint 0 integrada no commit `a707a30` |
 | PR #3 | Merged; Fundação Executável integrada |
-| `agent/core-tenancy-foundation` | Gate arquitetural da MISSÃO 005 em elaboração |
-| ADR-007 | `Proposed`; implementação ainda não autorizada |
+| `agent/core-tenancy-foundation` | ADR-007 aprovado; implementação em andamento |
+| ADR-007 | `Approved`; implementação controlada autorizada |
 
 ## Fora do escopo vigente
 

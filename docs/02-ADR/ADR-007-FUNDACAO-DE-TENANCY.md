@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-007 |
 | Título | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito |
-| Versão | 0.1.1 |
-| Estado | Proposed |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Owner | Core Platform — Tenancy |
@@ -213,17 +213,17 @@ Antes do primeiro caso de uso tenant-aware, será obrigatória uma missão de Ac
 
 ## 7. Critérios de aceite da decisão
 
-- [ ] Nenhum conflito com Constituição, Blueprint II, CDM ou ADR-006.
-- [ ] Estados candidato, resolvido e autorizado claramente separados.
-- [ ] `ResolvedTenantContext` não representa nem pode ser promovido localmente a autorização.
-- [ ] Construção confiável de `TenantId` inacessível pela superfície pública.
-- [ ] Header externo explicitamente não confiável.
-- [ ] Formato, geração, persistência e lifecycle mantidos fora do escopo.
-- [ ] Contexto semântico explícito e imutável.
-- [ ] Limite com observabilidade documentado.
-- [ ] Threshold de cobertura definido.
-- [ ] Riscos e sequência futura registrados.
-- [ ] Aprovação explícita do Arquiteto-Chefe.
+- [x] Nenhum conflito com Constituição, Blueprint II, CDM ou ADR-006.
+- [x] Estados candidato, resolvido e autorizado claramente separados.
+- [x] `ResolvedTenantContext` não representa nem pode ser promovido localmente a autorização.
+- [x] Construção confiável de `TenantId` inacessível pela superfície pública.
+- [x] Header externo explicitamente não confiável.
+- [x] Formato, geração, persistência e lifecycle mantidos fora do escopo.
+- [x] Contexto semântico explícito e imutável.
+- [x] Limite com observabilidade documentado.
+- [x] Threshold de cobertura definido.
+- [x] Riscos e sequência futura registrados.
+- [x] Aprovação explícita do Arquiteto-Chefe.
 
 ## 8. Referências
 
@@ -241,3 +241,4 @@ Antes do primeiro caso de uso tenant-aware, será obrigatória uma missão de Ac
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial da fundação de Tenancy | Proposed |
 | 0.1.1 | 2026-07-27 | Fecha separação entre contexto resolvido e autorizado e restringe criação confiável de TenantId | Proposed |
+| 1.0.0 | 2026-07-27 | Aprovação explícita do Arquiteto-Chefe para implementação controlada | Approved |

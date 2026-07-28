@@ -22,8 +22,8 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 | [ADR-004](ADR-004-CONFIGURACAO-CENTRALIZADA.md) | Configuração Centralizada — Environment, Validation, Secrets e Feature Flags | 1.0.0 | Approved |
 | [ADR-005](ADR-005-OBSERVABILIDADE.md) | Observabilidade — Logging, Metrics, Tracing, Context Propagation e Health Checks | 1.0.0 | Approved |
 | [ADR-006](ADR-006-CORE-PLATFORM-E-SHARED-KERNEL.md) | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão | 1.0.0 | Approved |
-| [ADR-007](ADR-007-FUNDACAO-DE-TENANCY.md) | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito | 0.1.1 | Proposed |
+| [ADR-007](ADR-007-FUNDACAO-DE-TENANCY.md) | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito | 1.0.0 | Approved |
 
 ## Gate atual
 
-Os ADR-001 a ADR-006 estão aprovados e integrados à `main`. O ADR-007 está proposto na branch `agent/core-tenancy-foundation` e bloqueia a implementação funcional da MISSÃO 005 até revisão e aprovação explícita do Arquiteto-Chefe.
+Os ADR-001 a ADR-006 estão aprovados e integrados à `main`. O ADR-007 foi aprovado pelo Arquiteto-Chefe na branch `agent/core-tenancy-foundation` e autoriza a implementação controlada da MISSÃO 005.

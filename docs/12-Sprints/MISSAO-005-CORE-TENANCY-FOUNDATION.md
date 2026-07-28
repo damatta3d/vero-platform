@@ -7,8 +7,8 @@
 | Missão | 005 |
 | Branch | `agent/core-tenancy-foundation` |
 | Base | `main` em `a707a30ebbcea1b91c5dfdb801f8b21203a98a7b` |
-| Estado | Gate arquitetural em revisão |
-| ADR | ADR-007 v0.1.1 — Proposed |
+| Estado | Implementação autorizada |
+| ADR | ADR-007 v1.0.0 — Approved |
 | Owner | Core Platform — Tenancy |
 | Data | 2026-07-27 |
 

@@ -7,10 +7,10 @@
 - [x] Elaborar ADR-007 em estado `Proposed`.
 - [x] Registrar escopo, ameaças e critérios da missão.
 - [x] Concluir revisão técnica e de conformidade do ADR-007.
-- [ ] Obter aprovação explícita do Arquiteto-Chefe.
-- [ ] Promover ADR-007 para `Approved`.
+- [x] Obter aprovação explícita do Arquiteto-Chefe.
+- [x] Promover ADR-007 para `Approved`.
 
-## Implementação — bloqueada até aprovação
+## Implementação — autorizada
 
 - [ ] Criar projeto Nx `core-tenancy`.
 - [ ] Implementar `TenantId` opaco e imutável.
