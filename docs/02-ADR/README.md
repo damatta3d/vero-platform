@@ -23,8 +23,8 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 | [ADR-005](ADR-005-OBSERVABILIDADE.md) | Observabilidade — Logging, Metrics, Tracing, Context Propagation e Health Checks | 1.0.0 | Approved |
 | [ADR-006](ADR-006-CORE-PLATFORM-E-SHARED-KERNEL.md) | Core Platform e Shared Kernel — Responsabilidades, Limites, Inclusão e Exclusão | 1.0.0 | Approved |
 | [ADR-007](ADR-007-FUNDACAO-DE-TENANCY.md) | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito | 1.0.0 | Approved |
-| [ADR-008](ADR-008-FUNDACAO-DE-IDENTITY-E-AUTENTICACAO.md) | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito | 0.1.1 | Proposed |
+| [ADR-008](ADR-008-FUNDACAO-DE-IDENTITY-E-AUTENTICACAO.md) | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito | 1.0.0 | Approved |
 
 ## Gate atual
 
-Os ADR-001 a ADR-007 estão aprovados e integrados à `main`. O ADR-008 está em revisão na branch `agent/core-identity-foundation`. Nenhuma implementação funcional de Identity está autorizada antes de sua aprovação explícita pelo Arquiteto-Chefe.
+Os ADR-001 a ADR-007 estão aprovados e integrados à `main`. O ADR-008 foi aprovado pelo Arquiteto-Chefe na branch `agent/core-identity-foundation` e autoriza a implementação controlada da MISSÃO 006.
