@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | ADR-007 |
 | Título | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito |
-| Versão | 0.1.0 |
+| Versão | 0.1.1 |
 | Estado | Proposed |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -71,6 +71,8 @@ Nesta missão:
 
 O encapsulamento não valida a autoridade da fonte. A confiança deve ser estabelecida antes da criação do identificador por um adapter autorizado.
 
+A construção a partir do valor bruto não fará parte da superfície pública. O construtor ou factory capaz de promover um valor validado a `TenantId` permanecerá interno ao módulo e será invocável somente pelo fluxo de resolução confiável. Consumidores externos receberão `TenantId` já resolvido e não poderão promover um candidato por cast, construtor público ou factory pública. A serialização não fornecerá caminho de desserialização privilegiada.
+
 ### 3.3 Resolução e autorização
 
 Resolução e autorização são estados distintos:
@@ -91,7 +93,7 @@ Não será criado middleware que aceite `x-tenant-id` como verdade. Caso esse he
 
 ### 3.5 Contexto explícito
 
-O módulo publicará um contexto semântico imutável contendo apenas a identidade resolvida e metadados mínimos aprovados. O contexto:
+O módulo publicará `ResolvedTenantContext`, contexto semântico imutável contendo apenas a identidade resolvida e metadados mínimos aprovados. O nome e o tipo deverão tornar explícito que resolução não representa autorização. O contexto:
 
 - será passado explicitamente em Domain e Application;
 - não acessará singleton global ou AsyncLocalStorage;
@@ -105,14 +107,9 @@ A plataforma de observabilidade poderá transportar uma projeção técnica do `
 
 Toda execução deverá manter isolamento por unidade assíncrona. Contexto não poderá ser mutado, reutilizado como objeto global ou herdado implicitamente entre requisições, mensagens ou jobs não relacionados.
 
-Adapters de composição futuros deverão:
+Na Missão 005, adapters de composição poderão produzir somente `ResolvedTenantContext`. Eles deverão iniciar escopo limpo, resolver a identidade por fonte confiável, projetar apenas metadados permitidos para logging e tracing e destruir o escopo ao concluir a execução.
 
-1. iniciar escopo limpo;
-2. resolver a identidade por fonte confiável;
-3. solicitar autorização ao owner de Access quando aplicável;
-4. criar o contexto semântico autorizado para o caso de uso;
-5. projetar apenas metadados permitidos para logging e tracing;
-6. destruir o escopo ao concluir a execução.
+Após a materialização de Access, uma composição futura deverá consumir separadamente o contexto resolvido e uma decisão positiva de autorização. Somente essa composição, sob contrato aprovado de Access, poderá produzir `AuthorizedTenantContext` ou capacidade equivalente para o caso de uso. Tenancy não criará, exportará nem simulará contexto autorizado nesta missão, e a ausência de Access impedirá a execução de APIs funcionais tenant-aware.
 
 ### 3.7 Erros e observabilidade
 
@@ -139,14 +136,14 @@ Esses temas exigirão missão e decisão próprias antes da implementação.
 
 A superfície poderá publicar somente:
 
-- `TenantId`;
-- tipo imutável de contexto resolvido;
+- `TenantId` já resolvido, sem construção pública a partir de valor bruto;
+- `ResolvedTenantContext`, imutável e semanticamente distinto de autorização;
 - candidato opaco de resolução, sem transporte;
 - porta de resolução;
 - resultados e erros semânticos indispensáveis;
-- funções/factories puras necessárias para preservar invariantes.
+- funções puras que não promovam candidato ou valor bruto a identidade confiável.
 
-Internals, fixtures, tipos de framework, DTOs de transporte e adapters concretos não serão exportados.
+Não serão exportados `AuthorizedTenantContext`, factory de promoção para `TenantId`, construtor confiável, internals, fixtures, tipos de framework, DTOs de transporte ou adapters concretos. A API pública deverá impedir, também em testes de compilação e de superfície, que consumidores contornem a porta de resolução.
 
 ### 3.10 Qualidade e cobertura
 
@@ -158,6 +155,7 @@ Devem existir, no mínimo:
 - testes de contexto ausente e inválido;
 - testes que provem a separação entre candidato, resolução e autorização;
 - testes contra confiança direta em input externo;
+- testes de compilação e superfície que provem a impossibilidade de construir `TenantId` ou contexto autorizado pela API pública;
 - testes de isolamento entre execuções concorrentes quando houver adapter de propagação;
 - fiscalização de `public-api.ts`, deep imports e dependências proibidas;
 - CI completo da plataforma.
@@ -217,6 +215,8 @@ Antes do primeiro caso de uso tenant-aware, será obrigatória uma missão de Ac
 
 - [ ] Nenhum conflito com Constituição, Blueprint II, CDM ou ADR-006.
 - [ ] Estados candidato, resolvido e autorizado claramente separados.
+- [ ] `ResolvedTenantContext` não representa nem pode ser promovido localmente a autorização.
+- [ ] Construção confiável de `TenantId` inacessível pela superfície pública.
 - [ ] Header externo explicitamente não confiável.
 - [ ] Formato, geração, persistência e lifecycle mantidos fora do escopo.
 - [ ] Contexto semântico explícito e imutável.
@@ -240,3 +240,4 @@ Antes do primeiro caso de uso tenant-aware, será obrigatória uma missão de Ac
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-27 | Proposta inicial da fundação de Tenancy | Proposed |
+| 0.1.1 | 2026-07-27 | Fecha separação entre contexto resolvido e autorizado e restringe criação confiável de TenantId | Proposed |
