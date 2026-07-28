@@ -1,6 +1,6 @@
 import type { AuthenticationEvidence } from '../domain/authentication-evidence.js';
-import type { IdentityContext } from './identity-context.js';
 import { AuthenticationFailedError } from '../domain/identity-errors.js';
+import type { IdentityContext } from './identity-context.js';
 import { isTrustedIdentityContext } from './identity-context.js';
 
 export type AuthenticationResult =
@@ -31,7 +31,9 @@ export function authenticationFailed(): AuthenticationResult {
   return result;
 }
 
-export function requireTrustedAuthenticationResult(value: unknown): AuthenticationResult {
+export function requireTrustedAuthenticationResult(
+  value: unknown
+): AuthenticationResult {
   if (typeof value !== 'object' || value === null || !trustedResults.has(value)) {
     throw new AuthenticationFailedError();
   }
