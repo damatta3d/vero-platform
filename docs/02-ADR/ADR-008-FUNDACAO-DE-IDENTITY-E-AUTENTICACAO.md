@@ -6,8 +6,8 @@
 |---|---|
 | Identificador | ADR-008 |
 | Título | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito |
-| Versão | 0.1.1 |
-| Estado | Proposed |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
 | Owner | Core Platform — Identity |
@@ -200,18 +200,18 @@ Após esta fundação, o próximo gate recomendado será Access e autorização 
 
 ## 7. Critérios de aceite da decisão
 
-- [ ] Nenhum conflito com Constituição, Blueprints, CDM, ADR-006 ou ADR-007.
-- [ ] Evidência, autenticação e autorização claramente separadas.
-- [ ] Principal não confundido com User.
-- [ ] Principal humano e de serviço contemplados.
-- [ ] Construção confiável inacessível pela superfície pública e protegida por capability interna em runtime.
-- [ ] Sujeito externo qualificado por autoridade, sem equivalência automática entre autoridades.
-- [ ] Evidência efêmera, não serializável, redigida e ausente de erros e telemetria.
-- [ ] Provider, protocolo, persistência e credenciais fora do escopo.
-- [ ] Integração com Tenancy preserva independência.
-- [ ] Segurança, minimização e observabilidade delimitadas.
-- [ ] Threshold e testes obrigatórios definidos.
-- [ ] Aprovação explícita do Arquiteto-Chefe.
+- [x] Nenhum conflito com Constituição, Blueprints, CDM, ADR-006 ou ADR-007.
+- [x] Evidência, autenticação e autorização claramente separadas.
+- [x] Principal não confundido com User.
+- [x] Principal humano e de serviço contemplados.
+- [x] Construção confiável inacessível pela superfície pública e protegida por capability interna em runtime.
+- [x] Sujeito externo qualificado por autoridade, sem equivalência automática entre autoridades.
+- [x] Evidência efêmera, não serializável, redigida e ausente de erros e telemetria.
+- [x] Provider, protocolo, persistência e credenciais fora do escopo.
+- [x] Integração com Tenancy preserva independência.
+- [x] Segurança, minimização e observabilidade delimitadas.
+- [x] Threshold e testes obrigatórios definidos.
+- [x] Aprovação explícita do Arquiteto-Chefe.
 
 ## 8. Referências
 
@@ -228,5 +228,6 @@ Após esta fundação, o próximo gate recomendado será Access e autorização 
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
+| 1.0.0 | 2026-07-27 | Aprovado pelo Arquiteto-Chefe; autoriza a implementação controlada da MISSÃO 006 | Approved |
 | 0.1.1 | 2026-07-27 | Fecha capability interna de confiança, escopo de autoridade do sujeito e ciclo seguro da evidência | Proposed |
 | 0.1.0 | 2026-07-27 | Proposta inicial da Fundação de Identity e autenticação | Proposed |
