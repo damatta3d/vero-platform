@@ -8,6 +8,9 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- ADR-008 proposto para a Fundação de Identity e autenticação.
+- Controle e backlog da MISSÃO 006, com implementação bloqueada até aprovação arquitetural.
+
 - Fundação de Tenancy com `TenantId` opaco, candidato não confiável, contexto resolvido explícito, porta de resolução e erros semânticos.
 - Testes unitários, de superfície e contratos de compilação do `core-tenancy`, com cobertura integral.
 - ADR-007 proposto para identidade opaca, resolução confiável e contexto explícito de Tenant.
@@ -46,6 +49,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Política de ciclo de vida, estado documental, identificador único, histórico próprio e rastreabilidade para documentos normativos.
 
 ### Changed
+
+- Status pós-merge da MISSÃO 005 corrigido e próxima dependência formalizada como Identity antes de Access.
 
 - Status do projeto corrigido para registrar a Sprint 0 integrada à `main` e o início controlado da MISSÃO 005.
 
