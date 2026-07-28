@@ -5,7 +5,10 @@ import {
 } from './identity-errors.js';
 
 const REDACTED = '[REDACTED]';
-const evidenceValues = new WeakMap<AuthenticationEvidence, string | Uint8Array>();
+const evidenceValues = new WeakMap<
+  AuthenticationEvidence,
+  string | Uint8Array
+>();
 
 export class AuthenticationEvidence {
   private constructor(value: string | Uint8Array) {
