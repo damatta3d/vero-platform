@@ -1,0 +1,39 @@
+{
+  "name": "core-tenancy",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core/tenancy/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:core", "runtime:agnostic", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/core/tenancy",
+        "main": "packages/core/tenancy/src/public-api.ts",
+        "tsConfig": "packages/core/tenancy/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": { "lintFilePatterns": ["packages/core/tenancy/src/**/*.ts"] }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "tsc -p packages/core/tenancy/tsconfig.lib.json --noEmit",
+          "tsc -p packages/core/tenancy/tsconfig.contract.json --noEmit"
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/core/tenancy/jest.config.cjs",
+        "coverage": true
+      }
+    }
+  }
+}
