@@ -8,7 +8,7 @@
 | Branch | `agent/core-identity-foundation` |
 | Base | `main` em `addb8d7a8e5bd50007ae323d446c197230202502` |
 | Estado | Gate arquitetural em revisão; implementação não autorizada |
-| ADR | ADR-008 v0.1.0 — Proposed |
+| ADR | ADR-008 v0.1.1 — Proposed |
 | Owner | Core Platform — Identity |
 | Data | 2026-07-27 |
 
@@ -73,7 +73,10 @@ Nenhum código funcional de Identity será criado antes do passo 4.
 | Confusão principal/User | conceitos e owners distintos |
 | Acoplamento a JWT/OIDC | porta agnóstica e adapter futuro |
 | Vazamento de credenciais | erros e telemetria minimizados |
-| Construção externa de principal | factory confiável interna e contrato de compilação |
+| Construção externa de principal | capability interna não exportada, composição controlada e testes de runtime |
+| Fabricação por adapter externo | implementação da porta não concede a capability de promoção |
+| Colisão entre autoridades | sujeito sempre qualificado por autoridade; linking automático proibido |
+| Exposição de evidência | valor efêmero, não serializável, redigido e ausente da telemetria |
 | Acoplamento Identity/Tenancy | composição futura somente por Access |
 
 ## Critérios de conclusão
@@ -81,7 +84,9 @@ Nenhum código funcional de Identity será criado antes do passo 4.
 - [ ] ADR-008 aprovado e coerente com documentos superiores.
 - [ ] Projeto `core-identity` criado sem abstrações especulativas.
 - [ ] API pública mínima e internals protegidos.
-- [ ] Evidência externa nunca tratada como identidade autenticada.
+- [ ] Evidência externa nunca tratada como identidade autenticada e nunca exposta por inspeção, serialização, erros ou telemetria.
+- [ ] Sujeito qualificado por autoridade, sem equivalência automática entre autoridades.
+- [ ] Implementações externas de `Authenticator` não conseguem fabricar resultados confiáveis.
 - [ ] Autenticação não concede autorização.
 - [ ] Principal não confundido com User.
 - [ ] Cobertura de statements, branches, functions e lines ≥ 90%.
