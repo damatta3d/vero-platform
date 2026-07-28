@@ -2,11 +2,11 @@
 
 ## Resultado
 
-**Estado:** venda validada no CI; produção implementada e validada localmente
+**Estado:** implementação concluída e validada no CI
 **Branch:** `agent/missao-008-santo-parma-mvp`
 **PR:** #8 — permanece em rascunho
 **CI de vendas:** run `30401419715` — `quality` e `integration` aprovados
-**Próximo gate:** CI da complementação de produção
+**CI de produção:** run `30402690997` — `quality` e `integration` aprovados
 
 ## Fluxo entregue
 
@@ -40,6 +40,6 @@ registrada nos dois fluxos, pois ainda não existe estoque intermediário de pro
 - schema Prisma válido;
 - build dos 15 projetos aprovado.
 
-O CI de vendas já comprovou o cenário transacional correspondente. O novo CI deverá aplicar a
-migration de produção e comprovar idempotência, baixa, snapshots, imutabilidade e isolamento com
-PostgreSQL real antes da conclusão formal desta entrega.
+Os CIs aplicaram as migrations e comprovaram idempotência, baixa atômica, snapshots imutáveis e
+isolamento entre empresas com PostgreSQL real. A próxima etapa é a M008-D com dados reais, sem
+retirar o PR do rascunho ou realizar merge antes do parecer final.

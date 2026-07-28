@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** venda da M008-C aprovada no CI; produção implementada localmente e aguardando CI
+**Estado:** M008-C concluída e aprovada no CI; PR #8 permanece em rascunho para a M008-D
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -34,7 +34,8 @@
 - M008-C implementada com produção e venda nativas, snapshots históricos, baixa transacional, CMV
   realizado e margem de venda.
 - CI `30401419715` aprovou vendas, migrations e integração PostgreSQL.
-- 106 testes locais aprovados após a complementação de produção.
+- CI `30402690997` aprovou produção, migration, integração PostgreSQL e `verify` integral.
+- 106 testes e build dos 15 projetos aprovados.
 
 ## Estado das linhas GitHub
 
@@ -46,7 +47,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | Venda aprovada no CI; produção aguardando publicação e CI; PR #8 permanece em rascunho |
+| `agent/missao-008-santo-parma-mvp` | M008-C aprovada no CI; PR #8 permanece em rascunho para a M008-D |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -91,7 +92,7 @@
 - CMV estimado e realizado nas duas operações, com faturamento e margem apenas na venda;
 - persistência da operação e baixa no ledger na mesma transação serializável;
 - APIs, históricos e resumos operacionais na interface responsiva;
-- 106 testes aprovados localmente; build integral pendente.
+- 106 testes e build dos 15 projetos aprovados localmente e no CI.
 
 ## Fora do escopo vigente
 
@@ -105,6 +106,6 @@
 
 ## Próximo gate
 
-1. Publicar a complementação de produção e validar `quality` e `integration` no PR #8.
-2. Confirmar migration, idempotência, baixa e snapshot de produção com PostgreSQL real no CI.
-3. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
+1. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
+2. Validar o fluxo guiado e a usabilidade da interface.
+3. Manter o PR em rascunho até o parecer final da MISSÃO 008.
