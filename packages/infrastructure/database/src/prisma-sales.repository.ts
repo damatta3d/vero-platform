@@ -221,7 +221,6 @@ export class PrismaSalesRepository implements SalesRepository {
                 soldAt: sale.soldAt,
                 costLines: {
                   create: sale.costLines.map((line) => ({
-                    tenantId: sale.tenantId,
                     ingredientId: line.ingredientId,
                     movementId: line.movementId,
                     quantityMicros: BigInt(line.quantityMicros),
