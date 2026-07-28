@@ -6,7 +6,7 @@
 - [x] Ler Blueprint II, CDM, ADR-005, ADR-006, Engineering Playbook e relatório da Sprint 0.
 - [x] Elaborar ADR-007 em estado `Proposed`.
 - [x] Registrar escopo, ameaças e critérios da missão.
-- [ ] Concluir revisão técnica independente do ADR-007.
+- [x] Concluir revisão técnica e de conformidade do ADR-007.
 - [ ] Obter aprovação explícita do Arquiteto-Chefe.
 - [ ] Promover ADR-007 para `Approved`.
 
