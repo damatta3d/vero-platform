@@ -6,7 +6,7 @@
 |---|---|
 | Identificador | ADR-009 |
 | Título | Fundação de Access — decisão contextual, negação por padrão e fronteira confiável |
-| Versão | 0.1.0 |
+| Versão | 0.1.1 |
 | Estado | Proposed |
 | Data | 2026-07-27 |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -56,6 +56,8 @@ Nenhum pedido, Role, Permission, claim, Tenant resolvido ou principal autenticad
 
 `ActionRef` e `ResourceRef` serão opacos, nominais, imutáveis e validados. Não carregarão entidades, DTOs, modelos ORM ou payloads empresariais.
 
+Cada referência usará nome qualificado e versionável sob namespace do módulo owner. Valores externos serão apenas candidatos sintaticamente validados; criar uma referência não cria Permission nem concede autoridade. Colisões, aliases silenciosos e equivalência entre namespaces distintos serão proibidos.
+
 A decisão será vinculada ao principal, Tenant, ação e recurso exatos do pedido. Reuso para outro principal, Tenant, ação ou recurso será proibido. Organization e Workspace não serão inferidos nem autorizados nesta missão.
 
 ### 3.4 Composição de confiança
@@ -66,7 +68,9 @@ Objetos literais, casts, fixtures ou estruturas compatíveis não deverão adqui
 
 ### 3.5 Avaliação e negação por padrão
 
-A porta `AccessEvaluator` será agnóstica de framework e fornecedor. Ausência de política aplicável, entrada inválida, exceção, timeout, resultado desconhecido ou falha de dependência produzirá negação segura.
+A porta pública `AccessEvaluator` será agnóstica de framework e fornecedor e devolverá somente um resultado de avaliação não autoritativo, nunca `AuthorizationDecision` ou `AuthorizedAccessContext`. Um orquestrador interno de Access validará esse resultado, o pedido e a política aplicável antes de promover uma permissão. Implementar, simular ou substituir a porta não concederá a capability interna.
+
+Ausência de política aplicável, entrada inválida, exceção, cancelamento, deadline excedido, resultado desconhecido, resposta tardia ou falha de dependência produzirá negação segura. Resultados recebidos após cancelamento ou deadline serão descartados e jamais promovidos.
 
 Políticas serão determinísticas para a mesma entrada e contexto declarado. Efeitos colaterais, consulta oculta, mutação e acesso global serão proibidos no núcleo. Integrações que exijam I/O pertencerão a adapters futuros e deverão traduzir falhas para negação segura.
 
@@ -76,7 +80,9 @@ Implementar, simular ou substituir `AccessEvaluator` não concederá capacidade 
 
 Decisões positivas serão criadas somente por capability/factory interna de Access após avaliação válida. Essa capability não será exportada. Decisões negativas poderão ser produzidas de forma segura sem conceder autoridade.
 
-Uma decisão positiva terá integridade verificável em runtime e será inseparável do fingerprint semântico do pedido avaliado. Consumidores não poderão promover booleanos, strings, objetos estruturais ou resultados de adapters como autorização.
+Uma decisão positiva terá integridade verificável em runtime e será inseparável do fingerprint semântico do pedido avaliado, da avaliação e da revisão da política. Consumidores não poderão promover booleanos, strings, objetos estruturais ou resultados de adapters como autorização.
+
+A decisão positiva e o contexto autorizado serão efêmeros, não serializáveis, não persistíveis, não transferíveis e destinados a uma única operação. Reuso, replay ou cache serão proibidos nesta fundação. Qualquer cache futuro exigirá ADR própria com validade, invalidação, versão de política e revogação.
 
 ### 3.7 Roles, Permissions e regras empresariais
 
@@ -121,8 +127,9 @@ Factories confiáveis, internals, fixtures, decisões positivas construíveis, a
 
 O projeto terá threshold mínimo de 90% nas quatro métricas e incluirá:
 
-- negação por padrão para ausência, erro, timeout e resultado desconhecido;
-- vínculo exato da decisão ao principal, Tenant, ação e recurso;
+- negação por padrão para ausência, erro, cancelamento, deadline, resposta tardia e resultado desconhecido;
+- vínculo exato da decisão ao principal, Tenant, ação, recurso, avaliação e revisão da política;
+- ciclo efêmero e rejeição de serialização, persistência, transferência, cache, reuso e replay;
 - rejeição de Identity/Tenancy forjados;
 - rejeição de decisões positivas fabricadas por objetos, casts, fixtures ou adapters;
 - prova de que implementar a porta não concede capability de `allow`;
@@ -180,8 +187,10 @@ A mudança é aditiva e não migra dados ou APIs funcionais. Identity e Tenancy 
 
 - [ ] Coerência com Constituição, Blueprints, CDM e ADR-006 a ADR-008.
 - [ ] Negação por padrão formalizada.
+- [ ] Porta externa devolve resultado não autoritativo; promoção permanece interna.
 - [ ] Decisão positiva não fabricável externamente.
-- [ ] Vínculo exato entre decisão e pedido.
+- [ ] Vínculo exato entre decisão, pedido, avaliação e revisão da política.
+- [ ] Namespaces de ação/recurso e ciclo efêmero definidos.
 - [ ] Identity e Tenancy preservam ownership.
 - [ ] Regras empresariais permanecem nos módulos.
 - [ ] Superfície, testes e riscos definidos.
@@ -203,4 +212,5 @@ A mudança é aditiva e não migra dados ou APIs funcionais. Identity e Tenancy 
 
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
+| 0.1.1 | 2026-07-27 | Fecha promoção interna, namespaces de ação/recurso e ciclo antirreplay da decisão | Proposed |
 | 0.1.0 | 2026-07-27 | Proposta inicial da Fundação de Access e autorização contextual | Proposed |
