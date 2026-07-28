@@ -9,33 +9,32 @@
 - [x] Criar controle formal da MISSÃO 007.
 - [x] Executar revisão arquitetural completa.
 - [x] Corrigir fronteira da porta, namespaces e ciclo antirreplay.
-- [ ] Obter aprovação explícita do Arquiteto-Chefe.
-- [ ] Promover ADR-009 para `Approved`.
+- [x] Obter aprovação explícita do Arquiteto-Chefe.
+- [x] Promover ADR-009 para `Approved`.
 
-## Implementação — bloqueada
+## Implementação
 
-- [ ] Criar projeto Nx `core-access`.
-- [ ] Implementar pedido contextual.
-- [ ] Implementar ação e recurso opacos.
-- [ ] Implementar decisão `allow/deny`.
-- [ ] Implementar negação por padrão.
-- [ ] Proteger capability de decisão positiva.
-- [ ] Vincular decisão ao pedido exato.
-- [ ] Implementar porta `AccessEvaluator`.
-- [ ] Criar erros e razões seguras.
-- [ ] Proteger superfície pública e deep imports.
-- [ ] Criar contratos de compilação.
-- [ ] Criar testes unitários, de runtime e arquitetura.
+- [x] Criar projeto Nx `core-access`.
+- [x] Implementar pedido contextual.
+- [x] Implementar ação e recurso qualificados.
+- [x] Implementar negação por padrão.
+- [x] Rejeitar Identity e Tenant forjados.
+- [x] Implementar contexto autorizado de uso único.
+- [x] Implementar porta `AccessEvaluator`.
+- [x] Criar erros seguros.
+- [x] Proteger superfície pública e deep imports.
+- [x] Criar contrato de compilação.
+- [x] Criar testes unitários, de runtime e arquitetura.
 
 ## Validação futura
 
-- [ ] Prettier.
-- [ ] ESLint.
-- [ ] TypeScript strict.
-- [ ] Cobertura mínima de 90%.
-- [ ] Testes arquiteturais.
-- [ ] Build completo.
-- [ ] Auditoria de dependências.
+- [x] Prettier focado.
+- [x] ESLint completo.
+- [x] TypeScript strict focado.
+- [x] Cobertura mínima de 90%.
+- [x] Testes arquiteturais completos.
+- [x] Build completo.
+- [x] Auditoria de dependências sem vulnerabilidade alta.
 - [ ] CI `quality` e `integration`.
 - [ ] Relatório técnico final.
 - [ ] Aprovação explícita antes do merge.
@@ -50,3 +49,5 @@
 - políticas empresariais;
 - licenciamento;
 - auditoria persistente.
+
+Essas dependências deixam de bloquear o MVP. Só serão implementadas quando um caso de uso vertical demonstrar necessidade.
