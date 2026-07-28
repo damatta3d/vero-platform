@@ -8,7 +8,7 @@
 **Blueprint Volume II:** VERO-BLP-002 v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
 **ADRs vigentes:** ADR-001 a ADR-006 v1.0.0 — Approved  
-**ADR em revisão:** ADR-007 v0.1.0 — Proposed  
+**ADR em revisão:** ADR-007 v0.1.1 — Proposed  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 005 — Core Platform: Fundação de Tenancy  
 **Estado:** Gate arquitetural em revisão; implementação bloqueada até aprovação do ADR-007  
