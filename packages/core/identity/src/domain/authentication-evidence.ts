@@ -23,7 +23,7 @@ export class AuthenticationEvidence {
     ) {
       throw new InvalidAuthenticationEvidenceError();
     }
-    return new AuthenticationEvidence(value as string | Uint8Array);
+    return new AuthenticationEvidence(value);
   }
 
   toString(): string {
