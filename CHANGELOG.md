@@ -8,6 +8,11 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Fundação de Tenancy com `TenantId` opaco, candidato não confiável, contexto resolvido explícito, porta de resolução e erros semânticos.
+- Testes unitários, de superfície e contratos de compilação do `core-tenancy`, com cobertura integral.
+- ADR-007 proposto para identidade opaca, resolução confiável e contexto explícito de Tenant.
+- Controle da MISSÃO 005 — Core Platform: Fundação de Tenancy, com gate arquitetural, ameaças e critérios de aceite.
+
 - Fundação executável da Sprint 0 com workspace Nx/pnpm, API NestJS/Fastify, worker e oito projetos.
 - Configuração Zod, logging Pino, OpenTelemetry, health checks e propagação de correlação.
 - Adapters de saúde para PostgreSQL, Redis e RabbitMQ, schema Prisma técnico vazio e execução Docker.
@@ -41,6 +46,8 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Política de ciclo de vida, estado documental, identificador único, histórico próprio e rastreabilidade para documentos normativos.
 
 ### Changed
+
+- Status do projeto corrigido para registrar a Sprint 0 integrada à `main` e o início controlado da MISSÃO 005.
 
 - Branch `agent/sprint-0-foundation` sincronizada com a baseline arquitetural aprovada na `main`.
 - Bloqueios cobertos pelos ADR-001 a ADR-006 removidos do backlog da Sprint 0.
