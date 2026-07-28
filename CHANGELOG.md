@@ -8,6 +8,10 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- M008-B com entradas de compra, consumo, ajustes, ledger imutável, posição de estoque e custo médio móvel.
+- Persistência transacional serializável de estoque com relações compostas por Tenant e proteção do ledger contra alteração ou exclusão.
+- API e interface responsiva para registrar compras e movimentações e consultar saldos.
+- Testes de domínio e integração para estoque negativo, custo histórico, imutabilidade e isolamento entre Tenants.
 - M008-A com catálogo tenant-aware de insumos e produtos, ficha técnica versionada e cálculo determinístico de custo e margem.
 - Persistência Prisma/PostgreSQL do catálogo com relações compostas por Tenant e migration validada.
 - API MVP protegida por chave, identidade verificada, Tenant resolvido e autorização de uso único.

@@ -16,12 +16,12 @@
 
 ## Prioridade P0 — M008-B: Compras e estoque
 
-- [ ] Registrar entrada de compra e custo unitário normalizado.
-- [ ] Implementar ledger imutável de estoque.
-- [ ] Calcular saldo e custo médio móvel.
-- [ ] Registrar consumo e ajustes com motivo e autor.
-- [ ] Impedir acesso e movimentação entre tenants.
-- [ ] Expor posição de estoque por insumo.
+- [x] Registrar entrada de compra e custo unitário normalizado.
+- [x] Implementar ledger imutável de estoque.
+- [x] Calcular saldo e custo médio móvel.
+- [x] Registrar consumo e ajustes com motivo e autor.
+- [x] Impedir acesso e movimentação entre tenants.
+- [x] Expor posição de estoque por insumo.
 
 ## Prioridade P0 — M008-C: Produção, venda, CMV e margem
 
