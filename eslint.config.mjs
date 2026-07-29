@@ -52,7 +52,8 @@ export default tseslint.config(
                 'scope:shared-kernel',
                 'scope:core',
                 'scope:platform',
-                'scope:business'
+                'scope:business',
+                'scope:integration'
               ]
             },
             {
@@ -67,6 +68,15 @@ export default tseslint.config(
             {
               sourceTag: 'scope:business',
               onlyDependOnLibsWithTags: ['scope:shared-kernel', 'scope:core', 'scope:business']
+            },
+            {
+              sourceTag: 'scope:integration',
+              onlyDependOnLibsWithTags: [
+                'scope:shared-kernel',
+                'scope:core',
+                'scope:business',
+                'scope:integration'
+              ]
             }
           ]
         }
@@ -82,6 +92,12 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off'
+    }
+  },
+  {
+    files: ['packages/integrations/anota-ai/src/**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/require-await': 'off'
     }
   }
 );

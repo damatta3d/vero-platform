@@ -1,0 +1,52 @@
+name: Anota AI Connection
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/anota-ai-connection.yml
+      - packages/integrations/anota-ai/**
+      - tools/anota-ai/**
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ANOTA_AI_CLIENT_ID: ${{ secrets.ANOTA_AI_CLIENT_ID }}
+      ANOTA_AI_CLIENT_SECRET: ${{ secrets.ANOTA_AI_CLIENT_SECRET }}
+      ANOTA_AI_PAGE_ID: ${{ secrets.ANOTA_AI_PAGE_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check protected configuration
+        id: configuration
+        shell: bash
+        run: |
+          if [[ -n "$ANOTA_AI_CLIENT_ID" && -n "$ANOTA_AI_CLIENT_SECRET" && -n "$ANOTA_AI_PAGE_ID" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Configure the three Anota AI repository secrets to run the connection test."
+          fi
+      - uses: pnpm/action-setup@v4
+        if: steps.configuration.outputs.available == 'true'
+        with:
+          version: 11.7.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        if: steps.configuration.outputs.available == 'true'
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        if: steps.configuration.outputs.available == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Build connector
+        if: steps.configuration.outputs.available == 'true'
+        run: pnpm nx build integration-anota-ai
+      - name: Verify read-only connection
+        if: steps.configuration.outputs.available == 'true'
+        run: pnpm anota-ai:smoke

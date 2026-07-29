@@ -90,6 +90,7 @@ model CatalogProduct {
   recipes        CatalogRecipe[]
   sales          SalesRecord[]
   productions    ProductionRecord[]
+  externalCatalogLinks ExternalCatalogLink[]
 
   @@id([tenantId, id])
   @@index([tenantId, name])
@@ -211,4 +212,21 @@ model ProductionCostLine {
   @@id([tenantId, productionId, ingredientId])
   @@unique([tenantId, movementId])
   @@map("production_cost_lines")
+}
+
+model ExternalCatalogLink {
+  tenantId               String         @db.VarChar(128)
+  provider               String         @db.VarChar(64)
+  establishmentExternalId String        @db.VarChar(256)
+  kind                   String         @db.VarChar(16)
+  providerItemId         String         @db.VarChar(256)
+  catalogProductId       String         @db.Uuid
+  authoredBy             String         @db.VarChar(256)
+  createdAt              DateTime       @db.Timestamptz(3)
+  updatedAt              DateTime       @db.Timestamptz(3)
+  catalogProduct         CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
+
+  @@id([tenantId, provider, establishmentExternalId, kind, providerItemId])
+  @@index([tenantId, catalogProductId])
+  @@map("external_catalog_links")
 }
