@@ -5,8 +5,8 @@
 | Campo | Valor |
 |---|---|
 | Identificador | ADR-011 |
-| Versão | 0.1.0 |
-| Estado | Proposed |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-29 |
 | Escopo | VERO Intelligence |
 | Autoridade de aprovação | Arquiteto-Chefe |
@@ -25,7 +25,7 @@ O VERO Intelligence precisa preservar pedidos, linhas, ajustes e dados financeir
 
 Sem uma decisão explícita há risco de duplicar Integration Hub, transformar Intelligence em sistema operacional de pedidos, acessar tabelas de outros módulos, reescrever fatos históricos, materializar métricas sem procedência e introduzir uma plataforma de dados incompatível com o Modular Monolith.
 
-## Decisão proposta
+## Decisão
 
 1. Criar o bounded context Business Intelligence no grupo Business.
 2. Atribuir ao Business Intelligence a propriedade de ChannelOrderFact, ChannelOrderLineFact, OrderAdjustmentFact, OrderFinancialFact, MetricDefinition e MetricObservation.
@@ -180,3 +180,4 @@ Rejeitada. Resultados históricos mudariam silenciosamente quando fórmulas foss
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-29 | Proposta inicial de persistência analítica e propriedade dos fatos | Proposed |
+| 1.0.0 | 2026-07-29 | Decisão revisada e aprovada formalmente pelo Arquiteto-Chefe | Approved |
