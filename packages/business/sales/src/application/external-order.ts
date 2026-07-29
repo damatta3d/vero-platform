@@ -14,9 +14,9 @@ export interface ExternalOrderMerchant {
 
 export interface ExternalOrderItemReference {
   readonly providerItemId: string;
-  readonly externalId: string;
-  readonly internalId: string;
-  readonly backofficeId: string;
+  readonly externalId?: string;
+  readonly internalId?: string;
+  readonly backofficeId?: string;
 }
 
 export interface ExternalOrderModifier extends ExternalOrderItemReference {
