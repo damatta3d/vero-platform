@@ -179,6 +179,9 @@ describe('translateAnotaAiOrder', () => {
     modifier['externalId'] = '';
     const payment = firstRecord(fixture['payments'], 'fixture payment');
     payment['externalId'] = '';
+    const customer = fixture['customer'] as Record<string, unknown>;
+    customer['name'] = '';
+    customer['phone'] = '';
 
     const order = translateAnotaAiOrder(fixture, {
       pageId: 'page-1',
@@ -192,6 +195,8 @@ describe('translateAnotaAiOrder', () => {
     expect(order.items[0]?.modifiers[0]?.providerItemId).toBe('11');
     expect(order.items[0]?.modifiers[0]?.externalId).toBeUndefined();
     expect(order.payments[0]?.externalId).toBeUndefined();
+    expect(order.customer.name).toBeUndefined();
+    expect(order.customer.phone).toBeUndefined();
   });
 
   it('supports pickup orders without a delivery address', () => {
