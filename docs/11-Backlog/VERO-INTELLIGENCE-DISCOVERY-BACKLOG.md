@@ -5,11 +5,12 @@
 **Status:** iniciado em 2026-07-29  
 **Estratégia:** reuse-first, evidência oficial e entrega vertical  
 **Dependências concluídas:** MISSÃO 008 e MISSÃO 009  
-**Implementação funcional:** bloqueada até conclusão do gate arquitetural  
+**Implementação funcional:** bloqueada até aprovação formal do Gate C  
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
 **D2 Portal:** inventário público concluído; validação autenticada pendente  
 **D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
-**D4 Canônico:** revisão normativa concluída; ADR-011 v1.0.0 Approved; implementação condicionada aos gates operacionais
+**D4 Canônico:** revisão normativa concluída; ADR-011 v1.0.0 Approved; implementação condicionada aos gates operacionais  
+**Gate C:** política de retenção e PII v0.1.0 Proposed; Anota AI read-only recomendada, ainda não autorizada
 
 ## Objetivo do discovery
 
@@ -105,6 +106,22 @@ Evidência:
 - [ ] adiar ADR de IA explicável até existir motor determinístico e contrato de evidências;
 - [x] eliminar qualquer ADR que apenas repita ADR-001 a ADR-010.
 
+### D5.1 — Retenção, PII e primeira fonte
+
+- [x] materializar política técnica inicial por dataset;
+- [x] classificar segredo, PII direta, PII pseudonimizada, dado comercial, financeiro e agregado;
+- [x] proibir PII direta e payload bruto no armazenamento analítico do MVP;
+- [x] definir pseudonimização tenant-scoped para a chave de pedido;
+- [x] definir prazos, expurgo, backups, legal hold e evidência de exclusão;
+- [x] recomendar Anota AI read-only como primeira fonte;
+- [ ] aprovar formalmente a política v0.1.0;
+- [ ] autorizar Anota AI e o recorte exato de pedidos como primeira fonte;
+- [ ] autorizar o início da implementação read-only;
+- [ ] validar papéis de tratamento, base aplicável e prazos legais/fiscais por oferta.
+
+Evidência:
+`docs/04-Architecture/VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md`.
+
 ### D6 — Primeiro corte vertical
 
 Proposta sujeita ao gate:
@@ -156,7 +173,7 @@ Portal do Parceiro.
 - contrato canônico mínimo revisado e aprovado;
 - ADR de persistência analítica aprovado;
 - dono de `ChannelOrderFact` decidido;
-- política de retenção e PII aprovada;
+- política de retenção e PII v0.1.0 aprovada formalmente;
 - chaves de revisão e checkpoint confirmadas;
 - critérios de aceite do primeiro corte vertical aprovados;
 - nenhum efeito empresarial habilitado pelo Intelligence.
