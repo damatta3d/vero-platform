@@ -68,6 +68,15 @@ export default tseslint.config(
             {
               sourceTag: 'scope:business',
               onlyDependOnLibsWithTags: ['scope:shared-kernel', 'scope:core', 'scope:business']
+            },
+            {
+              sourceTag: 'scope:integration',
+              onlyDependOnLibsWithTags: [
+                'scope:shared-kernel',
+                'scope:core',
+                'scope:business',
+                'scope:integration'
+              ]
             }
           ]
         }

@@ -185,11 +185,10 @@ describe('translateAnotaAiOrder', () => {
     const fixture = orderFixture();
     fixture['additionalFees'] = [{ amount: 1, name: 'service' }];
 
-    expect(() => translateAnotaAiOrder(fixture, { pageId: 'page-1', moneyUnit: 'MAJOR' })).toThrow(
-      expect.objectContaining({
-        code: 'UNSUPPORTED_ADDITIONAL_FEES',
-        field: 'additionalFees'
-      })
+    expectTranslationError(
+      () => translateAnotaAiOrder(fixture, { pageId: 'page-1', moneyUnit: 'MAJOR' }),
+      'UNSUPPORTED_ADDITIONAL_FEES',
+      'additionalFees'
     );
   });
 
@@ -197,18 +196,22 @@ describe('translateAnotaAiOrder', () => {
     const fixture = orderFixture();
     fixture['total'] = '52.999';
 
-    expect(() => translateAnotaAiOrder(fixture, { pageId: 'page-1', moneyUnit: 'MAJOR' })).toThrow(
-      expect.objectContaining({ code: 'INVALID_MONEY', field: 'total' })
+    expectTranslationError(
+      () => translateAnotaAiOrder(fixture, { pageId: 'page-1', moneyUnit: 'MAJOR' }),
+      'INVALID_MONEY',
+      'total'
     );
   });
 
   it('rejects decimal values when the provider is configured for cents', () => {
-    expect(() =>
-      translateAnotaAiOrder(orderFixture(), {
-        pageId: 'page-1',
-        moneyUnit: 'MINOR'
-      })
-    ).toThrow(expect.objectContaining({ code: 'INVALID_MONEY' }));
+    expectTranslationError(
+      () =>
+        translateAnotaAiOrder(orderFixture(), {
+          pageId: 'page-1',
+          moneyUnit: 'MINOR'
+        }),
+      'INVALID_MONEY'
+    );
   });
 
   it('rejects modifiers linked to a different parent item', () => {
@@ -217,11 +220,10 @@ describe('translateAnotaAiOrder', () => {
     const modifier = firstRecord(item['subItems'], 'fixture modifier');
     modifier['id_parent'] = 999;
 
-    expect(() => translateAnotaAiOrder(fixture, { pageId: 'page-1', moneyUnit: 'MAJOR' })).toThrow(
-      expect.objectContaining({
-        code: 'INVALID_ORDER',
-        field: 'items[0].subItems[0].id_parent'
-      })
+    expectTranslationError(
+      () => translateAnotaAiOrder(fixture, { pageId: 'page-1', moneyUnit: 'MAJOR' }),
+      'INVALID_ORDER',
+      'items[0].subItems[0].id_parent'
     );
   });
 
@@ -248,4 +250,20 @@ function firstRecord(value: unknown, description: string): Record<string, unknow
     throw new Error(`${description} missing`);
   }
   return value[0] as Record<string, unknown>;
+}
+
+function expectTranslationError(
+  action: () => void,
+  code: AnotaAiOrderTranslationError['code'],
+  field?: string
+): void {
+  try {
+    action();
+  } catch (error: unknown) {
+    if (!(error instanceof AnotaAiOrderTranslationError)) throw error;
+    expect(error.code).toBe(code);
+    if (field !== undefined) expect(error.field).toBe(field);
+    return;
+  }
+  throw new Error('Expected AnotaAiOrderTranslationError.');
 }
