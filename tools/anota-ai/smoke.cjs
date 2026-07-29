@@ -70,6 +70,42 @@ function sanitizedSchema(value) {
   return Object.freeze(paths);
 }
 
+function canonicalTranslationSummary(order) {
+  if (order.currency !== 'BRL') throw new Error('Canonical translation did not produce BRL.');
+
+  const modifiers = order.items.flatMap((item) => item.modifiers);
+  const monetaryValues = [
+    order.deliveryFeeCents,
+    order.totalCents,
+    ...order.additionalFeesCents,
+    ...order.items.flatMap((item) => [
+      item.unitPriceCents,
+      item.totalCents,
+      ...item.modifiers.flatMap((modifier) => [modifier.unitPriceCents, modifier.totalCents])
+    ]),
+    ...order.discounts.map((discount) => discount.amountCents),
+    ...order.payments.flatMap((payment) => [
+      payment.amountCents,
+      ...(payment.changeForCents === undefined ? [] : [payment.changeForCents])
+    ])
+  ];
+  if (monetaryValues.some((value) => !Number.isSafeInteger(value) || value < 0)) {
+    throw new Error('Canonical translation produced an invalid monetary value.');
+  }
+
+  return Object.freeze({
+    translated: true,
+    currency: order.currency,
+    monetaryValuesInCents: true,
+    itemCount: order.items.length,
+    modifierCount: modifiers.length,
+    discountCount: order.discounts.length,
+    additionalFeeCount: order.additionalFeesCents.length,
+    paymentCount: order.payments.length,
+    hasDeliveryAddress: order.deliveryAddress !== undefined
+  });
+}
+
 function findOrderId(document) {
   for (const field of ['_id', 'id', 'orderId', 'order_id']) {
     const value = document[field];
@@ -121,7 +157,7 @@ async function main() {
     process.cwd(),
     'dist/packages/integrations/anota-ai/public-api.cjs'
   );
-  const { AnotaAiClient } = require(connectorPath);
+  const { AnotaAiClient, translateAnotaAiOrder } = require(connectorPath);
   const client = new AnotaAiClient({
     clientId: configuration.clientId,
     clientSecret: configuration.clientSecret,
@@ -140,11 +176,18 @@ async function main() {
   const orderId = firstOrder === undefined ? undefined : findOrderId(firstOrder);
   let orderDetailSchema = [];
   let orderDetailInspected = false;
+  let translation = Object.freeze({ translated: false });
 
   if (orderId !== undefined) {
     diagnostic = Object.freeze({ operation: 'order-detail' });
     const detail = await client.getOrder(configuration.pageId, orderId);
     orderDetailSchema = sanitizedSchema(detail.info);
+    diagnostic = Object.freeze({ operation: 'order-translation' });
+    const translatedOrder = translateAnotaAiOrder(detail.info, {
+      pageId: configuration.pageId,
+      moneyUnit: 'MAJOR'
+    });
+    translation = canonicalTranslationSummary(translatedOrder);
     orderDetailInspected = true;
   }
 
@@ -156,6 +199,7 @@ async function main() {
       page: orders.info.currentpage,
       limit: orders.info.limit,
       orderDetailInspected,
+      translation,
       orderDetailSchema
     })}\n`
   );
