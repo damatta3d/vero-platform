@@ -14,6 +14,19 @@ export {
   type SaleRecipeLineSnapshot,
   type SalesSummary
 } from './domain/sales-model.js';
+export type {
+  ExternalOrder,
+  ExternalOrderCustomer,
+  ExternalOrderDeliveryAddress,
+  ExternalOrderDiscount,
+  ExternalOrderIdentity,
+  ExternalOrderItem,
+  ExternalOrderItemReference,
+  ExternalOrderMerchant,
+  ExternalOrderModifier,
+  ExternalOrderPayment,
+  ExternalOrderSource
+} from './application/external-order.js';
 export type { SalePostingDecision, SalesRepository } from './application/sales-repository.js';
 export {
   SalesService,
