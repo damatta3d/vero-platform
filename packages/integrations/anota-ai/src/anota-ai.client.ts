@@ -2,6 +2,7 @@ import { AnotaAiError } from './anota-ai.error.js';
 import { AnotaAiTokenProvider } from './anota-ai-token.provider.js';
 import type {
   AnotaAiClientOptions,
+  AnotaAiFetch,
   AnotaAiMenuExport,
   AnotaAiOperationResult,
   AnotaAiOrderDetail,
@@ -20,7 +21,10 @@ export class AnotaAiClient {
 
   constructor(options: AnotaAiClientOptions) {
     validateOptions(options);
-    this.fetch = options.fetch ?? ((url, init) => fetch(url, init));
+    this.fetch = withRequestTimeout(
+      options.fetch ?? ((url, init) => fetch(url, init)),
+      options.requestTimeoutMs ?? 10_000
+    );
     this.userAgent = buildUserAgent(options);
     this.tokenProvider = new AnotaAiTokenProvider({
       clientId: options.clientId,
@@ -162,7 +166,8 @@ export class AnotaAiClient {
         headers,
         ...(options.body === undefined ? {} : { body: JSON.stringify(options.body) })
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof AnotaAiError) throw error;
       throw new AnotaAiError(
         'TRANSPORT_FAILED',
         'Não foi possível acessar a API da Anota AI.',
@@ -223,6 +228,36 @@ function validateOptions(options: AnotaAiClientOptions): void {
   ) {
     invalidConfiguration('tokenExpirySkewSeconds');
   }
+  if (
+    options.requestTimeoutMs !== undefined &&
+    (!Number.isSafeInteger(options.requestTimeoutMs) ||
+      options.requestTimeoutMs < 1 ||
+      options.requestTimeoutMs > 120_000)
+  ) {
+    invalidConfiguration('requestTimeoutMs');
+  }
+}
+
+function withRequestTimeout(fetchImplementation: AnotaAiFetch, timeoutMs: number): AnotaAiFetch {
+  return async (url, init) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetchImplementation(url, { ...init, signal: controller.signal });
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw new AnotaAiError(
+          'REQUEST_TIMEOUT',
+          'A API da Anota AI excedeu o tempo limite da requisição.',
+          undefined,
+          true
+        );
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
 }
 
 function validateLinkPage(input: LinkAnotaAiPageInput): void {

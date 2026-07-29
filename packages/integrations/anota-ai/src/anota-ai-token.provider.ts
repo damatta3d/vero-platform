@@ -62,7 +62,8 @@ export class AnotaAiTokenProvider {
         },
         body
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof AnotaAiError) throw error;
       throw new AnotaAiError(
         'TRANSPORT_FAILED',
         'Não foi possível acessar a autenticação da Anota AI.',
