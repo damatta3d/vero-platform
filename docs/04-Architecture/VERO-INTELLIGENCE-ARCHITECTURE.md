@@ -4,10 +4,10 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Arquitetura revisada; implementação condicionada aos gates operacionais |
+| Estado | Arquitetura e Gate C aprovados; implementação produtiva permanece bloqueada |
 | Data | 2026-07-29 |
 | Branch | agent/vero-intelligence-discovery |
-| Implementação | Bloqueada até aprovação formal do Gate C |
+| Implementação | Corte vertical read-only autorizado; ainda não iniciado |
 | ADR material | ADR-011 v1.0.0 — Approved |
 
 ## 1. Resultado executivo
@@ -172,7 +172,7 @@ PDF não será fonte estruturada primária quando houver CSV/XLSX/API oficial.
 ## 9. Multi-tenancy, segurança e LGPD
 
 A política técnica inicial está materializada em
-`VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md` como v0.1.0 — Proposed. Ela define
+`VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md` como v1.0.0 — Approved. Ela define
 classificação, pseudonimização, prazos por dataset, expurgo, backups e critérios do Gate C.
 
 - Tenant e estabelecimento fazem parte de toda chave, query e cache;
@@ -241,13 +241,13 @@ Concluído em 2026-07-29. O modelo mínimo e o ADR-011 foram revisados; o ADR-01
 
 ### Gate C — Governança de dados e implementação read-only
 
-Estado: pendente de aprovação formal.
+Concluído em 2026-07-29.
 
-- política de retenção e PII v0.1.0 materializada como Proposed;
-- Anota AI read-only recomendada como primeira fonte, limitada a pedidos já homologados;
+- política de retenção e PII v1.0.0 aprovada formalmente;
+- Anota AI read-only aprovada como primeira fonte, limitada a pedidos já homologados;
 - PII direta, payload bruto e texto livre excluídos do recorte;
-- implementação somente depois da aprovação da política, da fonte, dos escopos e do corte vertical;
-- sem mutações de provider, Sales ou Inventory.
+- desenvolvimento e testes read-only do primeiro corte vertical autorizados;
+- ingestão produtiva, webhooks e mutações de provider, Sales ou Inventory permanecem bloqueados.
 
 ### Gate D — Homologação
 
