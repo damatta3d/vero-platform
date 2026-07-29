@@ -4,7 +4,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Proposed para revisão arquitetural |
+| Estado | Revisado contra a baseline normativa; depende do ADR-011 Proposed |
 | Data | 2026-07-29 |
 | Escopo | Primeiro corte: pedidos externos + catálogo VERO + CMV/margem |
 | Implementação | Bloqueada até aprovação do gate |
@@ -311,23 +311,25 @@ Nenhuma seta representa escrita direta em tabela de outro módulo.
 - `business/intelligence`: fatos reconciliados, fórmulas, métricas e explicações;
 - `infrastructure/database`: implementações por portas públicas.
 
-A posição definitiva de `ChannelOrderFact` entre Order Intake e Intelligence será validada no ADR
-de persistência analítica. O Intelligence não poderá se tornar sistema operacional de pedidos por
-acidente.
+A revisão arquitetural atribuiu `ChannelOrderFact` ao `business/intelligence` como projeção
+analítica append-only. A decisão material está registrada no ADR-011 v0.1.0 — Proposed. O fato não
+é pedido operacional, não representa venda concluída e não produz efeitos em Sales ou Inventory.
 
 ## 12. Impacto nos ADRs candidatos
 
 1. **Ingestão, idempotência e replay:** núcleo já decidido pelo ADR-010. Não criar novo ADR que o
    repita. Checkpoints e arquivos podem ser detalhados em design document, salvo nova decisão
    material.
-2. **Persistência analítica e agregados:** permanece material e deve ser submetida como Proposed,
-   incluindo posição dos fatos, retenção e estratégia PostgreSQL.
+2. **Persistência analítica e agregados:** materializada no ADR-011 v0.1.0 — Proposed. O ADR atribui
+   os fatos ao Business Intelligence, mantém execução/checkpoint no Integration Hub, usa PostgreSQL
+   no MVP e exige política de retenção por dataset antes da ativação.
 3. **IA explicável:** adiar até o motor determinístico e o contrato de evidências estarem definidos.
 
 ## 13. Critérios de aceite para implementação
 
-- modelo revisado contra Constituição, Blueprint, CDM e ADR-010;
-- dono de `ChannelOrderFact` decidido;
+- modelo revisado contra Constituição, Blueprints, CDM e ADR-010;
+- ADR-011 aprovado pelo Arquiteto-Chefe;
+- `ChannelOrderFact` pertencente ao Business Intelligence como fato analítico append-only;
 - primeira fonte escolhida e escopos autorizados;
 - política de retenção e PII aprovada;
 - chaves naturais e semântica de revisão confirmadas;
@@ -337,8 +339,11 @@ acidente.
 
 ## 14. Resultado do gate D4
 
-O modelo mínimo está definido para revisão. Ele reutiliza três blocos já existentes/aprovados
-(`IntegrationConnection`, `ExternalMessageReceipt`, `ExternalCatalogLink`) e o contrato
-`ExternalOrder`, evitando a criação de conexões, inbox, catálogo, venda, estoque e CMV paralelos.
+A revisão contra Constituição, Blueprints, CDM e ADR-010 foi concluída. O modelo reutiliza três
+blocos já existentes/aprovados (`IntegrationConnection`, `ExternalMessageReceipt`,
+`ExternalCatalogLink`) e o contrato `ExternalOrder`, evitando conexões, inbox, catálogo, venda,
+estoque e CMV paralelos.
 
-A implementação permanece bloqueada até a revisão arquitetural e a decisão material de persistência.
+A decisão material de persistência e propriedade foi registrada no ADR-011 v0.1.0 — Proposed. A
+implementação permanece bloqueada até sua aprovação expressa, a política inicial de retenção e a
+autorização da primeira fonte.
