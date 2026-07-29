@@ -9,7 +9,7 @@
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
 **D2 Portal:** inventário público concluído; validação autenticada pendente  
 **D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
-**D4 Canônico:** revisão normativa concluída; ADR-011 Proposed; aprovação e implementação bloqueadas
+**D4 Canônico:** revisão normativa concluída; ADR-011 v1.0.0 Approved; implementação condicionada aos gates operacionais
 
 ## Objetivo do discovery
 
@@ -91,7 +91,7 @@ Evidência:
 - [x] registrar tenancy, minimização de PII e retenção como gates;
 - [x] revisar o modelo contra a versão integral do CDM e precedência normativa;
 - [x] propor no ADR-011 o dono de `ChannelOrderFact` e a estratégia de persistência;
-- [ ] aprovar o modelo no gate arquitetural.
+- [x] aprovar o modelo no gate arquitetural.
 
 Evidência:
 `docs/04-Architecture/VERO-INTELLIGENCE-MINIMUM-CANONICAL-MODEL.md`.
@@ -99,7 +99,7 @@ Evidência:
 ### D5 — ADRs candidatos
 
 - [x] eliminar ADR genérico de inbox/idempotência/replay por já estar coberto pelo ADR-010;
-- [x] submeter ADR-011 de persistência analítica e agregados no Modular Monolith como `Proposed`;
+- [x] aprovar o ADR-011 de persistência analítica e agregados no Modular Monolith como `Approved`;
 - [x] propor posição de `ChannelOrderFact`, retenção por dataset e materialização seletiva no ADR;
 - [ ] detalhar checkpoints/importação de arquivos em Design, salvo decisão material nova;
 - [ ] adiar ADR de IA explicável até existir motor determinístico e contrato de evidências;
