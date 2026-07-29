@@ -7,7 +7,7 @@
 | Estado | Arquitetura revisada; implementação condicionada aos gates operacionais |
 | Data | 2026-07-29 |
 | Branch | agent/vero-intelligence-discovery |
-| Implementação | Bloqueada até aprovação do gate |
+| Implementação | Bloqueada até aprovação formal do Gate C |
 | ADR material | ADR-011 v1.0.0 — Approved |
 
 ## 1. Resultado executivo
@@ -171,6 +171,10 @@ PDF não será fonte estruturada primária quando houver CSV/XLSX/API oficial.
 
 ## 9. Multi-tenancy, segurança e LGPD
 
+A política técnica inicial está materializada em
+`VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md` como v0.1.0 — Proposed. Ela define
+classificação, pseudonimização, prazos por dataset, expurgo, backups e critérios do Gate C.
+
 - Tenant e estabelecimento fazem parte de toda chave, query e cache;
 - IDs externos nunca resolvem Tenant isoladamente;
 - conexão e dataset possuem kill switch;
@@ -235,9 +239,15 @@ Matrizes oficiais, lacunas e comparação concluídas.
 
 Concluído em 2026-07-29. O modelo mínimo e o ADR-011 foram revisados; o ADR-011 v1.0.0 foi aprovado formalmente pelo Arquiteto-Chefe.
 
-### Gate C — Implementação read-only
+### Gate C — Governança de dados e implementação read-only
 
-Implementar somente após Gate B, política de retenção e fonte autorizada. Sem mutações de provider, Sales ou Inventory.
+Estado: pendente de aprovação formal.
+
+- política de retenção e PII v0.1.0 materializada como Proposed;
+- Anota AI read-only recomendada como primeira fonte, limitada a pedidos já homologados;
+- PII direta, payload bruto e texto livre excluídos do recorte;
+- implementação somente depois da aprovação da política, da fonte, dos escopos e do corte vertical;
+- sem mutações de provider, Sales ou Inventory.
 
 ### Gate D — Homologação
 
