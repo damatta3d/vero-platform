@@ -10,8 +10,8 @@
 - [x] Identificar incompatibilidade entre pedido externo e venda simplificada.
 - [x] Elaborar `VERO-INT-001`.
 - [x] Propor ADR-010.
-- [ ] Aprovar o Design Document.
-- [ ] Aprovar o ADR-010.
+- [x] Aprovar o Design Document.
+- [x] Aprovar o ADR-010.
 - [x] Confirmar autenticação, Page ID, cardápio, listagem e detalhe de pedido.
 - [x] Executar smoke real read-only sem expor PII.
 - [ ] Obter respostas oficiais para os contratos operacionais pendentes.
