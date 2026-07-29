@@ -138,8 +138,8 @@ financeiro. Sem Financial Sales/Reconciliation, taxas e líquido serão marcados
 | Fonte/capacidade | Estado |
 |---|---|
 | Anota AI read-only | Permitida para homologação controlada |
-| Persistência automática de pedidos Anota AI | Bloqueada até inbox e modelo canônico aprovados |
-| Webhooks e mutações Anota AI | Bloqueados pelo Gate C/D da MISSÃO 009 |
+| Persistência analítica read-only de pedidos Anota AI | Desenvolvimento e testes autorizados no Gate C; produção bloqueada até Gate D |
+| Webhooks e mutações Anota AI | Bloqueados; não fazem parte do corte read-only aprovado |
 | iFood público/documental | Permitido para desenho |
 | iFood produtivo | Bloqueado até onboarding, escopos e homologação |
 | Scraping do Portal | Proibido |
