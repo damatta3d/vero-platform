@@ -7,7 +7,7 @@
 | Estado | Arquitetura e Gate C aprovados; implementação produtiva permanece bloqueada |
 | Data | 2026-07-29 |
 | Branch | agent/vero-intelligence-discovery |
-| Implementação | Corte vertical read-only autorizado; ainda não iniciado |
+| Implementação | Corte vertical read-only iniciado pelo contrato sanitizado de ChannelOrderFact |
 | ADR material | ADR-011 v1.0.0 — Approved |
 
 ## 1. Resultado executivo
