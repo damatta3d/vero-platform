@@ -26,9 +26,11 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 | [ADR-008](ADR-008-FUNDACAO-DE-IDENTITY-E-AUTENTICACAO.md) | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito | 1.0.0 | Approved |
 | [ADR-009](ADR-009-FUNDACAO-DE-ACCESS-E-AUTORIZACAO.md) | Fundação de Access — decisão contextual, negação por padrão e fronteira confiável | 1.0.0 | Approved |
 | [ADR-010](ADR-010-INTEGRATION-HUB-E-CONECTOR-ANOTA-AI.md) | Integration Hub e fronteira do Connector Anota AI | 1.0.0 | Approved |
+| [ADR-011](ADR-011-PERSISTENCIA-ANALITICA-E-FATOS-DO-VERO-INTELLIGENCE.md) | Persistência analítica e propriedade dos fatos do VERO Intelligence | 1.0.0 | Approved |
 
 ## Gate atual
 
-Os ADR-001 a ADR-009 estão aprovados e integrados à `main`. O ADR-010 foi aprovado no Gate A da
-MISSÃO 009 e aguarda integração pelo PR #10. Captura automática, mutações, vendas e estoque
-permanecem bloqueados até os gates operacionais correspondentes.
+Os ADR-001 a ADR-010 estão aprovados e integrados à `main`. O ADR-011 foi aprovado no Gate B do
+VERO Intelligence e aguarda integração pelo PR #11. A implementação produtiva depende da política
+de retenção e PII e da autorização da primeira fonte. Captura automática, mutações, vendas,
+estoque e ações de IA permanecem bloqueados até os gates operacionais correspondentes.
