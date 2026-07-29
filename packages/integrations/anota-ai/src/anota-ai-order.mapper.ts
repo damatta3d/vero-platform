@@ -82,10 +82,7 @@ export function translateAnotaAiOrder(
       )
     ),
     totalCents: money(order['total'], options.moneyUnit, 'total'),
-    customer: Object.freeze({
-      name: text(customer['name'], 'customer.name', 256),
-      phone: text(customer['phone'], 'customer.phone', 64)
-    }),
+    customer: mapCustomer(customer),
     ...(order['deliveryAddress'] === undefined || order['deliveryAddress'] === null
       ? {}
       : { deliveryAddress: mapDeliveryAddress(order['deliveryAddress']) })
@@ -157,6 +154,15 @@ function mapPayment(value: unknown, index: number, unit: AnotaAiMoneyUnit): Exte
       ? {}
       : { changeForCents: money(changeFor, unit, `${path}.changeFor`) }),
     amountCents: money(payment['value'], unit, `${path}.value`)
+  });
+}
+
+function mapCustomer(value: Record<string, unknown>): Readonly<{ name?: string; phone?: string }> {
+  const name = optionalText(value['name'], 'customer.name', 256);
+  const phone = optionalText(value['phone'], 'customer.phone', 64);
+  return Object.freeze({
+    ...(name === undefined ? {} : { name }),
+    ...(phone === undefined ? {} : { phone })
   });
 }
 
