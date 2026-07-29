@@ -9,7 +9,7 @@
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
 **D2 Portal:** inventário público concluído; validação autenticada pendente  
 **D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
-**D4 Canônico:** modelo mínimo proposto para revisão; implementação bloqueada
+**D4 Canônico:** revisão normativa concluída; ADR-011 Proposed; aprovação e implementação bloqueadas
 
 ## Objetivo do discovery
 
@@ -89,8 +89,8 @@ Evidência:
 - [x] definir métricas versionadas, completude, procedência e qualidade;
 - [x] adiar visita, conversão, CRM, tendência e recomendação até fonte ou histórico suficientes;
 - [x] registrar tenancy, minimização de PII e retenção como gates;
-- [ ] revisar o modelo contra a versão integral do CDM e precedência normativa;
-- [ ] decidir em ADR o dono de `ChannelOrderFact` e a estratégia de persistência;
+- [x] revisar o modelo contra a versão integral do CDM e precedência normativa;
+- [x] propor no ADR-011 o dono de `ChannelOrderFact` e a estratégia de persistência;
 - [ ] aprovar o modelo no gate arquitetural.
 
 Evidência:
@@ -99,8 +99,8 @@ Evidência:
 ### D5 — ADRs candidatos
 
 - [x] eliminar ADR genérico de inbox/idempotência/replay por já estar coberto pelo ADR-010;
-- [ ] submeter ADR de persistência analítica e agregados no Modular Monolith como `Proposed`;
-- [ ] decidir posição de `ChannelOrderFact`, retenção e materialização no ADR;
+- [x] submeter ADR-011 de persistência analítica e agregados no Modular Monolith como `Proposed`;
+- [x] propor posição de `ChannelOrderFact`, retenção por dataset e materialização seletiva no ADR;
 - [ ] detalhar checkpoints/importação de arquivos em Design, salvo decisão material nova;
 - [ ] adiar ADR de IA explicável até existir motor determinístico e contrato de evidências;
 - [x] eliminar qualquer ADR que apenas repita ADR-001 a ADR-010.
