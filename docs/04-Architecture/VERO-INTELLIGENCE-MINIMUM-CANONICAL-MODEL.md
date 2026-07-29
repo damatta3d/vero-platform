@@ -4,7 +4,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Revisado contra a baseline normativa; depende do ADR-011 Proposed |
+| Estado | Revisado contra a baseline normativa; ADR-011 v1.0.0 Approved |
 | Data | 2026-07-29 |
 | Escopo | Primeiro corte: pedidos externos + catálogo VERO + CMV/margem |
 | Implementação | Bloqueada até aprovação do gate |
@@ -312,7 +312,7 @@ Nenhuma seta representa escrita direta em tabela de outro módulo.
 - `infrastructure/database`: implementações por portas públicas.
 
 A revisão arquitetural atribuiu `ChannelOrderFact` ao `business/intelligence` como projeção
-analítica append-only. A decisão material está registrada no ADR-011 v0.1.0 — Proposed. O fato não
+analítica append-only. A decisão material está registrada no ADR-011 v1.0.0 — Approved. O fato não
 é pedido operacional, não representa venda concluída e não produz efeitos em Sales ou Inventory.
 
 ## 12. Impacto nos ADRs candidatos
@@ -320,7 +320,7 @@ analítica append-only. A decisão material está registrada no ADR-011 v0.1.0 �
 1. **Ingestão, idempotência e replay:** núcleo já decidido pelo ADR-010. Não criar novo ADR que o
    repita. Checkpoints e arquivos podem ser detalhados em design document, salvo nova decisão
    material.
-2. **Persistência analítica e agregados:** materializada no ADR-011 v0.1.0 — Proposed. O ADR atribui
+2. **Persistência analítica e agregados:** materializada no ADR-011 v1.0.0 — Approved. O ADR atribui
    os fatos ao Business Intelligence, mantém execução/checkpoint no Integration Hub, usa PostgreSQL
    no MVP e exige política de retenção por dataset antes da ativação.
 3. **IA explicável:** adiar até o motor determinístico e o contrato de evidências estarem definidos.
@@ -344,6 +344,6 @@ blocos já existentes/aprovados (`IntegrationConnection`, `ExternalMessageReceip
 `ExternalCatalogLink`) e o contrato `ExternalOrder`, evitando conexões, inbox, catálogo, venda,
 estoque e CMV paralelos.
 
-A decisão material de persistência e propriedade foi registrada no ADR-011 v0.1.0 — Proposed. A
+A decisão material de persistência e propriedade foi registrada no ADR-011 v1.0.0 — Approved. A
 implementação permanece bloqueada até sua aprovação expressa, a política inicial de retenção e a
 autorização da primeira fonte.
