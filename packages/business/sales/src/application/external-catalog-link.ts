@@ -1,10 +1,7 @@
 import type { ExternalOrder } from './external-order.js';
 
 export type ExternalCatalogReferenceKind = 'ITEM' | 'MODIFIER';
-export type ExternalCatalogLinkErrorCode =
-  | 'INVALID_LINK'
-  | 'DUPLICATE_LINK'
-  | 'SCOPE_MISMATCH';
+export type ExternalCatalogLinkErrorCode = 'INVALID_LINK' | 'DUPLICATE_LINK' | 'SCOPE_MISMATCH';
 
 export interface ExternalCatalogLink {
   readonly tenantId: string;
