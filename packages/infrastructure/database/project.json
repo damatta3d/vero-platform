@@ -10,6 +10,7 @@
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/infrastructure/database",
+        "rootDir": ".",
         "main": "packages/infrastructure/database/src/public-api.ts",
         "tsConfig": "packages/infrastructure/database/tsconfig.lib.json"
       }

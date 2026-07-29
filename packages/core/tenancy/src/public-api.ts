@@ -11,4 +11,9 @@ export {
   requireResolvedTenantContext,
   type ResolvedTenantContext
 } from './application/resolved-tenant-context.js';
-export { type TenantResolutionResult, type TenantResolver } from './application/tenant-resolver.js';
+export {
+  createTenantResolver,
+  type TenantLookup,
+  type TenantResolutionResult,
+  type TenantResolver
+} from './application/tenant-resolver.js';

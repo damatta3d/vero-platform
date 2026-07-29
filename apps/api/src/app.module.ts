@@ -10,6 +10,7 @@ import {
 } from './health/dependency-health.adapters.js';
 import { HealthController } from './health/health.controller.js';
 import { APP_CONFIG } from './app.tokens.js';
+import { CatalogModule } from './catalog/catalog.module.js';
 
 @Module({})
 export class AppModule {
@@ -18,6 +19,7 @@ export class AppModule {
       module: AppModule,
       imports: [
         TerminusModule,
+        ...(config.mvp.enabled ? [CatalogModule.register(config)] : []),
         LoggerModule.forRoot({
           pinoHttp: {
             level: config.logLevel,

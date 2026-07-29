@@ -8,6 +8,30 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Validação guiada da Parmegiana individual com os custos reais de HM05F e MC500 da compra de
+  28/07/2026, incluindo entrada, baixa transacional e CMV.
+- M008-D com classificação explícita de insumos e embalagens no catálogo.
+- Embalagens consumíveis incluídas na ficha técnica, estoque, produção, venda e CMV realizado.
+- Interface atualizada para cadastrar, comprar e acompanhar embalagens por unidade.
+- Migration retrocompatível e teste de persistência da embalagem HM05F.
+- M008-C complementada com produção idempotente, baixa multinsumo pelo rendimento da ficha e CMV
+  estimado/realizado sem receita fictícia.
+- Histórico imutável de produção e custos por insumo, API, resumo e interface operacional.
+- Testes de domínio e integração para atomicidade, idempotência, estoque insuficiente e isolamento
+  da produção.
+- M008-C com venda nativa idempotente, snapshot da ficha e custos, baixa automática de estoque, CMV realizado e margem.
+- Histórico imutável de vendas e custos por insumo, persistido na mesma transação serializável do ledger.
+- API e painel responsivo para registrar vendas e consultar faturamento, CMV e margem realizados.
+- Testes de domínio e integração para rendimento, estoque insuficiente, idempotência, isolamento e imutabilidade.
+- M008-B com entradas de compra, consumo, ajustes, ledger imutável, posição de estoque e custo médio móvel.
+- Persistência transacional serializável de estoque com relações compostas por Tenant e proteção do ledger contra alteração ou exclusão.
+- API e interface responsiva para registrar compras e movimentações e consultar saldos.
+- Testes de domínio e integração para estoque negativo, custo histórico, imutabilidade e isolamento entre Tenants.
+- M008-A com catálogo tenant-aware de insumos e produtos, ficha técnica versionada e cálculo determinístico de custo e margem.
+- Persistência Prisma/PostgreSQL do catálogo com relações compostas por Tenant e migration validada.
+- API MVP protegida por chave, identidade verificada, Tenant resolvido e autorização de uso único.
+- Interface web responsiva para cadastrar insumos, produtos, fichas técnicas e consultar custos.
+- Testes de domínio, aplicação, segurança e integração de persistência do catálogo.
 - ADR-009 proposto para a Fundação de Access e autorização contextual.
 - ADR-009 v0.1.1 com promoção interna, namespaces de ação/recurso e ciclo antirreplay.
 - Controle e backlog da MISSÃO 007, com implementação bloqueada até aprovação arquitetural.

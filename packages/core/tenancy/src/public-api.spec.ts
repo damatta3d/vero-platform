@@ -9,6 +9,7 @@ describe('core-tenancy public API', () => {
       'TenantContextRequiredError',
       'TenantResolutionError',
       'createResolvedTenantContext',
+      'createTenantResolver',
       'requireResolvedTenantContext'
     ]);
     expect(publicApi).not.toHaveProperty('AuthorizedTenantContext');

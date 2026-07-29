@@ -25,6 +25,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
       - run: pnpm exec prisma validate
       - run: pnpm audit --audit-level high
       - run: pnpm verify
@@ -79,4 +80,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - run: pnpm exec prisma migrate deploy
       - run: pnpm test:integration

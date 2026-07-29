@@ -6,6 +6,7 @@ import {
 import { promoteVerifiedSubject } from '../internal/trusted-authentication.js';
 import {
   authenticationFailed,
+  createAuthenticator,
   createTrustedAuthenticationResult,
   requireTrustedAuthenticationResult,
   type AuthenticationResult,
@@ -63,5 +64,36 @@ describe('authentication trust boundary', () => {
       expect(result.error.code).toBe('AUTHENTICATION_FAILED');
       expect(result.error.message).not.toContain('secret');
     }
+  });
+
+  it('promotes only a subject returned by a verifier', async () => {
+    const authenticator = createAuthenticator({
+      verify: (value) =>
+        Promise.resolve(
+          value === 'valid-secret'
+            ? { authority: 'mvp-api-key', subject: 'christian', type: 'human' as const }
+            : undefined
+        )
+    });
+
+    const accepted = requireTrustedAuthenticationResult(
+      await authenticator.authenticate(AuthenticationEvidence.fromUntrusted('valid-secret'))
+    );
+    expect(accepted.authenticated).toBe(true);
+
+    const denied = requireTrustedAuthenticationResult(
+      await authenticator.authenticate(AuthenticationEvidence.fromUntrusted('invalid-secret'))
+    );
+    expect(denied.authenticated).toBe(false);
+  });
+
+  it('converts verifier errors to a safe authentication failure', async () => {
+    const authenticator = createAuthenticator({
+      verify: () => Promise.reject(new Error('provider detail'))
+    });
+    const result = requireTrustedAuthenticationResult(
+      await authenticator.authenticate(AuthenticationEvidence.fromUntrusted('secret'))
+    );
+    expect(result.authenticated).toBe(false);
   });
 });

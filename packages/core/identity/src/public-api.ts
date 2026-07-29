@@ -9,7 +9,10 @@ export {
 export type { AuthenticatedPrincipal, PrincipalId, PrincipalType } from './domain/principal.js';
 export { requireIdentityContext, type IdentityContext } from './application/identity-context.js';
 export {
+  createAuthenticator,
   requireTrustedAuthenticationResult,
   type AuthenticationResult,
-  type Authenticator
+  type Authenticator,
+  type IdentityVerifier,
+  type VerifiedSubject
 } from './application/authenticator.js';
