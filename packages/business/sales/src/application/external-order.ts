@@ -41,7 +41,7 @@ export interface ExternalOrderDiscount {
 }
 
 export interface ExternalOrderPayment {
-  readonly externalId: string;
+  readonly externalId?: string;
   readonly code: string;
   readonly name: string;
   readonly card: string;
