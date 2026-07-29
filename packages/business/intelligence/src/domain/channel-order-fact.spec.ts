@@ -205,18 +205,17 @@ describe('ChannelOrderFact', () => {
   ])(
     'rejects invalid %s',
     (field, inputOverride = {}, selectedPseudonymizer = pseudonymizer, orderOverride = {}) => {
-      expect(() =>
-        createChannelOrderFact(
-          {
-            tenantId: 'santo-parma',
-            connectionId: 'anota-ai-primary',
-            order: { ...order, ...orderOverride },
-            observedAt: new Date('2026-07-29T18:06:00.000Z'),
-            ...inputOverride
-          },
-          selectedPseudonymizer
-        )
-      ).toThrow(new InvalidChannelOrderFactError(field));
+      const input: CreateChannelOrderFactInput = {
+        tenantId: inputOverride.tenantId ?? 'santo-parma',
+        connectionId: inputOverride.connectionId ?? 'anota-ai-primary',
+        order: { ...order, ...orderOverride },
+        observedAt:
+          inputOverride.observedAt ?? new Date('2026-07-29T18:06:00.000Z')
+      };
+
+      expect(() => createChannelOrderFact(input, selectedPseudonymizer)).toThrow(
+        new InvalidChannelOrderFactError(field)
+      );
     }
   );
 
