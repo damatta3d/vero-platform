@@ -5,7 +5,7 @@
 **Status:** iniciado em 2026-07-29  
 **Estratégia:** reuse-first, evidência oficial e entrega vertical  
 **Dependências concluídas:** MISSÃO 008 e MISSÃO 009  
-**Implementação funcional:** corte vertical read-only autorizado; código ainda não iniciado  
+**Implementação funcional:** D6.1 iniciado com contrato sanitizado de ChannelOrderFact  
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
 **D2 Portal:** inventário público concluído; validação autenticada pendente  
 **D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
@@ -124,7 +124,7 @@ Evidência:
 
 ### D6 — Primeiro corte vertical
 
-Escopo aprovado no Gate C; implementação ainda não iniciada:
+Escopo aprovado no Gate C; implementação iniciada em 2026-07-29:
 
 1. ingerir pedidos Anota AI read-only por execução controlada, sem efeito operacional;
 2. persistir revisões imutáveis e linhas com procedência;
@@ -134,6 +134,18 @@ Escopo aprovado no Gate C; implementação ainda não iniciada:
 6. apontar origem, fórmula, versão e completude de cada número;
 7. gerar alertas determinísticos de qualidade e margem incompleta;
 8. manter preço, promoção, venda, estoque e status externo sem alteração automática.
+
+#### D6.1 — Contrato sanitizado do fato
+
+- [x] criar o módulo `business/intelligence`;
+- [x] transformar `ExternalOrder` em `ChannelOrderFact` provider-neutral;
+- [x] excluir cliente, telefone, endereço, pagamento, cartão e ID bruto;
+- [x] exigir pseudonimização tenant-scoped por conexão;
+- [x] representar itens, complementos, descontos e entrega sem efeito operacional;
+- [x] adicionar testes unitários de minimização e validação temporal;
+- [ ] persistir revisões imutáveis no PostgreSQL;
+- [ ] integrar execução controlada do Anota AI;
+- [ ] homologar replay, duplicidade, isolamento entre tenants e expurgo.
 
 O iFood entra no mesmo pipeline somente após onboarding, escopos e homologação oficiais.
 
