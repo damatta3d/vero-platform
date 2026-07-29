@@ -13,8 +13,7 @@ import { createTenantIdFromTrustedValue } from '../../../../core/tenancy/src/dom
 
 import {
   ExternalCatalogLinkService,
-  type ExternalCatalogLinkRepository,
-  type PersistedExternalCatalogLink
+  type ExternalCatalogLinkRepository
 } from './external-catalog-link-service.js';
 
 async function access(action: string): Promise<AuthorizedAccessContext> {
