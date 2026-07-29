@@ -51,8 +51,8 @@ export interface ExternalOrderPayment {
 }
 
 export interface ExternalOrderCustomer {
-  readonly name: string;
-  readonly phone: string;
+  readonly name?: string;
+  readonly phone?: string;
 }
 
 export interface ExternalOrderDeliveryAddress {
