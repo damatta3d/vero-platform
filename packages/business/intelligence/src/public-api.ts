@@ -1,12 +1,20 @@
 export {
   createChannelOrderFact,
   InvalidChannelOrderFactError,
+  ChannelOrderFactPersistenceError,
+  type AppendChannelOrderFactResult,
+  type AppendChannelOrderFactStatus,
   type ChannelOrderAdjustmentFact,
   type ChannelOrderAdjustmentKind,
   type ChannelOrderFact,
+  type ChannelOrderFactIdentity,
+  type ChannelOrderFactPersistenceErrorCode,
+  type ChannelOrderFactProvenance,
+  type ChannelOrderFactRepository,
   type ChannelOrderLineFact,
   type ChannelOrderLineKind,
   type CreateChannelOrderFactInput,
   type OrderPseudonymizer,
-  type OrderPseudonymScope
+  type OrderPseudonymScope,
+  type PersistedChannelOrderFact
 } from './domain/channel-order-fact.js';

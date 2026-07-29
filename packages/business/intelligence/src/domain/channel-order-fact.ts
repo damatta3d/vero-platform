@@ -47,6 +47,53 @@ export interface ChannelOrderFact {
   readonly totalCents: number;
 }
 
+export interface ChannelOrderFactIdentity {
+  readonly tenantId: string;
+  readonly connectionId: string;
+  readonly orderKey: string;
+  readonly revision: string;
+}
+
+export interface ChannelOrderFactProvenance {
+  readonly receiptId: string;
+  readonly ingestionRunId: string;
+  readonly schemaVersion: string;
+}
+
+export interface PersistedChannelOrderFact {
+  readonly fact: ChannelOrderFact;
+  readonly provenance: ChannelOrderFactProvenance;
+  readonly semanticHash: string;
+  readonly persistedAt: Date;
+}
+
+export type AppendChannelOrderFactStatus = 'INSERTED' | 'REPLAYED';
+
+export interface AppendChannelOrderFactResult {
+  readonly status: AppendChannelOrderFactStatus;
+  readonly persisted: PersistedChannelOrderFact;
+}
+
+export interface ChannelOrderFactRepository {
+  append(
+    fact: ChannelOrderFact,
+    provenance: ChannelOrderFactProvenance
+  ): Promise<AppendChannelOrderFactResult>;
+  findRevision(identity: ChannelOrderFactIdentity): Promise<PersistedChannelOrderFact | undefined>;
+}
+
+export type ChannelOrderFactPersistenceErrorCode = 'INVALID_PROVENANCE' | 'IDEMPOTENCY_CONFLICT';
+
+export class ChannelOrderFactPersistenceError extends Error {
+  constructor(
+    readonly code: ChannelOrderFactPersistenceErrorCode,
+    readonly field: string
+  ) {
+    super(`Channel order fact persistence failed: ${field}.`);
+    this.name = 'ChannelOrderFactPersistenceError';
+  }
+}
+
 export interface CreateChannelOrderFactInput {
   readonly tenantId: string;
   readonly connectionId: string;

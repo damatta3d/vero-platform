@@ -230,3 +230,65 @@ model ExternalCatalogLink {
   @@index([tenantId, catalogProductId])
   @@map("external_catalog_links")
 }
+
+model IntelligenceChannelOrderFact {
+  tenantId                 String                                   @db.VarChar(128)
+  connectionId             String                                   @db.VarChar(128)
+  orderKey                 String                                   @db.VarChar(256)
+  revision                 DateTime                                 @db.Timestamptz(3)
+  provider                 String                                   @db.VarChar(64)
+  establishmentExternalId  String                                   @db.VarChar(256)
+  currency                 String                                   @db.VarChar(3)
+  occurredAt               DateTime                                 @db.Timestamptz(3)
+  observedAt               DateTime                                 @db.Timestamptz(3)
+  salesChannel             String                                   @db.VarChar(128)
+  orderType                String                                   @db.VarChar(128)
+  menuVersion              Int
+  totalCents               Int
+  semanticHash             String                                   @db.Char(64)
+  receiptId                String                                   @db.VarChar(256)
+  ingestionRunId           String                                   @db.VarChar(256)
+  schemaVersion            String                                   @db.VarChar(64)
+  persistedAt              DateTime                                 @db.Timestamptz(3)
+  lines                    IntelligenceChannelOrderLineFact[]
+  adjustments              IntelligenceChannelOrderAdjustmentFact[]
+
+  @@id([tenantId, connectionId, orderKey, revision])
+  @@index([tenantId, occurredAt])
+  @@index([tenantId, provider, establishmentExternalId, occurredAt])
+  @@map("intelligence_channel_order_facts")
+}
+
+model IntelligenceChannelOrderLineFact {
+  tenantId                String                       @db.VarChar(128)
+  connectionId            String                       @db.VarChar(128)
+  orderKey                String                       @db.VarChar(256)
+  revision                DateTime                     @db.Timestamptz(3)
+  ordinal                 Int
+  kind                    String                       @db.VarChar(16)
+  providerItemId          String                       @db.VarChar(256)
+  parentProviderItemId    String?                      @db.VarChar(256)
+  name                    String                       @db.VarChar(512)
+  quantity                Int
+  unitPriceCents          Int
+  totalCents              Int
+  orderFact               IntelligenceChannelOrderFact @relation(fields: [tenantId, connectionId, orderKey, revision], references: [tenantId, connectionId, orderKey, revision], onDelete: Restrict)
+
+  @@id([tenantId, connectionId, orderKey, revision, ordinal])
+  @@map("intelligence_channel_order_line_facts")
+}
+
+model IntelligenceChannelOrderAdjustmentFact {
+  tenantId                String                       @db.VarChar(128)
+  connectionId            String                       @db.VarChar(128)
+  orderKey                String                       @db.VarChar(256)
+  revision                DateTime                     @db.Timestamptz(3)
+  ordinal                 Int
+  kind                    String                       @db.VarChar(32)
+  amountCents             Int
+  label                   String                       @db.VarChar(256)
+  orderFact               IntelligenceChannelOrderFact @relation(fields: [tenantId, connectionId, orderKey, revision], references: [tenantId, connectionId, orderKey, revision], onDelete: Restrict)
+
+  @@id([tenantId, connectionId, orderKey, revision, ordinal])
+  @@map("intelligence_channel_order_adjustment_facts")
+}
