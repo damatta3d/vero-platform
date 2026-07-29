@@ -10,12 +10,11 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 
-import { CatalogService, catalogItemKindValues, unitOfMeasureValues } from '@vero/business-catalog';
+import { CatalogService, unitOfMeasureValues } from '@vero/business-catalog';
 import { MvpSecurityService } from './mvp-security.service.js';
 
 const createIngredientSchema = z.object({
   name: z.string().trim().min(1).max(160),
-  kind: z.enum(catalogItemKindValues).default('INGREDIENT'),
   unit: z.enum(unitOfMeasureValues),
   packageQuantityMicros: z.number().int().positive(),
   packageCostCents: z.number().int().nonnegative()

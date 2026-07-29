@@ -6,7 +6,6 @@ import {
   createProduct,
   createRecipe,
   type Ingredient,
-  type CatalogItemKind,
   type Product,
   type Recipe,
   type RecipeCost,
@@ -29,7 +28,6 @@ export interface Clock {
 
 export interface CreateIngredientInput {
   readonly name: string;
-  readonly kind?: CatalogItemKind;
   readonly unit: UnitOfMeasure;
   readonly packageQuantityMicros: number;
   readonly packageCostCents: number;
@@ -74,7 +72,6 @@ export class CatalogService {
       id: this.ids.generate(),
       tenantId,
       name: input.name,
-      ...(input.kind === undefined ? {} : { kind: input.kind }),
       unit: input.unit,
       packageQuantityMicros: input.packageQuantityMicros,
       packageCostCents: input.packageCostCents,

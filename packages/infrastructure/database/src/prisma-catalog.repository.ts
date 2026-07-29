@@ -6,7 +6,6 @@ import {
   createProduct,
   createRecipe,
   type CatalogRepository,
-  type CatalogItemKind,
   type Ingredient,
   type Product,
   type Recipe,
@@ -24,7 +23,6 @@ function ingredientFromRow(row: {
   id: string;
   tenantId: string;
   name: string;
-  kind: string;
   unit: string;
   packageQuantityMicros: bigint;
   packageCostCents: number;
@@ -33,7 +31,6 @@ function ingredientFromRow(row: {
 }): Ingredient {
   return createIngredient({
     ...row,
-    kind: row.kind as CatalogItemKind,
     unit: row.unit as UnitOfMeasure,
     packageQuantityMicros: safeNumber(row.packageQuantityMicros)
   });
@@ -90,7 +87,6 @@ export class PrismaCatalogRepository implements CatalogRepository {
       },
       update: {
         name: ingredient.name,
-        kind: ingredient.kind,
         unit: ingredient.unit,
         packageQuantityMicros: BigInt(ingredient.packageQuantityMicros),
         packageCostCents: ingredient.packageCostCents,

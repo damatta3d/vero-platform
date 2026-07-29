@@ -125,20 +125,6 @@ describe(CatalogService.name, () => {
       packageQuantityMicros: 1_000_000,
       packageCostCents: 4000
     });
-    const hm05f = await service.createIngredient(await access('catalog.ingredient.create'), {
-      name: 'HM05F',
-      kind: 'PACKAGING',
-      unit: 'UNIT',
-      packageQuantityMicros: 150_000_000,
-      packageCostCents: 12_103
-    });
-    const mc500 = await service.createIngredient(await access('catalog.ingredient.create'), {
-      name: 'MC500 com tampa',
-      kind: 'PACKAGING',
-      unit: 'UNIT',
-      packageQuantityMicros: 200_000_000,
-      packageCostCents: 23_767
-    });
     const product = await service.createProduct(await access('catalog.product.create'), {
       name: 'Parmegiana de Alcatra',
       salePriceCents: 4490
@@ -148,23 +134,19 @@ describe(CatalogService.name, () => {
       yieldUnits: 1,
       lines: [
         { ingredientId: alcatra.id, quantityMicros: 150_000 },
-        { ingredientId: cheese.id, quantityMicros: 70_000 },
-        { ingredientId: hm05f.id, quantityMicros: 1_000_000 },
-        { ingredientId: mc500.id, quantityMicros: 1_000_000 }
+        { ingredientId: cheese.id, quantityMicros: 70_000 }
       ]
     });
 
     expect(recipe.version).toBe(1);
     expect(await service.getProductCost(await access('catalog.cost.read'), product.id)).toEqual({
-      totalCostCents: 1275,
-      costPerUnitCents: 1275,
+      totalCostCents: 1075,
+      costPerUnitCents: 1075,
       salePriceCents: 4490,
-      marginCents: 3215,
-      marginBasisPoints: 7160
+      marginCents: 3415,
+      marginBasisPoints: 7606
     });
-    const items = await service.listIngredients(await access('catalog.ingredient.read'));
-    expect(items).toHaveLength(4);
-    expect(items.find((item) => item.name === 'HM05F')?.kind).toBe('PACKAGING');
+    expect(await service.listIngredients(await access('catalog.ingredient.read'))).toHaveLength(2);
     expect(await service.listProducts(await access('catalog.product.read'))).toHaveLength(1);
   });
 

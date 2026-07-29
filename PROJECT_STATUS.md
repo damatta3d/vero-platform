@@ -9,10 +9,10 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** MISSÃO 008 concluída; parecer técnico favorável e PR #8 pronto para revisão
+**Estado:** M008-C concluída e aprovada no CI; PR #8 permanece em rascunho para a M008-D
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
-**Atualizado em:** 2026-07-29
+**Atualizado em:** 2026-07-28
 
 ## Concluído
 
@@ -36,13 +36,6 @@
 - CI `30401419715` aprovou vendas, migrations e integração PostgreSQL.
 - CI `30402690997` aprovou produção, migration, integração PostgreSQL e `verify` integral.
 - 106 testes e build dos 15 projetos aprovados.
-- M008-D iniciada com distinção entre insumos e embalagens.
-- Embalagens incluídas na ficha técnica e na baixa transacional de produção/venda.
-- CI `30417176073` aprovou migration, persistência de embalagens, 107 testes e 15 builds.
-- Custos reais de HM05F, MC500, MO100-4 e TPMO100 incorporados à validação.
-- CI final `30461716408` aprovou `quality` e `integration` com PostgreSQL real.
-- Validação guiada da Parmegiana de Alcatra individual concluída.
-- Parecer técnico final da MISSÃO 008 favorável à aprovação do PR #8.
 
 ## Estado das linhas GitHub
 
@@ -54,7 +47,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | MISSÃO 008 concluída; pronta para revisão e decisão de merge |
+| `agent/missao-008-santo-parma-mvp` | M008-C aprovada no CI; PR #8 permanece em rascunho para a M008-D |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -101,23 +94,6 @@
 - APIs, históricos e resumos operacionais na interface responsiva;
 - 106 testes e build dos 15 projetos aprovados localmente e no CI.
 
-## Entrega atual — M008-D
-
-- classificação explícita de item como insumo ou embalagem;
-- cadastro e estoque de embalagens por unidade;
-- embalagens incluídas nas fichas técnicas versionadas;
-- baixa conjunta de alimentos e embalagens na produção ou venda direta;
-- custo estimado e realizado incluindo embalagens;
-- interface responsiva com contadores, identificação e compra de embalagens;
-- migration retrocompatível: cadastros existentes permanecem como insumos;
-- 107 testes, arquitetura, lint e build dos 15 projetos aprovados localmente e no CI;
-- migration e baixa transacional das embalagens aprovadas com PostgreSQL real no CI
-  `30417176073`.
-- compra real de 300 HM05F por R$ 242,06 e 400 MC500 por R$ 475,34 validada;
-- venda de duas Parmegianas baixou duas unidades de cada embalagem atomicamente;
-- CMV estimado preciso de duas vendas validado em R$ 19,89;
-- CI final `30461716408` aprovou `quality`, migrations e integração PostgreSQL.
-
 ## Fora do escopo vigente
 
 - integrações automáticas com iFood e Anote Aí;
@@ -130,6 +106,6 @@
 
 ## Próximo gate
 
-1. Submeter o PR #8 à revisão final.
-2. Realizar o merge somente após autorização do Arquiteto-Chefe.
-3. Após o merge, planejar a MISSÃO 009 sem misturá-la ao escopo concluído.
+1. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
+2. Validar o fluxo guiado e a usabilidade da interface.
+3. Manter o PR em rascunho até o parecer final da MISSÃO 008.
