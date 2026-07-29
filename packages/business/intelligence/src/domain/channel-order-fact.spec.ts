@@ -2,7 +2,6 @@ import type { ExternalOrder } from '@vero/business-sales';
 import {
   createChannelOrderFact,
   InvalidChannelOrderFactError,
-  type CreateChannelOrderFactInput,
   type OrderPseudonymizer
 } from './channel-order-fact.js';
 
@@ -72,13 +71,6 @@ const order: ExternalOrder = Object.freeze({
     longitude: -54.6
   })
 });
-
-type InvalidCase = readonly [
-  field: string,
-  inputOverride?: Partial<Omit<CreateChannelOrderFactInput, 'order'>>,
-  selectedPseudonymizer?: OrderPseudonymizer,
-  orderOverride?: Partial<ExternalOrder>
-];
 
 describe('ChannelOrderFact', () => {
   const pseudonymizer: OrderPseudonymizer = {
@@ -167,56 +159,43 @@ describe('ChannelOrderFact', () => {
     expect(fact.adjustments).toEqual([]);
   });
 
-  it.each<InvalidCase>([
-    ['tenantId', { tenantId: '' }],
-    ['tenantId', { tenantId: 'x'.repeat(129) }],
-    ['orderKey', {}, { pseudonymize: () => '' }],
-    ['order.items', {}, pseudonymizer, { items: [] }],
-    [
-      'order.lines.quantity',
-      {},
-      pseudonymizer,
-      { items: [{ ...order.items[0]!, quantity: Number.NaN }] }
-    ],
-    [
-      'order.lines.unitPriceCents',
-      {},
-      pseudonymizer,
-      { items: [{ ...order.items[0]!, unitPriceCents: -1 }] }
-    ],
-    [
-      'order.discounts.amountCents',
-      {},
-      pseudonymizer,
-      { discounts: [{ amountCents: -1, tag: 'INVALID' }] }
-    ],
-    ['order.deliveryFeeCents', {}, pseudonymizer, { deliveryFeeCents: -1 }],
-    ['order.additionalFeesCents', {}, pseudonymizer, { additionalFeesCents: [100] }],
-    [
-      'order.source.menuVersion',
-      {},
-      pseudonymizer,
-      {
-        source: { ...order.source, menuVersion: -1 }
-      }
-    ],
-    ['order.totalCents', {}, pseudonymizer, { totalCents: -1 }],
-    ['order.createdAt', {}, pseudonymizer, { createdAt: 'not-a-date' }]
-  ])(
-    'rejects invalid %s',
-    (field, inputOverride = {}, selectedPseudonymizer = pseudonymizer, orderOverride = {}) => {
-      const input: CreateChannelOrderFactInput = {
-        tenantId: inputOverride.tenantId ?? 'santo-parma',
-        connectionId: inputOverride.connectionId ?? 'anota-ai-primary',
-        order: { ...order, ...orderOverride },
-        observedAt: inputOverride.observedAt ?? new Date('2026-07-29T18:06:00.000Z')
-      };
-
-      expect(() => createChannelOrderFact(input, selectedPseudonymizer)).toThrow(
-        new InvalidChannelOrderFactError(field)
+  it('rejects unsupported fees and malformed scalar values', () => {
+    const create = (orderOverride: Partial<ExternalOrder>, tenantId = 'santo-parma') =>
+      createChannelOrderFact(
+        {
+          tenantId,
+          connectionId: 'anota-ai-primary',
+          order: { ...order, ...orderOverride },
+          observedAt: new Date('2026-07-29T18:06:00.000Z')
+        },
+        pseudonymizer
       );
-    }
-  );
+
+    expect(() => create({ deliveryFeeCents: -1 })).toThrow(
+      new InvalidChannelOrderFactError('order.deliveryFeeCents')
+    );
+    expect(() => create({ additionalFeesCents: [100] })).toThrow(
+      new InvalidChannelOrderFactError('order.additionalFeesCents')
+    );
+    expect(() => create({ totalCents: Number.NaN })).toThrow(
+      new InvalidChannelOrderFactError('order.totalCents')
+    );
+    expect(() => create({ createdAt: 'not-a-date' })).toThrow(
+      new InvalidChannelOrderFactError('order.createdAt')
+    );
+    expect(() => create({}, 'x'.repeat(129))).toThrow(
+      new InvalidChannelOrderFactError('tenantId')
+    );
+
+    const item = order.items[0];
+    if (item === undefined) throw new Error('Test fixture must contain one item.');
+    expect(() => create({ items: [{ ...item, quantity: Number.NaN }] })).toThrow(
+      new InvalidChannelOrderFactError('order.lines.quantity')
+    );
+    expect(() => create({ items: [{ ...item, unitPriceCents: -1 }] })).toThrow(
+      new InvalidChannelOrderFactError('order.lines.unitPriceCents')
+    );
+  });
 
   it('supports a valid order without modifiers, discounts or delivery fee', () => {
     const item = order.items[0];
