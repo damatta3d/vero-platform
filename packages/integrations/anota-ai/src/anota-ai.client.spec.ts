@@ -253,6 +253,21 @@ describe('AnotaAiClient', () => {
     await expect(unavailable.listOrders('page-1')).rejects.not.toThrow(/client-secret/);
   });
 
+  it('aborts provider requests at the configured timeout without leaking credentials', async () => {
+    const blocked: AnotaAiFetch = (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(new Error('client-secret timeout')));
+      });
+    const client = createClient(blocked, { requestTimeoutMs: 10 });
+
+    const rejection = client.listOrders('page-1');
+    await expect(rejection).rejects.toMatchObject({
+      code: 'REQUEST_TIMEOUT',
+      retryable: true
+    });
+    await expect(rejection).rejects.not.toThrow(/client-secret/);
+  });
+
   it('rejects malformed provider responses', async () => {
     const invalidToken = createClient(async () => json({ accessToken: '', expiresIn: 0 }));
     await expect(invalidToken.listOrders('page-1')).rejects.toMatchObject({
@@ -311,6 +326,7 @@ describe('AnotaAiClient', () => {
     expect(() => createClient(jest.fn(), { tokenExpirySkewSeconds: 301 })).toThrow(
       /tokenExpirySkewSeconds/
     );
+    expect(() => createClient(jest.fn(), { requestTimeoutMs: 0 })).toThrow(/requestTimeoutMs/);
 
     const grouped = createClient(async (url) =>
       url.includes('/oauth-client/token')

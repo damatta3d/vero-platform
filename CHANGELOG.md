@@ -8,9 +8,24 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 
 ### Added
 
+- Gate A da MISSÃO 009 com Design Document `VERO-INT-001`, backlog e plano de homologação
+  progressiva do Connector Anota AI.
+- ADR-010 proposto para Integration Hub, Anti-Corruption Layer, inbox/outbox e garantias
+  at-least-once com efeitos idempotentes.
+- Cliente Anota AI com OAuth 2.0, isolamento por estabelecimento e operações oficialmente
+  documentadas.
+- Smoke read-only protegido para cardápio, lista e detalhe de pedido.
+- Contrato `ExternalOrder`, ACL de pedido real e vínculos explícitos de catálogo por tenant.
+- Timeout configurável com cancelamento e erro sanitizado em todas as chamadas Anota AI.
 - Validação guiada da Parmegiana individual com os custos reais de HM05F e MC500 da compra de
   28/07/2026, incluindo entrada, baixa transacional e CMV.
 - M008-D com classificação explícita de insumos e embalagens no catálogo.
+
+### Changed
+
+- Estado da MISSÃO 009 reconciliado após o merge concorrente do PR #9 no commit `bac02c7`;
+  Design Document, ADR e timeout seguem em revisão complementar sem ativar webhooks, vendas ou
+  baixas de estoque.
 - Embalagens consumíveis incluídas na ficha técnica, estoque, produção, venda e CMV realizado.
 - Interface atualizada para cadastrar, comprar e acompanhar embalagens por unidade.
 - Migration retrocompatível e teste de persistência da embalagem HM05F.
@@ -78,6 +93,12 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Pacote 3 da Constituição Arquitetural com princípios completos de domínio, modularidade, multi-tenancy, eventos, engines, IA, integrações, segurança e observabilidade.
 - Referências cruzadas granulares para os tópicos a detalhar posteriormente no Blueprint.
 - Pacote 2 da Constituição Arquitetural com Missão, Visão e Valores.
+
+### Changed
+
+- Status atualizado após o merge da MISSÃO 008 no commit `34fdcf4`.
+- Importação operacional de pedidos condicionada a um contrato público de Order Intake; o conector
+  não gravará diretamente na venda simplificada.
 - Registro rastreável dos tópicos constitucionais a detalhar no Blueprint.
 - Controle de versão independente da Constituição em `docs/00-Constituicao-Arquitetural/VERSION.md`.
 - Política de ciclo de vida, estado documental, identificador único, histórico próprio e rastreabilidade para documentos normativos.

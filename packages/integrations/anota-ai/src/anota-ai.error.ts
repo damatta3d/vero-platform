@@ -4,6 +4,7 @@ export type AnotaAiErrorCode =
   | 'RATE_LIMITED'
   | 'PROVIDER_REJECTED'
   | 'INVALID_PROVIDER_RESPONSE'
+  | 'REQUEST_TIMEOUT'
   | 'TRANSPORT_FAILED';
 
 export class AnotaAiError extends Error {

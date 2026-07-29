@@ -6,12 +6,16 @@
 **Constituição:** VERO-CONST-001 v1.0.0 — Approved  
 **Blueprint Volumes I e II:** v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
-**ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
+**ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved; ADR-010 v1.0.0 — Approved no PR #10  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
-**Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** MISSÃO 008 concluída; parecer técnico favorável e PR #8 pronto para revisão
-**Branch:** `agent/missao-008-santo-parma-mvp`  
-**Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
+**Fase:** MISSÃO 009 — Connector Anota AI
+
+**Estado:** PR #9 integrado; smoke read-only aprovado; Gate A arquitetural aprovado no PR #10
+
+**Branch:** `agent/missao-009-anota-ai-governance`
+
+**Baseline oficial da `main`:** `bac02c7aa561f62fb582381fd0b710e948fc3d2a`
+
 **Atualizado em:** 2026-07-29
 
 ## Concluído
@@ -43,18 +47,29 @@
 - CI final `30461716408` aprovou `quality` e `integration` com PostgreSQL real.
 - Validação guiada da Parmegiana de Alcatra individual concluída.
 - Parecer técnico final da MISSÃO 008 favorável à aprovação do PR #8.
+- PR #8 integrado à `main` no commit `34fdcf4`.
+- MISSÃO 009 implementada no PR #9 e integrada concorrentemente durante a revisão arquitetural.
+- `VERO-INT-001` v1.0.0 aprovado no Gate A da MISSÃO 009.
+- ADR-010 v1.0.0 aprovado para Integration Hub e fronteira do Connector Anota AI.
+- Identificado que pedido externo não pode ser convertido diretamente na venda simplificada atual.
+- PR #9 integrado com cliente OAuth, ACL e vínculos de catálogo multitenant.
+- Smoke read-only `30471438277` autenticou, listou 30 categorias e traduziu 1 pedido real.
+- CI `30471437674` aprovou quality, migrations e integração PostgreSQL.
+- Timeout próprio e erro sanitizado adicionados à autenticação e às chamadas do conector.
 
 ## Estado das linhas GitHub
 
 | Linha | Estado |
 |---|---|
-| `main` | Segurança essencial integrada no commit `ca066dd` |
+| `main` | Connector Anota AI do PR #9 integrado no commit `bac02c7` |
 | PR #3 | Merged; Fundação Executável |
 | PR #4 | Merged; ADR-001 a ADR-006 |
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | MISSÃO 008 concluída; pronta para revisão e decisão de merge |
+| PR #8 | Merged; MVP Santo Parma |
+| PR #9 | Merged; Connector Anota AI read-only e vínculos homologados |
+| PR #10 | Gate A aprovado; Design, ADR e timeout em validação final |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -118,9 +133,19 @@
 - CMV estimado preciso de duas vendas validado em R$ 19,89;
 - CI final `30461716408` aprovou `quality`, migrations e integração PostgreSQL.
 
+## Escopo da MISSÃO 009
+
+- pesquisa dos contratos oficiais da Anota AI;
+- Integration Hub provider-neutral;
+- Connector Anota AI com Anti-Corruption Layer;
+- conexão por tenant e estabelecimento;
+- inbox, deduplicação, resiliência e observabilidade;
+- Order Intake antes de qualquer venda automática;
+- homologação progressiva iniciando por read-only.
+
 ## Fora do escopo vigente
 
-- integrações automáticas com iFood e Anote Aí;
+- integração com iFood;
 - fiscal, contabilidade e conciliação;
 - aprovação avançada de compras;
 - produção avançada;
@@ -130,6 +155,8 @@
 
 ## Próximo gate
 
-1. Submeter o PR #8 à revisão final.
-2. Realizar o merge somente após autorização do Arquiteto-Chefe.
-3. Após o merge, planejar a MISSÃO 009 sem misturá-la ao escopo concluído.
+1. Concluir os gates do PR #10 e submetê-lo à decisão de merge.
+2. Fechar lifecycle, health e governança de conexão.
+3. Confirmar com a Anota AI os contratos operacionais pendentes.
+4. Definir SecretProvider para ambiente compartilhado.
+5. Manter webhooks, venda e estoque bloqueados até o próximo gate.
