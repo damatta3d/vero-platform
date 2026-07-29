@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-D em validação; embalagens integradas localmente ao estoque e ao CMV
+**Estado:** M008-D com embalagens aprovada no CI; aguardando custos reais e validação guiada
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -38,7 +38,7 @@
 - 106 testes e build dos 15 projetos aprovados.
 - M008-D iniciada com distinção entre insumos e embalagens.
 - Embalagens incluídas na ficha técnica e na baixa transacional de produção/venda.
-- Validação local atualizada para 107 testes e build dos 15 projetos.
+- CI `30417176073` aprovou migration, persistência de embalagens, 107 testes e 15 builds.
 
 ## Estado das linhas GitHub
 
@@ -50,7 +50,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-D com embalagens implementada localmente; aguardando CI |
+| `agent/missao-008-santo-parma-mvp` | M008-D com embalagens aprovada no CI; aguardando validação guiada |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -106,7 +106,9 @@
 - custo estimado e realizado incluindo embalagens;
 - interface responsiva com contadores, identificação e compra de embalagens;
 - migration retrocompatível: cadastros existentes permanecem como insumos;
-- 107 testes, arquitetura, lint e build dos 15 projetos aprovados localmente.
+- 107 testes, arquitetura, lint e build dos 15 projetos aprovados localmente e no CI;
+- migration e baixa transacional das embalagens aprovadas com PostgreSQL real no CI
+  `30417176073`.
 
 ## Fora do escopo vigente
 
@@ -120,6 +122,6 @@
 
 ## Próximo gate
 
-1. Validar a migration e o cenário transacional de embalagens no CI do PR #8.
-2. Preencher os custos reais de HM05F, MC500 e MO100-4.
-3. Executar a validação guiada da Parmegiana de Alcatra individual.
+1. Preencher os custos reais de HM05F, MC500 e MO100-4.
+2. Executar a validação guiada da Parmegiana de Alcatra individual.
+3. Emitir o parecer final da MISSÃO 008 antes de qualquer merge.

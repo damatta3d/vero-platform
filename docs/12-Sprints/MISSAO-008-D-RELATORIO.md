@@ -2,9 +2,10 @@
 
 ## Resultado
 
-**Estado:** implementação local concluída; aguardando CI e custos reais  
+**Estado:** implementação aprovada no CI; aguardando custos reais e validação guiada  
 **Branch:** `agent/missao-008-santo-parma-mvp`  
-**PR:** #8 — permanece em rascunho
+**PR:** #8 — permanece em rascunho  
+**CI:** run `30417176073` — `quality` e `integration` aprovados
 
 ## Fluxo entregue
 
@@ -35,7 +36,15 @@ porção. MO100-4 será usada nas fichas dos produtos da categoria Monte seu Pra
 - lint, TypeScript strict e arquitetura aprovados;
 - build dos 15 projetos aprovado.
 
+## Evidências do CI
+
+- migration aplicada com sucesso;
+- HM05F persistida como embalagem;
+- venda de duas porções baixou duas embalagens e os alimentos na mesma transação;
+- CMV e margem realizados incluíram o custo médio das embalagens;
+- 107 testes, arquitetura, lint e 15 builds aprovados.
+
 ## Gate pendente
 
-O CI deverá aplicar a migration e executar o teste transacional em PostgreSQL real. Os valores
-definitivos das embalagens serão cadastrados após confirmação do preço e da quantidade por pacote.
+Os valores definitivos das embalagens serão cadastrados após confirmação do preço e da quantidade
+por pacote. Em seguida será executado o teste guiado da Parmegiana de Alcatra individual.
