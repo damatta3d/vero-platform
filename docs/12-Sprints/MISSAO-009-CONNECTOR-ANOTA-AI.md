@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Status:** Implementação read-only integrada; Gate A arquitetural em revisão complementar
+**Status:** Implementação read-only integrada; Gate A arquitetural aprovado
 **Tenant piloto:** O Santo Parma
 **Branch:** `agent/missao-009-anota-ai-governance`
 **Baseline:** `main` em `bac02c7aa561f62fb582381fd0b710e948fc3d2a`
@@ -87,5 +87,6 @@ contratos oficiais e o desenho arquitetural serem aprovados.
 
 ## Gate atual
 
-Submeter `VERO-INT-001` e ADR-010 à revisão do Arquiteto-Chefe. O cliente read-only foi integrado
-pelo PR #9; ativação operacional, webhooks, venda e estoque continuam bloqueados.
+Integrar o PR #10 após os gates finais e autorização. Em seguida, fechar lifecycle, health,
+governança de conexão e os contratos operacionais pendentes com a Anota AI. Ativação operacional,
+webhooks, venda e estoque continuam bloqueados.
