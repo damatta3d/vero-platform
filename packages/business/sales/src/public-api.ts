@@ -28,6 +28,7 @@ export type {
   ExternalOrderSource
 } from './application/external-order.js';
 export {
+  createExternalCatalogLink,
   ExternalCatalogLinkError,
   resolveExternalOrderCatalog,
   type ExternalCatalogLink,
@@ -37,6 +38,16 @@ export {
   type ResolvedExternalCatalogReference,
   type UnresolvedExternalCatalogReference
 } from './application/external-catalog-link.js';
+export {
+  ExternalCatalogLinkService,
+  type ExternalCatalogLinkAudit,
+  type ExternalCatalogLinkClock,
+  type ExternalCatalogLinkRepository,
+  type ExternalCatalogLinkScope,
+  type HomologateExternalCatalogLinkInput,
+  type PersistedExternalCatalogLink,
+  type RemoveExternalCatalogLinkInput
+} from './application/external-catalog-link-service.js';
 export type { SalePostingDecision, SalesRepository } from './application/sales-repository.js';
 export {
   SalesService,

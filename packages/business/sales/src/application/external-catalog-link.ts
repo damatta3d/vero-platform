@@ -1,7 +1,11 @@
 import type { ExternalOrder } from './external-order.js';
 
 export type ExternalCatalogReferenceKind = 'ITEM' | 'MODIFIER';
-export type ExternalCatalogLinkErrorCode = 'INVALID_LINK' | 'DUPLICATE_LINK' | 'SCOPE_MISMATCH';
+export type ExternalCatalogLinkErrorCode =
+  | 'INVALID_LINK'
+  | 'DUPLICATE_LINK'
+  | 'SCOPE_MISMATCH'
+  | 'CATALOG_PRODUCT_NOT_FOUND';
 
 export interface ExternalCatalogLink {
   readonly tenantId: string;
@@ -40,6 +44,10 @@ export class ExternalCatalogLinkError extends Error {
   }
 }
 
+export function createExternalCatalogLink(value: ExternalCatalogLink): ExternalCatalogLink {
+  return validateLink(value, 'link');
+}
+
 export function resolveExternalOrderCatalog(
   tenantIdValue: string,
   order: ExternalOrder,
@@ -54,7 +62,7 @@ export function resolveExternalOrderCatalog(
   const linkByReference = new Map<string, ExternalCatalogLink>();
 
   for (const [index, candidate] of links.entries()) {
-    const link = validateLink(candidate, index);
+    const link = validateLink(candidate, `links[${index}]`);
     if (
       link.tenantId !== tenantId ||
       link.provider !== provider ||
@@ -120,8 +128,7 @@ function addReference(
   }
 }
 
-function validateLink(value: ExternalCatalogLink, index: number): ExternalCatalogLink {
-  const field = `links[${index}]`;
+function validateLink(value: ExternalCatalogLink, field: string): ExternalCatalogLink {
   if (value.kind !== 'ITEM' && value.kind !== 'MODIFIER') {
     fail('INVALID_LINK', `${field}.kind`);
   }
