@@ -276,8 +276,7 @@ function parseOperation(value: unknown): AnotaAiOperationResult {
 
 function parseMenuExport(value: unknown): AnotaAiMenuExport {
   const root = successfulRecord(value);
-  const categories = root['categories'];
-  if (!Array.isArray(categories)) invalidProviderResponse();
+  const categories = menuCategories(root);
   const normalized = categories.map((category) => {
     if (!isRecord(category)) invalidProviderResponse();
     return Object.freeze({ ...category });
@@ -290,6 +289,17 @@ function parseMenuExport(value: unknown): AnotaAiMenuExport {
     ...(normalizedMessage === undefined ? {} : { message: normalizedMessage }),
     categories: Object.freeze(normalized)
   });
+}
+
+function menuCategories(root: Record<string, unknown>): unknown[] {
+  const direct = root['categories'];
+  if (Array.isArray(direct)) return direct;
+
+  const data = root['data'];
+  if (Array.isArray(data)) return data;
+  if (isRecord(data) && Array.isArray(data['categories'])) return data['categories'];
+
+  invalidProviderResponse();
 }
 
 function successfulRecord(value: unknown): Record<string, unknown> {
