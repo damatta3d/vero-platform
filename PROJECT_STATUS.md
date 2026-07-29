@@ -55,6 +55,7 @@
 - PR #9 criado em rascunho com cliente OAuth, ACL e vínculos de catálogo multitenant.
 - Smoke read-only `30471438277` autenticou, listou 30 categorias e traduziu 1 pedido real.
 - CI `30471437674` aprovou quality, migrations e integração PostgreSQL.
+- Timeout próprio e erro sanitizado adicionados à autenticação e às chamadas do conector.
 
 ## Estado das linhas GitHub
 
@@ -156,6 +157,6 @@
 
 1. Revisar e aprovar `VERO-INT-001`.
 2. Revisar e aprovar o ADR-010.
-3. Corrigir timeout e fechar a governança de conexão.
+3. Fechar lifecycle, health e governança de conexão.
 4. Confirmar com a Anota AI os contratos operacionais pendentes.
 5. Manter webhooks, venda e estoque bloqueados até o próximo gate.

@@ -23,7 +23,7 @@
 - [x] Isolar estabelecimento por Page ID.
 - [ ] Definir SecretProvider adequado ao ambiente.
 - [x] Criar schemas e fixtures oficiais versionadas.
-- [ ] Adicionar timeout próprio ao cliente HTTP.
+- [x] Adicionar timeout próprio ao cliente HTTP.
 - [ ] Implementar lifecycle de conexão, health e métricas.
 - [x] Executar smoke test read-only.
 

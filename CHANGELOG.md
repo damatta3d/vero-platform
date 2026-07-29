@@ -16,6 +16,7 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
   documentadas.
 - Smoke read-only protegido para cardápio, lista e detalhe de pedido.
 - Contrato `ExternalOrder`, ACL de pedido real e vínculos explícitos de catálogo por tenant.
+- Timeout configurável com cancelamento e erro sanitizado em todas as chamadas Anota AI.
 - Validação guiada da Parmegiana individual com os custos reais de HM05F e MC500 da compra de
   28/07/2026, incluindo entrada, baixa transacional e CMV.
 - M008-D com classificação explícita de insumos e embalagens no catálogo.

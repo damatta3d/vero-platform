@@ -8,6 +8,7 @@ export interface AnotaAiClientOptions {
   readonly serviceName?: string;
   readonly runtimeVersion?: string;
   readonly tokenExpirySkewSeconds?: number;
+  readonly requestTimeoutMs?: number;
   readonly fetch?: AnotaAiFetch;
   readonly now?: () => number;
 }
