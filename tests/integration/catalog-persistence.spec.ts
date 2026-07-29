@@ -24,6 +24,17 @@ describe('catalog persistence', () => {
       createdAt: now,
       updatedAt: now
     });
+    const packaging = createIngredient({
+      id: '10000000-0000-4000-8000-000000000002',
+      tenantId: tenantA,
+      name: 'HM05F',
+      kind: 'PACKAGING',
+      unit: 'UNIT',
+      packageQuantityMicros: 100_000_000,
+      packageCostCents: 5000,
+      createdAt: now,
+      updatedAt: now
+    });
     const product = createProduct({
       id: '20000000-0000-4000-8000-000000000001',
       tenantId: tenantA,
@@ -38,16 +49,21 @@ describe('catalog persistence', () => {
       productId: product.id,
       version: 1,
       yieldUnits: 1,
-      lines: [{ ingredientId: ingredient.id, quantityMicros: 150_000 }],
+      lines: [
+        { ingredientId: ingredient.id, quantityMicros: 150_000 },
+        { ingredientId: packaging.id, quantityMicros: 1_000_000 }
+      ],
       authoredBy: 'vero:integration',
       createdAt: now
     });
 
     await repository.saveIngredient(ingredient);
+    await repository.saveIngredient(packaging);
     await repository.saveProduct(product);
     await repository.saveRecipe(recipe);
 
     await expect(repository.findLatestRecipe(tenantA, product.id)).resolves.toEqual(recipe);
+    await expect(repository.findIngredient(tenantA, packaging.id)).resolves.toEqual(packaging);
     await expect(repository.findProduct(tenantB, product.id)).resolves.toBeUndefined();
     await expect(repository.findIngredients(tenantB, [ingredient.id])).resolves.toEqual([]);
   });

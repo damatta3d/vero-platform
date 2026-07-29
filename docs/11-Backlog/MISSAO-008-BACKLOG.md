@@ -36,7 +36,7 @@
 - [x] Criar interface responsiva do fluxo principal.
 - [x] Implementar formulários, listas e painel mínimo.
 - [x] Incluir estados de vazio, erro e confirmação.
-- [ ] Executar validação guiada com dados reais do Santo Parma.
+- [x] Executar validação guiada com dados reais do Santo Parma.
 
 ## Adiados
 

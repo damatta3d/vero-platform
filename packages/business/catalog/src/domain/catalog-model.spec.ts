@@ -2,7 +2,8 @@ import {
   calculateRecipeCost,
   createIngredient,
   createProduct,
-  createRecipe
+  createRecipe,
+  type CatalogItemKind
 } from './catalog-model.js';
 import { CatalogTenantMismatchError, InvalidCatalogDataError } from './catalog-errors.js';
 
@@ -38,6 +39,28 @@ describe('catalog domain', () => {
         packageCostCents: 4000,
         createdAt: now,
         updatedAt: now
+      }),
+      createIngredient({
+        id: 'hm05f',
+        tenantId: 'santo-parma',
+        name: 'HM05F',
+        kind: 'PACKAGING',
+        unit: 'UNIT',
+        packageQuantityMicros: 150_000_000,
+        packageCostCents: 12_103,
+        createdAt: now,
+        updatedAt: now
+      }),
+      createIngredient({
+        id: 'mc500',
+        tenantId: 'santo-parma',
+        name: 'MC500 com tampa',
+        kind: 'PACKAGING',
+        unit: 'UNIT',
+        packageQuantityMicros: 200_000_000,
+        packageCostCents: 23_767,
+        createdAt: now,
+        updatedAt: now
       })
     ];
     const recipe = createRecipe({
@@ -48,19 +71,48 @@ describe('catalog domain', () => {
       yieldUnits: 1,
       lines: [
         { ingredientId: 'alcatra', quantityMicros: 150_000 },
-        { ingredientId: 'mucarela', quantityMicros: 70_000 }
+        { ingredientId: 'mucarela', quantityMicros: 70_000 },
+        { ingredientId: 'hm05f', quantityMicros: 1_000_000 },
+        { ingredientId: 'mc500', quantityMicros: 1_000_000 }
       ],
       authoredBy: 'vero:christian',
       createdAt: now
     });
 
     expect(calculateRecipeCost(product, recipe, ingredients)).toEqual({
-      totalCostCents: 1075,
-      costPerUnitCents: 1075,
+      totalCostCents: 1275,
+      costPerUnitCents: 1275,
       salePriceCents: 4490,
-      marginCents: 3415,
-      marginBasisPoints: 7606
+      marginCents: 3215,
+      marginBasisPoints: 7160
     });
+  });
+
+  it('classifies packaging separately while keeping old ingredient inputs compatible', () => {
+    const ingredient = createIngredient({
+      id: 'alcatra',
+      tenantId: 'santo-parma',
+      name: 'Alcatra',
+      unit: 'KILOGRAM',
+      packageQuantityMicros: 1_000_000,
+      packageCostCents: 5300,
+      createdAt: now,
+      updatedAt: now
+    });
+    const packaging = createIngredient({
+      id: 'mc500',
+      tenantId: 'santo-parma',
+      name: 'MC500',
+      kind: 'PACKAGING',
+      unit: 'UNIT',
+      packageQuantityMicros: 100_000_000,
+      packageCostCents: 5000,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    expect(ingredient.kind).toBe('INGREDIENT');
+    expect(packaging.kind).toBe('PACKAGING');
   });
 
   it('rejects invalid quantities, duplicate recipe lines and cross-tenant data', () => {
@@ -72,6 +124,19 @@ describe('catalog domain', () => {
         unit: 'KILOGRAM',
         packageQuantityMicros: 0,
         packageCostCents: 5300,
+        createdAt: now,
+        updatedAt: now
+      })
+    ).toThrow(InvalidCatalogDataError);
+    expect(() =>
+      createIngredient({
+        id: 'packaging',
+        tenantId: 'tenant-a',
+        name: 'HM05F',
+        kind: 'INVALID' as CatalogItemKind,
+        unit: 'UNIT',
+        packageQuantityMicros: 1_000_000,
+        packageCostCents: 50,
         createdAt: now,
         updatedAt: now
       })

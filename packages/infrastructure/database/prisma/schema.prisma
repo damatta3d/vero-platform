@@ -14,6 +14,11 @@ enum CatalogUnitOfMeasure {
   LITER
 }
 
+enum CatalogItemKind {
+  INGREDIENT
+  PACKAGING
+}
+
 enum InventoryStockMovementType {
   PURCHASE_IN
   CONSUMPTION_OUT
@@ -25,6 +30,7 @@ model CatalogIngredient {
   id                    String                   @db.Uuid
   tenantId              String                   @db.VarChar(128)
   name                  String                   @db.VarChar(160)
+  kind                  CatalogItemKind          @default(INGREDIENT)
   unit                  CatalogUnitOfMeasure
   packageQuantityMicros BigInt
   packageCostCents      Int
@@ -38,6 +44,7 @@ model CatalogIngredient {
 
   @@id([tenantId, id])
   @@index([tenantId, name])
+  @@index([tenantId, kind, name])
   @@map("catalog_ingredients")
 }
 
@@ -74,12 +81,12 @@ model InventoryStockMovement {
 }
 
 model CatalogProduct {
-  id             String          @db.Uuid
-  tenantId       String          @db.VarChar(128)
-  name           String          @db.VarChar(160)
+  id             String             @db.Uuid
+  tenantId       String             @db.VarChar(128)
+  name           String             @db.VarChar(160)
   salePriceCents Int
-  createdAt      DateTime        @db.Timestamptz(3)
-  updatedAt      DateTime        @db.Timestamptz(3)
+  createdAt      DateTime           @db.Timestamptz(3)
+  updatedAt      DateTime           @db.Timestamptz(3)
   recipes        CatalogRecipe[]
   sales          SalesRecord[]
   productions    ProductionRecord[]
@@ -91,16 +98,16 @@ model CatalogProduct {
 }
 
 model CatalogRecipe {
-  id         String              @db.Uuid
-  tenantId   String              @db.VarChar(128)
-  productId  String              @db.Uuid
-  version    Int
-  yieldUnits Int
-  authoredBy String              @db.VarChar(256)
-  createdAt  DateTime            @db.Timestamptz(3)
-  product    CatalogProduct      @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
-  lines      CatalogRecipeLine[]
-  sales      SalesRecord[]
+  id          String              @db.Uuid
+  tenantId    String              @db.VarChar(128)
+  productId   String              @db.Uuid
+  version     Int
+  yieldUnits  Int
+  authoredBy  String              @db.VarChar(256)
+  createdAt   DateTime            @db.Timestamptz(3)
+  product     CatalogProduct      @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
+  lines       CatalogRecipeLine[]
+  sales       SalesRecord[]
   productions ProductionRecord[]
 
   @@id([tenantId, id])
@@ -166,22 +173,22 @@ model SalesCostLine {
 }
 
 model ProductionRecord {
-  id                 String               @db.Uuid
-  tenantId           String               @db.VarChar(128)
-  idempotencyKey     String               @db.VarChar(160)
-  productId          String               @db.Uuid
-  productName        String               @db.VarChar(160)
-  recipeId           String               @db.Uuid
-  recipeVersion      Int
-  yieldUnits         Int
-  quantity           Int
-  estimatedCmvCents  Int
-  realizedCmvCents   Int
-  authoredBy         String               @db.VarChar(256)
-  producedAt         DateTime             @db.Timestamptz(3)
-  product            CatalogProduct       @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
-  recipe             CatalogRecipe        @relation(fields: [tenantId, recipeId], references: [tenantId, id], onDelete: Restrict)
-  costLines          ProductionCostLine[]
+  id                String               @db.Uuid
+  tenantId          String               @db.VarChar(128)
+  idempotencyKey    String               @db.VarChar(160)
+  productId         String               @db.Uuid
+  productName       String               @db.VarChar(160)
+  recipeId          String               @db.Uuid
+  recipeVersion     Int
+  yieldUnits        Int
+  quantity          Int
+  estimatedCmvCents Int
+  realizedCmvCents  Int
+  authoredBy        String               @db.VarChar(256)
+  producedAt        DateTime             @db.Timestamptz(3)
+  product           CatalogProduct       @relation(fields: [tenantId, productId], references: [tenantId, id], onDelete: Restrict)
+  recipe            CatalogRecipe        @relation(fields: [tenantId, recipeId], references: [tenantId, id], onDelete: Restrict)
+  costLines         ProductionCostLine[]
 
   @@id([tenantId, id])
   @@unique([tenantId, idempotencyKey])
