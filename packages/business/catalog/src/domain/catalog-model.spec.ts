@@ -46,8 +46,19 @@ describe('catalog domain', () => {
         name: 'HM05F',
         kind: 'PACKAGING',
         unit: 'UNIT',
-        packageQuantityMicros: 100_000_000,
-        packageCostCents: 5000,
+        packageQuantityMicros: 150_000_000,
+        packageCostCents: 12_103,
+        createdAt: now,
+        updatedAt: now
+      }),
+      createIngredient({
+        id: 'mc500',
+        tenantId: 'santo-parma',
+        name: 'MC500 com tampa',
+        kind: 'PACKAGING',
+        unit: 'UNIT',
+        packageQuantityMicros: 200_000_000,
+        packageCostCents: 23_767,
         createdAt: now,
         updatedAt: now
       })
@@ -61,18 +72,19 @@ describe('catalog domain', () => {
       lines: [
         { ingredientId: 'alcatra', quantityMicros: 150_000 },
         { ingredientId: 'mucarela', quantityMicros: 70_000 },
-        { ingredientId: 'hm05f', quantityMicros: 1_000_000 }
+        { ingredientId: 'hm05f', quantityMicros: 1_000_000 },
+        { ingredientId: 'mc500', quantityMicros: 1_000_000 }
       ],
       authoredBy: 'vero:christian',
       createdAt: now
     });
 
     expect(calculateRecipeCost(product, recipe, ingredients)).toEqual({
-      totalCostCents: 1125,
-      costPerUnitCents: 1125,
+      totalCostCents: 1275,
+      costPerUnitCents: 1275,
       salePriceCents: 4490,
-      marginCents: 3365,
-      marginBasisPoints: 7494
+      marginCents: 3215,
+      marginBasisPoints: 7160
     });
   });
 

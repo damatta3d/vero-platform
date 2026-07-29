@@ -125,12 +125,19 @@ describe(CatalogService.name, () => {
       packageQuantityMicros: 1_000_000,
       packageCostCents: 4000
     });
-    const packaging = await service.createIngredient(await access('catalog.ingredient.create'), {
+    const hm05f = await service.createIngredient(await access('catalog.ingredient.create'), {
       name: 'HM05F',
       kind: 'PACKAGING',
       unit: 'UNIT',
-      packageQuantityMicros: 100_000_000,
-      packageCostCents: 5000
+      packageQuantityMicros: 150_000_000,
+      packageCostCents: 12_103
+    });
+    const mc500 = await service.createIngredient(await access('catalog.ingredient.create'), {
+      name: 'MC500 com tampa',
+      kind: 'PACKAGING',
+      unit: 'UNIT',
+      packageQuantityMicros: 200_000_000,
+      packageCostCents: 23_767
     });
     const product = await service.createProduct(await access('catalog.product.create'), {
       name: 'Parmegiana de Alcatra',
@@ -142,20 +149,21 @@ describe(CatalogService.name, () => {
       lines: [
         { ingredientId: alcatra.id, quantityMicros: 150_000 },
         { ingredientId: cheese.id, quantityMicros: 70_000 },
-        { ingredientId: packaging.id, quantityMicros: 1_000_000 }
+        { ingredientId: hm05f.id, quantityMicros: 1_000_000 },
+        { ingredientId: mc500.id, quantityMicros: 1_000_000 }
       ]
     });
 
     expect(recipe.version).toBe(1);
     expect(await service.getProductCost(await access('catalog.cost.read'), product.id)).toEqual({
-      totalCostCents: 1125,
-      costPerUnitCents: 1125,
+      totalCostCents: 1275,
+      costPerUnitCents: 1275,
       salePriceCents: 4490,
-      marginCents: 3365,
-      marginBasisPoints: 7494
+      marginCents: 3215,
+      marginBasisPoints: 7160
     });
     const items = await service.listIngredients(await access('catalog.ingredient.read'));
-    expect(items).toHaveLength(3);
+    expect(items).toHaveLength(4);
     expect(items.find((item) => item.name === 'HM05F')?.kind).toBe('PACKAGING');
     expect(await service.listProducts(await access('catalog.product.read'))).toHaveLength(1);
   });

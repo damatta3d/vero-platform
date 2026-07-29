@@ -2,7 +2,7 @@
 
 ## Resultado
 
-**Estado:** implementação aprovada no CI; aguardando custos reais e validação guiada  
+**Estado:** custos reais incorporados; aguardando CI final da validação guiada
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **PR:** #8 — permanece em rascunho  
 **CI:** run `30417176073` — `quality` e `integration` aprovados
@@ -22,9 +22,27 @@
 - HM05F — parmegiana individual, recipiente de proteína/molho/queijo;
 - MC500 — arroz e batata rústica da parmegiana individual;
 - MO100-4 — marmitex de quatro divisórias do Monte seu Prato.
+- TPMO100 — tampa compatível da MO100-4.
 
 HM05F e MC500 devem compor a ficha da Parmegiana de Alcatra individual, uma unidade de cada por
-porção. MO100-4 será usada nas fichas dos produtos da categoria Monte seu Prato.
+porção. MO100-4 e TPMO100 devem compor as fichas dos produtos da categoria Monte seu Prato, uma
+unidade de cada porção.
+
+## Compra real de 28/07/2026
+
+| Código | Conteúdo por caixa | Caixas | Quantidade total | Total dos produtos | Custo unitário exato |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| HM05F | 150 un. | 2 | 300 un. | R$ 242,06 | R$ 0,806866... |
+| MC500 com tampa | 200 un. | 2 | 400 un. | R$ 475,34 | R$ 1,18835 |
+| MO100-4 | 100 un. | 2 | 200 un. | R$ 225,40 | R$ 1,127 |
+| TPMO100 | 100 un. | 2 | 200 un. | R$ 171,04 | R$ 0,8552 |
+
+O custo combinado de embalagem da Parmegiana individual é R$ 1,995216... e arredonda para
+**R$ 2,00 por pedido**. O custo combinado do Monte seu Prato é R$ 1,9822 e arredonda para
+**R$ 1,98 por pedido**.
+
+Os produtos somam R$ 1.113,84. A diferença para o total da nota, R$ 1.117,84, corresponde a
+R$ 4,00 de outras despesas acessórias e não foi rateada nos itens nesta validação.
 
 ## Evidências locais
 
@@ -44,7 +62,12 @@ porção. MO100-4 será usada nas fichas dos produtos da categoria Monte seu Pra
 - CMV e margem realizados incluíram o custo médio das embalagens;
 - 107 testes, arquitetura, lint e 15 builds aprovados.
 
-## Gate pendente
+## Validação guiada
 
-Os valores definitivos das embalagens serão cadastrados após confirmação do preço e da quantidade
-por pacote. Em seguida será executado o teste guiado da Parmegiana de Alcatra individual.
+- catálogo usa o preço e a quantidade por caixa, preservando precisão no cálculo unitário;
+- ficha da Parmegiana individual consome uma HM05F e uma MC500 por porção;
+- entrada real registra 300 HM05F por R$ 242,06 e 400 MC500 por R$ 475,34;
+- venda de duas porções baixa duas unidades de cada embalagem na mesma transação;
+- CMV estimado e realizado incluem ambas as embalagens e preservam o custo histórico.
+
+O fechamento depende somente do CI final desta validação e do parecer técnico da MISSÃO 008.

@@ -122,6 +122,5 @@
 
 ## Próximo gate
 
-1. Preencher os custos reais de HM05F, MC500 e MO100-4.
-2. Executar a validação guiada da Parmegiana de Alcatra individual.
-3. Emitir o parecer final da MISSÃO 008 antes de qualquer merge.
+1. Confirmar no CI a validação guiada com HM05F e MC500 pelos custos reais de 28/07/2026.
+2. Emitir o parecer final da MISSÃO 008 antes de qualquer merge.

@@ -19,9 +19,11 @@ describe('sales persistence', () => {
   const recipeId = '72000000-0000-4000-8000-000000000001';
   const ingredientId = '73000000-0000-4000-8000-000000000001';
   const packagingId = '73000000-0000-4000-8000-000000000002';
+  const sidePackagingId = '73000000-0000-4000-8000-000000000003';
   const saleId = '74000000-0000-4000-8000-000000000001';
   const movementId = '75000000-0000-4000-8000-000000000001';
   const packagingMovementId = '75000000-0000-4000-8000-000000000002';
+  const sidePackagingMovementId = '75000000-0000-4000-8000-000000000003';
   const idempotencyKey = '76000000-0000-4000-8000-000000000001';
   const now = new Date('2026-07-28T23:00:00.000Z');
 
@@ -45,8 +47,21 @@ describe('sales persistence', () => {
         name: 'HM05F',
         kind: 'PACKAGING',
         unit: 'UNIT',
-        packageQuantityMicros: 100_000_000,
-        packageCostCents: 5000,
+        packageQuantityMicros: 150_000_000,
+        packageCostCents: 12_103,
+        createdAt: now,
+        updatedAt: now
+      })
+    );
+    await catalog.saveIngredient(
+      createIngredient({
+        id: sidePackagingId,
+        tenantId,
+        name: 'MC500 com tampa',
+        kind: 'PACKAGING',
+        unit: 'UNIT',
+        packageQuantityMicros: 200_000_000,
+        packageCostCents: 23_767,
         createdAt: now,
         updatedAt: now
       })
@@ -70,7 +85,8 @@ describe('sales persistence', () => {
         yieldUnits: 1,
         lines: [
           { ingredientId, quantityMicros: 150_000 },
-          { ingredientId: packagingId, quantityMicros: 1_000_000 }
+          { ingredientId: packagingId, quantityMicros: 1_000_000 },
+          { ingredientId: sidePackagingId, quantityMicros: 1_000_000 }
         ],
         authoredBy: 'vero:integration',
         createdAt: now
@@ -95,9 +111,22 @@ describe('sales persistence', () => {
         tenantId,
         ingredientId: packagingId,
         type: 'PURCHASE_IN',
-        quantityMicros: 100_000_000,
-        totalCostCents: 5000,
-        reason: 'Estoque inicial de embalagens',
+        quantityMicros: 300_000_000,
+        totalCostCents: 24_206,
+        reason: 'Compra real de 2 caixas HM05F em 28/07/2026',
+        authoredBy: 'vero:integration',
+        occurredAt: now
+      })
+    );
+    await inventory.transact(tenantId, sidePackagingId, (position) =>
+      createStockPosting(position, {
+        id: '77000000-0000-4000-8000-000000000003',
+        tenantId,
+        ingredientId: sidePackagingId,
+        type: 'PURCHASE_IN',
+        quantityMicros: 400_000_000,
+        totalCostCents: 47_534,
+        reason: 'Compra real de 2 caixas MC500 em 28/07/2026',
         authoredBy: 'vero:integration',
         occurredAt: now
       })
@@ -117,7 +146,8 @@ describe('sales persistence', () => {
         quantity: 2,
         movementIds: {
           [ingredientId]: movementId,
-          [packagingId]: packagingMovementId
+          [packagingId]: packagingMovementId,
+          [sidePackagingId]: sidePackagingMovementId
         },
         authoredBy: 'vero:integration',
         soldAt: now
@@ -131,9 +161,9 @@ describe('sales persistence', () => {
       recipeVersion: 1,
       quantity: 2,
       grossRevenueCents: 8980,
-      estimatedCmvCents: 1690,
-      realizedCmvCents: 1600,
-      marginCents: 7380
+      estimatedCmvCents: 1990,
+      realizedCmvCents: 1899,
+      marginCents: 7081
     });
     expect(repeated.id).toBe(first.id);
     await expect(inventory.findPosition(tenantId, ingredientId)).resolves.toMatchObject({
@@ -141,9 +171,13 @@ describe('sales persistence', () => {
     });
     await expect(inventory.listMovements(tenantId, ingredientId, 10)).resolves.toHaveLength(2);
     await expect(inventory.findPosition(tenantId, packagingId)).resolves.toMatchObject({
-      quantityOnHandMicros: 98_000_000
+      quantityOnHandMicros: 298_000_000
     });
     await expect(inventory.listMovements(tenantId, packagingId, 10)).resolves.toHaveLength(2);
+    await expect(inventory.findPosition(tenantId, sidePackagingId)).resolves.toMatchObject({
+      quantityOnHandMicros: 398_000_000
+    });
+    await expect(inventory.listMovements(tenantId, sidePackagingId, 10)).resolves.toHaveLength(2);
     await expect(sales.listSales(otherTenant, 10)).resolves.toHaveLength(0);
   });
 
@@ -159,8 +193,8 @@ describe('sales persistence', () => {
       salesCount: 1,
       unitsSold: 2,
       grossRevenueCents: 8980,
-      realizedCmvCents: 1600,
-      marginCents: 7380
+      realizedCmvCents: 1899,
+      marginCents: 7081
     });
   });
 });
