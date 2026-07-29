@@ -1,0 +1,147 @@
+import type { ExternalOrder } from '@vero/business-sales';
+import {
+  createChannelOrderFact,
+  InvalidChannelOrderFactError,
+  type OrderPseudonymizer
+} from './channel-order-fact.js';
+
+const order: ExternalOrder = Object.freeze({
+  currency: 'BRL',
+  identity: Object.freeze({
+    provider: 'ANOTA_AI',
+    establishmentExternalId: 'page-1',
+    orderExternalId: 'raw-order-123',
+    idempotencyKey: 'operational-key',
+    reference: '42'
+  }),
+  merchant: Object.freeze({ externalId: 'merchant-1', name: 'Santo Parma', unit: '' }),
+  source: Object.freeze({
+    salesChannel: 'DELIVERY',
+    origin: 'WHATSAPP',
+    type: 'DELIVERY',
+    menuVersion: 7
+  }),
+  createdAt: '2026-07-29T18:00:00.000Z',
+  updatedAt: '2026-07-29T18:05:00.000Z',
+  items: Object.freeze([
+    Object.freeze({
+      providerItemId: 'item-1',
+      name: 'Parmegiana',
+      quantity: 1,
+      unitPriceCents: 4490,
+      totalCents: 4990,
+      modifiers: Object.freeze([
+        Object.freeze({
+          providerItemId: 'modifier-1',
+          parentProviderItemId: 'item-1',
+          name: 'Purê',
+          quantity: 1,
+          unitPriceCents: 500,
+          totalCents: 500
+        })
+      ])
+    })
+  ]),
+  discounts: Object.freeze([Object.freeze({ amountCents: 200, tag: 'CUPOM' })]),
+  deliveryFeeCents: 800,
+  additionalFeesCents: Object.freeze([]),
+  payments: Object.freeze([
+    Object.freeze({
+      externalId: 'payment-secret',
+      code: 'CREDIT',
+      name: 'Cartão',
+      card: 'VISA',
+      prepaid: true,
+      amountCents: 5290
+    })
+  ]),
+  totalCents: 5290,
+  customer: Object.freeze({ name: 'Cliente Secreto', phone: '67999999999' }),
+  deliveryAddress: Object.freeze({
+    formattedAddress: 'Rua Privada, 123',
+    streetName: 'Rua Privada',
+    streetNumber: '123',
+    complement: '',
+    neighborhood: 'Centro',
+    city: 'Campo Grande',
+    state: 'MS',
+    country: 'BR',
+    postalCode: '79000-000',
+    latitude: -20.4,
+    longitude: -54.6
+  })
+});
+
+describe('ChannelOrderFact', () => {
+  const pseudonymizer: OrderPseudonymizer = {
+    pseudonymize: (scope) => `hmac-v1:${scope.tenantId}:${scope.connectionId}`
+  };
+
+  it('creates an immutable provider-neutral fact without direct PII or raw order identity', () => {
+    const fact = createChannelOrderFact(
+      {
+        tenantId: 'santo-parma',
+        connectionId: 'anota-ai-primary',
+        order,
+        observedAt: new Date('2026-07-29T18:06:00.000Z')
+      },
+      pseudonymizer
+    );
+
+    expect(fact).toMatchObject({
+      tenantId: 'santo-parma',
+      provider: 'ANOTA_AI',
+      orderKey: 'hmac-v1:santo-parma:anota-ai-primary',
+      revision: '2026-07-29T18:05:00.000Z',
+      totalCents: 5290
+    });
+    expect(fact.lines).toHaveLength(2);
+    expect(fact.adjustments).toEqual([
+      { kind: 'DISCOUNT', amountCents: 200, label: 'CUPOM' },
+      { kind: 'DELIVERY_FEE', amountCents: 800, label: 'Delivery' }
+    ]);
+    expect(Object.isFrozen(fact)).toBe(true);
+    expect(Object.isFrozen(fact.lines)).toBe(true);
+
+    const serialized = JSON.stringify(fact);
+    for (const forbidden of [
+      'raw-order-123',
+      'operational-key',
+      'Cliente Secreto',
+      '67999999999',
+      'Rua Privada',
+      'payment-secret',
+      'VISA'
+    ]) {
+      expect(serialized).not.toContain(forbidden);
+    }
+  });
+
+  it('requires tenant-scoped pseudonymization instead of persisting the external id', () => {
+    expect(() =>
+      createChannelOrderFact(
+        {
+          tenantId: 'santo-parma',
+          connectionId: 'anota-ai-primary',
+          order,
+          observedAt: new Date('2026-07-29T18:06:00.000Z')
+        },
+        { pseudonymize: (_scope, externalOrderId) => externalOrderId }
+      )
+    ).toThrow(new InvalidChannelOrderFactError('orderKey'));
+  });
+
+  it('rejects observations older than the source event', () => {
+    expect(() =>
+      createChannelOrderFact(
+        {
+          tenantId: 'santo-parma',
+          connectionId: 'anota-ai-primary',
+          order,
+          observedAt: new Date('2026-07-29T17:59:59.000Z')
+        },
+        pseudonymizer
+      )
+    ).toThrow(new InvalidChannelOrderFactError('observedAt'));
+  });
+});
