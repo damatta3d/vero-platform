@@ -25,7 +25,9 @@ Um ADR aprovado não deve ter sua decisão reescrita. Mudança material exige no
 | [ADR-007](ADR-007-FUNDACAO-DE-TENANCY.md) | Fundação de Tenancy — identidade opaca, resolução confiável e contexto explícito | 1.0.0 | Approved |
 | [ADR-008](ADR-008-FUNDACAO-DE-IDENTITY-E-AUTENTICACAO.md) | Fundação de Identity — principal autenticado, evidência verificada e contexto explícito | 1.0.0 | Approved |
 | [ADR-009](ADR-009-FUNDACAO-DE-ACCESS-E-AUTORIZACAO.md) | Fundação de Access — decisão contextual, negação por padrão e fronteira confiável | 1.0.0 | Approved |
+| [ADR-010](ADR-010-INTEGRATION-HUB-E-CONECTOR-ANOTA-AI.md) | Integration Hub e fronteira do Connector Anota AI | 1.0.0 | Approved |
+| [ADR-011](ADR-011-PERSISTENCIA-ANALITICA-E-FATOS-DO-VERO-INTELLIGENCE.md) | Persistência analítica e propriedade dos fatos do VERO Intelligence | 0.1.0 | Proposed |
 
 ## Gate atual
 
-Os ADR-001 a ADR-008 estão aprovados e integrados à `main`. O ADR-009 foi aprovado na branch `agent/core-access-foundation`; a missão implementa somente a segurança essencial antes da transição para o MVP vertical do Santo Parma.
+Os ADR-001 a ADR-010 estão aprovados e integrados à main. O ADR-011 foi materializado como Proposed no discovery do VERO Intelligence. Sua existência não autoriza implementação, promoção para Approved, ingestão produtiva ou mutações externas.
