@@ -98,9 +98,7 @@ function mapItem(value: unknown, index: number, unit: AnotaAiMoneyUnit): Externa
   const providerItemId = String(nonNegativeInteger(item['id'], `${path}.id`));
   return Object.freeze({
     providerItemId,
-    externalId: text(item['externalId'], `${path}.externalId`, 256),
-    internalId: text(item['internalId'], `${path}.internalId`, 256),
-    backofficeId: text(item['backoffice_id'], `${path}.backoffice_id`, 256),
+    ...mapOptionalReferences(item, path),
     name: text(item['name'], `${path}.name`, 512),
     quantity: positiveInteger(item['quantity'], `${path}.quantity`),
     unitPriceCents: money(item['price'], unit, `${path}.price`),
@@ -127,9 +125,7 @@ function mapModifier(
   return Object.freeze({
     providerItemId: String(nonNegativeInteger(modifier['id'], `${path}.id`)),
     parentProviderItemId: parentId,
-    externalId: text(modifier['externalId'], `${path}.externalId`, 256),
-    internalId: text(modifier['internalId'], `${path}.internalId`, 256),
-    backofficeId: text(modifier['backoffice_id'], `${path}.backoffice_id`, 256),
+    ...mapOptionalReferences(modifier, path),
     name: text(modifier['name'], `${path}.name`, 512),
     quantity: positiveInteger(modifier['quantity'], `${path}.quantity`),
     unitPriceCents: money(modifier['price'], unit, `${path}.price`),
@@ -181,6 +177,20 @@ function mapDeliveryAddress(value: unknown): ExternalOrderDeliveryAddress {
   });
 }
 
+function mapOptionalReferences(
+  value: Record<string, unknown>,
+  path: string
+): { readonly externalId?: string; readonly internalId?: string; readonly backofficeId?: string } {
+  const externalId = optionalText(value['externalId'], `${path}.externalId`, 256);
+  const internalId = optionalText(value['internalId'], `${path}.internalId`, 256);
+  const backofficeId = optionalText(value['backoffice_id'], `${path}.backoffice_id`, 256);
+  return Object.freeze({
+    ...(externalId === undefined ? {} : { externalId }),
+    ...(internalId === undefined ? {} : { internalId }),
+    ...(backofficeId === undefined ? {} : { backofficeId })
+  });
+}
+
 function idempotencyKey(pageId: string, orderId: string): string {
   const digest = createHash('sha256')
     .update('anota-ai')
@@ -229,6 +239,15 @@ function text(value: unknown, field: string, maximum: number, allowEmpty = false
   if ((!allowEmpty && normalized.length === 0) || normalized.length > maximum) {
     fail('INVALID_ORDER', field);
   }
+  return normalized;
+}
+
+function optionalText(value: unknown, field: string, maximum: number): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'string') fail('INVALID_ORDER', field);
+  const normalized = value.trim();
+  if (normalized.length === 0) return undefined;
+  if (normalized.length > maximum) fail('INVALID_ORDER', field);
   return normalized;
 }
 
