@@ -7,7 +7,7 @@
 | Estado | Revisado contra a baseline normativa; ADR-011 v1.0.0 Approved |
 | Data | 2026-07-29 |
 | Escopo | Primeiro corte: pedidos externos + catálogo VERO + CMV/margem |
-| Implementação | Bloqueada até aprovação do gate |
+| Implementação | Bloqueada até aprovação formal do Gate C |
 | Princípio | Reuse-first; nenhuma duplicação de agregados transacionais |
 
 ## 1. Objetivo
@@ -119,7 +119,12 @@ Snapshot canônico de uma revisão do pedido externo:
 - `receiptId`, `ingestionRunId`, schema e qualidade;
 - hash semântico do snapshot.
 
-Chave: `tenantId + connectionId + externalOrderId + revision`.
+Chave lógica: `tenantId + connectionId + externalOrderId + revision`.
+
+No armazenamento analítico, `externalOrderId` representa uma chave HMAC determinística,
+versionada e scoped por Tenant e conexão. O identificador bruto não entra no fato; quando necessário
+para uma nova consulta ao provider, permanece como referência operacional criptografada e restrita
+no Integration Hub.
 
 Revisões são imutáveis. A visão “estado atual” aponta para a maior revisão válida.
 
@@ -281,7 +286,7 @@ Uma margem com 80% dos itens vinculados não pode ser exibida como margem comple
 - `tenantId` e `establishmentId` são obrigatórios em toda chave e consulta;
 - nenhum identificador externo resolve Tenant sozinho;
 - nome, telefone, endereço e coordenadas não entram no fato analítico padrão;
-- retenção de recibos e fatos deve ser definida antes do runtime;
+- retenção, PII, pseudonimização e expurgo seguem a política `VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md`, ainda Proposed no Gate C;
 - arquivos oficiais recebem checksum, controle de acesso e relatório de rejeições;
 - logs e métricas não expõem PII, tokens ou valores de alta cardinalidade;
 - reprocessamento é auditado e não altera revisões imutáveis.
@@ -331,7 +336,7 @@ analítica append-only. A decisão material está registrada no ADR-011 v1.0.0 �
 - ADR-011 aprovado pelo Arquiteto-Chefe;
 - `ChannelOrderFact` pertencente ao Business Intelligence como fato analítico append-only;
 - primeira fonte escolhida e escopos autorizados;
-- política de retenção e PII aprovada;
+- política de retenção e PII v0.1.0 revisada e formalmente aprovada;
 - chaves naturais e semântica de revisão confirmadas;
 - fórmula do primeiro dashboard versionada;
 - testes de isolamento e reprocessamento definidos;
@@ -345,5 +350,6 @@ blocos já existentes/aprovados (`IntegrationConnection`, `ExternalMessageReceip
 estoque e CMV paralelos.
 
 A decisão material de persistência e propriedade foi registrada no ADR-011 v1.0.0 — Approved. A
-implementação permanece bloqueada até sua aprovação expressa, a política inicial de retenção e a
-autorização da primeira fonte.
+política inicial de retenção e PII v0.1.0 foi materializada como Proposed. A implementação permanece
+bloqueada até a aprovação formal dessa política, a autorização da primeira fonte e a autorização
+expressa do corte read-only.
