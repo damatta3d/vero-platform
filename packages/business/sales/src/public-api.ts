@@ -27,6 +27,16 @@ export type {
   ExternalOrderPayment,
   ExternalOrderSource
 } from './application/external-order.js';
+export {
+  ExternalCatalogLinkError,
+  resolveExternalOrderCatalog,
+  type ExternalCatalogLink,
+  type ExternalCatalogLinkErrorCode,
+  type ExternalCatalogReferenceKind,
+  type ExternalOrderCatalogResolution,
+  type ResolvedExternalCatalogReference,
+  type UnresolvedExternalCatalogReference
+} from './application/external-catalog-link.js';
 export type { SalePostingDecision, SalesRepository } from './application/sales-repository.js';
 export {
   SalesService,
