@@ -169,6 +169,28 @@ describe('translateAnotaAiOrder', () => {
     expect(order.payments[0]?.changeForCents).toBe(6000);
   });
 
+  it('translates unlinked products and modifiers without inventing catalog ids', () => {
+    const fixture = orderFixture();
+    const item = firstRecord(fixture['items'], 'fixture item');
+    item['externalId'] = '';
+    item['internalId'] = null;
+    delete item['backoffice_id'];
+    const modifier = firstRecord(item['subItems'], 'fixture modifier');
+    modifier['externalId'] = '';
+
+    const order = translateAnotaAiOrder(fixture, {
+      pageId: 'page-1',
+      moneyUnit: 'MAJOR'
+    });
+
+    expect(order.items[0]?.providerItemId).toBe('10');
+    expect(order.items[0]?.externalId).toBeUndefined();
+    expect(order.items[0]?.internalId).toBeUndefined();
+    expect(order.items[0]?.backofficeId).toBeUndefined();
+    expect(order.items[0]?.modifiers[0]?.providerItemId).toBe('11');
+    expect(order.items[0]?.modifiers[0]?.externalId).toBeUndefined();
+  });
+
   it('supports pickup orders without a delivery address', () => {
     const fixture = orderFixture();
     delete fixture['deliveryAddress'];
