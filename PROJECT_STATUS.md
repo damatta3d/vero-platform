@@ -8,11 +8,15 @@
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
-**Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-C concluída e aprovada no CI; PR #8 permanece em rascunho para a M008-D
-**Branch:** `agent/missao-008-santo-parma-mvp`  
-**Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
-**Atualizado em:** 2026-07-28
+**Fase:** MISSÃO 009 — Connector Anota AI
+
+**Estado:** PR #9 em Draft; smoke read-only aprovado; Design Document e ADR em revisão
+
+**Branch:** `agent/missao-009-anota-ai-connector`
+
+**Baseline oficial da `main`:** `34fdcf456c551bcd580299effde6d500fc5b405d`
+
+**Atualizado em:** 2026-07-29
 
 ## Concluído
 
@@ -36,18 +40,35 @@
 - CI `30401419715` aprovou vendas, migrations e integração PostgreSQL.
 - CI `30402690997` aprovou produção, migration, integração PostgreSQL e `verify` integral.
 - 106 testes e build dos 15 projetos aprovados.
+- M008-D iniciada com distinção entre insumos e embalagens.
+- Embalagens incluídas na ficha técnica e na baixa transacional de produção/venda.
+- CI `30417176073` aprovou migration, persistência de embalagens, 107 testes e 15 builds.
+- Custos reais de HM05F, MC500, MO100-4 e TPMO100 incorporados à validação.
+- CI final `30461716408` aprovou `quality` e `integration` com PostgreSQL real.
+- Validação guiada da Parmegiana de Alcatra individual concluída.
+- Parecer técnico final da MISSÃO 008 favorável à aprovação do PR #8.
+- PR #8 integrado à `main` no commit `34fdcf4`.
+- MISSÃO 009 iniciada sem branch ou PR concorrente.
+- `VERO-INT-001` elaborado em Draft.
+- ADR-010 proposto para Integration Hub e fronteira do Connector Anota AI.
+- Identificado que pedido externo não pode ser convertido diretamente na venda simplificada atual.
+- PR #9 criado em rascunho com cliente OAuth, ACL e vínculos de catálogo multitenant.
+- Smoke read-only `30471438277` autenticou, listou 30 categorias e traduziu 1 pedido real.
+- CI `30471437674` aprovou quality, migrations e integração PostgreSQL.
 
 ## Estado das linhas GitHub
 
 | Linha | Estado |
 |---|---|
-| `main` | Segurança essencial integrada no commit `ca066dd` |
+| `main` | MISSÃO 008 integrada no commit `34fdcf4` |
 | PR #3 | Merged; Fundação Executável |
 | PR #4 | Merged; ADR-001 a ADR-006 |
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-C aprovada no CI; PR #8 permanece em rascunho para a M008-D |
+| PR #8 | Merged; MVP Santo Parma |
+| PR #9 | Draft; Connector Anota AI e Gate A da MISSÃO 009 |
+| `agent/missao-009-anota-ai-connector` | Cliente, ACL e vínculos em validação arquitetural |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -94,9 +115,36 @@
 - APIs, históricos e resumos operacionais na interface responsiva;
 - 106 testes e build dos 15 projetos aprovados localmente e no CI.
 
+## Entrega atual — M008-D
+
+- classificação explícita de item como insumo ou embalagem;
+- cadastro e estoque de embalagens por unidade;
+- embalagens incluídas nas fichas técnicas versionadas;
+- baixa conjunta de alimentos e embalagens na produção ou venda direta;
+- custo estimado e realizado incluindo embalagens;
+- interface responsiva com contadores, identificação e compra de embalagens;
+- migration retrocompatível: cadastros existentes permanecem como insumos;
+- 107 testes, arquitetura, lint e build dos 15 projetos aprovados localmente e no CI;
+- migration e baixa transacional das embalagens aprovadas com PostgreSQL real no CI
+  `30417176073`.
+- compra real de 300 HM05F por R$ 242,06 e 400 MC500 por R$ 475,34 validada;
+- venda de duas Parmegianas baixou duas unidades de cada embalagem atomicamente;
+- CMV estimado preciso de duas vendas validado em R$ 19,89;
+- CI final `30461716408` aprovou `quality`, migrations e integração PostgreSQL.
+
+## Escopo da MISSÃO 009
+
+- pesquisa dos contratos oficiais da Anota AI;
+- Integration Hub provider-neutral;
+- Connector Anota AI com Anti-Corruption Layer;
+- conexão por tenant e estabelecimento;
+- inbox, deduplicação, resiliência e observabilidade;
+- Order Intake antes de qualquer venda automática;
+- homologação progressiva iniciando por read-only.
+
 ## Fora do escopo vigente
 
-- integrações automáticas com iFood e Anote Aí;
+- integração com iFood;
 - fiscal, contabilidade e conciliação;
 - aprovação avançada de compras;
 - produção avançada;
@@ -106,6 +154,8 @@
 
 ## Próximo gate
 
-1. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
-2. Validar o fluxo guiado e a usabilidade da interface.
-3. Manter o PR em rascunho até o parecer final da MISSÃO 008.
+1. Revisar e aprovar `VERO-INT-001`.
+2. Revisar e aprovar o ADR-010.
+3. Corrigir timeout e fechar a governança de conexão.
+4. Confirmar com a Anota AI os contratos operacionais pendentes.
+5. Manter webhooks, venda e estoque bloqueados até o próximo gate.
