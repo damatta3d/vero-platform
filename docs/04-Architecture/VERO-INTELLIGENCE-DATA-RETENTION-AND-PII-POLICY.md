@@ -4,12 +4,13 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Proposed — Gate C de governança de dados |
-| Versão | 0.1.0 |
+| Estado | Approved — Gate C de governança de dados |
+| Versão | 1.0.0 |
 | Data | 2026-07-29 |
 | Escopo | VERO Intelligence MVP e dados recebidos para fins analíticos |
 | ADR relacionado | ADR-011 v1.0.0 — Approved |
-| Implementação | Bloqueada até aprovação formal desta política e da primeira fonte |
+| Implementação | Corte vertical read-only autorizado; ainda não iniciado |
+| Autoridade de aprovação | Arquiteto-Chefe |
 | Natureza | Política técnica inicial; não substitui validação jurídica, contrato ou registro de operações |
 
 ## 1. Decisão executiva
@@ -142,10 +143,10 @@ Antes de ativar um dataset, o catálogo de governança deverá registrar:
 A arquitetura não escolherá uma base legal genérica para todos os tenants. Essa decisão depende da
 finalidade, dos contratos e dos papéis efetivos de tratamento.
 
-## 9. Primeiro dataset recomendado
+## 9. Primeiro dataset aprovado
 
-A primeira fonte recomendada continua sendo **Anota AI read-only**, limitada a pedidos já
-homologados. O recorte inicial permite:
+A primeira fonte aprovada no Gate C é **Anota AI read-only**, limitada a pedidos já homologados.
+O recorte inicial autorizado permite:
 
 - Tenant, estabelecimento, conexão e provider;
 - chave pseudonimizada do pedido;
@@ -158,8 +159,9 @@ homologados. O recorte inicial permite:
 Ficam excluídos: cliente, telefone, endereço, coordenadas, observações livres, detalhes de cartão,
 troco individualizável e payload bruto.
 
-A recomendação não autoriza implementação. A fonte e o recorte precisam de aprovação formal do
-Arquiteto-Chefe no Gate C.
+A aprovação autoriza somente o desenvolvimento do corte vertical read-only descrito nesta política.
+Não autoriza ingestão produtiva, webhooks, mutações externas, venda automática, baixa de estoque ou
+ações automáticas de IA.
 
 ## 10. Critérios de aceite do Gate C
 
@@ -185,10 +187,18 @@ Arquiteto-Chefe no Gate C.
 - executar RIPD quando a avaliação de risco indicar alto risco;
 - obter respostas da Anota AI sobre retenção, escopos, incremental, webhooks e campos adicionais.
 
-Essas pendências impedem ativação produtiva do dataset correspondente. Não impedem a revisão
-arquitetural desta política.
+Essas pendências impedem ativação produtiva do dataset correspondente. Não invalidam a aprovação
+técnica desta política nem a autorização para desenvolver e testar o corte read-only fora de
+produção.
 
-## 12. Referências oficiais
+## 12. Histórico
+
+| Versão | Data | Alteração | Estado |
+|---|---|---|---|
+| 0.1.0 | 2026-07-29 | Política inicial submetida ao Gate C | Proposed |
+| 1.0.0 | 2026-07-29 | Política, primeira fonte e recorte read-only aprovados formalmente | Approved |
+
+## 13. Referências oficiais
 
 - Lei Geral de Proteção de Dados Pessoais — Lei nº 13.709/2018:
   https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm
