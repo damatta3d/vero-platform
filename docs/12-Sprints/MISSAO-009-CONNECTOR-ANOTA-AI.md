@@ -2,10 +2,10 @@
 
 ## Estado
 
-**Status:** Gate A — prova read-only concluída; desenho em revisão  
-**Tenant piloto:** O Santo Parma  
-**Branch:** `agent/missao-009-anota-ai-design`  
-**Baseline:** `main` em `34fdcf456c551bcd580299effde6d500fc5b405d`
+**Status:** Implementação read-only integrada; Gate A arquitetural em revisão complementar
+**Tenant piloto:** O Santo Parma
+**Branch:** `agent/missao-009-anota-ai-governance`
+**Baseline:** `main` em `bac02c7aa561f62fb582381fd0b710e948fc3d2a`
 
 ## Objetivo
 
@@ -87,5 +87,5 @@ contratos oficiais e o desenho arquitetural serem aprovados.
 
 ## Gate atual
 
-Submeter `VERO-INT-001` e ADR-010 à revisão do Arquiteto-Chefe. O cliente read-only permanece no PR
-Draft; ativação operacional, webhooks, venda e estoque continuam bloqueados.
+Submeter `VERO-INT-001` e ADR-010 à revisão do Arquiteto-Chefe. O cliente read-only foi integrado
+pelo PR #9; ativação operacional, webhooks, venda e estoque continuam bloqueados.

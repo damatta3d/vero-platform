@@ -20,6 +20,12 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o 
 - Validação guiada da Parmegiana individual com os custos reais de HM05F e MC500 da compra de
   28/07/2026, incluindo entrada, baixa transacional e CMV.
 - M008-D com classificação explícita de insumos e embalagens no catálogo.
+
+### Changed
+
+- Estado da MISSÃO 009 reconciliado após o merge concorrente do PR #9 no commit `bac02c7`;
+  Design Document, ADR e timeout seguem em revisão complementar sem ativar webhooks, vendas ou
+  baixas de estoque.
 - Embalagens consumíveis incluídas na ficha técnica, estoque, produção, venda e CMV realizado.
 - Interface atualizada para cadastrar, comprar e acompanhar embalagens por unidade.
 - Migration retrocompatível e teste de persistência da embalagem HM05F.

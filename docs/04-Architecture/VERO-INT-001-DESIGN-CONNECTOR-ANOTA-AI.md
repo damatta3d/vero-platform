@@ -297,7 +297,7 @@ registrará autoria, ação, alvo, instante e resultado, sem substituir logs ou 
 ### Gate A — Pesquisa, prova read-only e desenho
 
 - [x] contratos oficiais essenciais catalogados;
-- [x] cliente, ACL e smoke read-only implementados em PR Draft;
+- [x] cliente, ACL e smoke read-only integrados pelo PR #9;
 - [x] conectividade real sem exposição de dados;
 - [ ] lacunas operacionais respondidas pela Anota AI;
 - [ ] ADR-010 aprovado;
@@ -355,6 +355,6 @@ registrará autoria, ação, alvo, instante e resultado, sem substituir logs ou 
 
 ## 14. Critério para iniciar código
 
-O cliente e a tradução read-only já existem no PR #9 e permanecem em Draft. Nenhum webhook, ação
-externa, criação de venda ou baixa de estoque poderá ser ativado antes da aprovação do ADR-010,
-deste Design Document e dos contratos operacionais pendentes.
+O cliente e a tradução read-only foram integrados pelo PR #9. Nenhum webhook, ação externa,
+criação de venda ou baixa de estoque poderá ser ativado antes da aprovação do ADR-010, deste
+Design Document e dos contratos operacionais pendentes.

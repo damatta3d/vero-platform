@@ -129,8 +129,9 @@ Rejeitada por violar a Anti-Corruption Layer e impedir substituição do provide
 
 ## Impactos e migração
 
-- o PR #9 já contém cliente, ACL, contrato `ExternalOrder` e migration de vínculos em estado Draft;
-- a implementação existente não será ativada nem integrada antes da aprovação;
+- o PR #9 integrou cliente, ACL, contrato `ExternalOrder` e migration de vínculos em modo read-only;
+- a implementação existente não será ativada para captura, mutações externas, venda ou estoque
+  antes da aprovação;
 - a evolução será dividida pelos gates de `VERO-INT-001`;
 - ADR de secret store poderá ser necessário antes da homologação compartilhada;
 - evolução de Order Intake dentro de Sales ou sua futura extração terá contrato próprio;

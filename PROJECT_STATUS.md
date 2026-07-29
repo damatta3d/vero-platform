@@ -10,11 +10,11 @@
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 009 — Connector Anota AI
 
-**Estado:** PR #9 em Draft; smoke read-only aprovado; Design Document e ADR em revisão
+**Estado:** PR #9 integrado; smoke read-only aprovado; governança arquitetural complementar em revisão
 
-**Branch:** `agent/missao-009-anota-ai-connector`
+**Branch:** `agent/missao-009-anota-ai-governance`
 
-**Baseline oficial da `main`:** `34fdcf456c551bcd580299effde6d500fc5b405d`
+**Baseline oficial da `main`:** `bac02c7aa561f62fb582381fd0b710e948fc3d2a`
 
 **Atualizado em:** 2026-07-29
 
@@ -48,11 +48,11 @@
 - Validação guiada da Parmegiana de Alcatra individual concluída.
 - Parecer técnico final da MISSÃO 008 favorável à aprovação do PR #8.
 - PR #8 integrado à `main` no commit `34fdcf4`.
-- MISSÃO 009 iniciada sem branch ou PR concorrente.
+- MISSÃO 009 implementada no PR #9 e integrada concorrentemente durante a revisão arquitetural.
 - `VERO-INT-001` elaborado em Draft.
 - ADR-010 proposto para Integration Hub e fronteira do Connector Anota AI.
 - Identificado que pedido externo não pode ser convertido diretamente na venda simplificada atual.
-- PR #9 criado em rascunho com cliente OAuth, ACL e vínculos de catálogo multitenant.
+- PR #9 integrado com cliente OAuth, ACL e vínculos de catálogo multitenant.
 - Smoke read-only `30471438277` autenticou, listou 30 categorias e traduziu 1 pedido real.
 - CI `30471437674` aprovou quality, migrations e integração PostgreSQL.
 - Timeout próprio e erro sanitizado adicionados à autenticação e às chamadas do conector.
@@ -61,15 +61,15 @@
 
 | Linha | Estado |
 |---|---|
-| `main` | MISSÃO 008 integrada no commit `34fdcf4` |
+| `main` | Connector Anota AI do PR #9 integrado no commit `bac02c7` |
 | PR #3 | Merged; Fundação Executável |
 | PR #4 | Merged; ADR-001 a ADR-006 |
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
 | PR #8 | Merged; MVP Santo Parma |
-| PR #9 | Draft; Connector Anota AI e Gate A da MISSÃO 009 |
-| `agent/missao-009-anota-ai-connector` | Cliente, ACL e vínculos em validação arquitetural |
+| PR #9 | Merged; Connector Anota AI read-only e vínculos homologados |
+| `agent/missao-009-anota-ai-governance` | Design, ADR e timeout em validação complementar |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
