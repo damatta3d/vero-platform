@@ -144,4 +144,89 @@ describe('ChannelOrderFact', () => {
       )
     ).toThrow(new InvalidChannelOrderFactError('observedAt'));
   });
+
+  it('supports a valid order without modifiers, discounts or delivery fee', () => {
+    const item = order.items[0];
+    if (item === undefined) throw new Error('Test fixture must contain one item.');
+
+    const minimalOrder: ExternalOrder = Object.freeze({
+      ...order,
+      items: Object.freeze([Object.freeze({ ...item, modifiers: Object.freeze([]) })]),
+      discounts: Object.freeze([]),
+      deliveryFeeCents: 0
+    });
+
+    const fact = createChannelOrderFact(
+      {
+        tenantId: 'santo-parma',
+        connectionId: 'anota-ai-primary',
+        order: minimalOrder,
+        observedAt: new Date('2026-07-29T18:06:00.000Z')
+      },
+      pseudonymizer
+    );
+
+    expect(fact.lines).toHaveLength(1);
+    expect(fact.adjustments).toEqual([]);
+  });
+
+  it('rejects malformed canonical fields instead of persisting partial facts', () => {
+    const create = (candidateOrder: ExternalOrder, tenantId = 'santo-parma') =>
+      createChannelOrderFact(
+        {
+          tenantId,
+          connectionId: 'anota-ai-primary',
+          order: candidateOrder,
+          observedAt: new Date('2026-07-29T18:06:00.000Z')
+        },
+        pseudonymizer
+      );
+
+    expect(() => create(order, '   ')).toThrow(new InvalidChannelOrderFactError('tenantId'));
+    expect(() =>
+      create(
+        Object.freeze({
+          ...order,
+          updatedAt: 'not-a-date'
+        })
+      )
+    ).toThrow(new InvalidChannelOrderFactError('order.updatedAt'));
+    expect(() =>
+      create(
+        Object.freeze({
+          ...order,
+          items: Object.freeze([])
+        })
+      )
+    ).toThrow(new InvalidChannelOrderFactError('order.items'));
+
+    const item = order.items[0];
+    if (item === undefined) throw new Error('Test fixture must contain one item.');
+
+    expect(() =>
+      create(
+        Object.freeze({
+          ...order,
+          items: Object.freeze([Object.freeze({ ...item, quantity: 0 })])
+        })
+      )
+    ).toThrow(new InvalidChannelOrderFactError('order.lines.quantity'));
+    expect(() =>
+      create(
+        Object.freeze({
+          ...order,
+          discounts: Object.freeze([Object.freeze({ amountCents: -1, tag: 'INVALID' })])
+        })
+      )
+    ).toThrow(new InvalidChannelOrderFactError('order.discounts.amountCents'));
+    expect(() =>
+      create(
+        Object.freeze({
+          ...order,
+          source: Object.freeze({ ...order.source, menuVersion: -1 })
+        })
+      )
+    ).toThrow(new InvalidChannelOrderFactError('order.source.menuVersion'));
+  });
+
 });
