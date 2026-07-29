@@ -26,6 +26,7 @@ export const mvpPageHtml = `<!doctype html>
 
     <section class="summary">
       <article class="metric"><small>Insumos</small><strong id="ingredientCount">0</strong></article>
+      <article class="metric"><small>Embalagens</small><strong id="packagingCount">0</strong></article>
       <article class="metric"><small>Produtos</small><strong id="productCount">0</strong></article>
       <article class="metric"><small>Valor em estoque</small><strong id="stockValue">R$ 0,00</strong></article>
       <article class="metric"><small>Produções</small><strong id="productionCount">0</strong></article>
@@ -38,7 +39,7 @@ export const mvpPageHtml = `<!doctype html>
     </section>
 
     <nav>
-      <button data-panel="ingredients" class="active">1. Insumos</button>
+      <button data-panel="ingredients" class="active">1. Insumos e embalagens</button>
       <button data-panel="products">2. Produtos</button>
       <button data-panel="recipe">3. Ficha técnica</button>
       <button data-panel="inventory">4. Compras e estoque</button>
@@ -48,16 +49,17 @@ export const mvpPageHtml = `<!doctype html>
 
     <section id="ingredients" class="panel active">
       <div class="card form-card">
-        <div class="section-title"><div><small>PASSO 1</small><h2>Novo insumo</h2></div></div>
+        <div class="section-title"><div><small>PASSO 1</small><h2>Novo item de custo</h2></div></div>
         <form id="ingredientForm" class="grid">
-          <div class="wide"><label>Nome</label><input name="name" required placeholder="Ex.: Alcatra"></div>
-          <div><label>Unidade da embalagem</label><select name="unit"><option value="KILOGRAM">Quilograma</option><option value="GRAM">Grama</option><option value="LITER">Litro</option><option value="MILLILITER">Mililitro</option><option value="UNIT">Unidade</option></select></div>
-          <div><label>Quantidade comprada</label><input name="quantity" type="number" min="0.000001" step="0.001" required placeholder="1"></div>
-          <div><label>Custo da embalagem (R$)</label><input name="cost" type="number" min="0" step="0.01" required placeholder="53,00"></div>
-          <button type="submit">Salvar insumo</button>
+          <div class="wide"><label>Nome ou código</label><input name="name" required placeholder="Ex.: Alcatra ou HM05F"></div>
+          <div><label>Tipo</label><select name="kind"><option value="INGREDIENT">Insumo alimentar</option><option value="PACKAGING">Embalagem</option></select></div>
+          <div><label>Unidade de controle</label><select name="unit"><option value="KILOGRAM">Quilograma</option><option value="GRAM">Grama</option><option value="LITER">Litro</option><option value="MILLILITER">Mililitro</option><option value="UNIT">Unidade</option></select></div>
+          <div><label>Quantidade no pacote/compra</label><input name="quantity" type="number" min="0.000001" step="0.001" required placeholder="Ex.: 100"></div>
+          <div><label>Valor pago (R$)</label><input name="cost" type="number" min="0" step="0.01" required placeholder="Ex.: 53,00"></div>
+          <button type="submit">Salvar item</button>
         </form>
       </div>
-      <div class="card"><h2>Insumos cadastrados</h2><div id="ingredientList" class="list empty">Nenhum insumo cadastrado.</div></div>
+      <div class="card"><h2>Itens cadastrados</h2><div id="ingredientList" class="list empty">Nenhum item cadastrado.</div></div>
     </section>
 
     <section id="products" class="panel">
@@ -80,8 +82,8 @@ export const mvpPageHtml = `<!doctype html>
             <div class="wide"><label>Produto</label><select id="recipeProduct" required></select></div>
             <div><label>Rendimento (porções)</label><input id="yieldUnits" type="number" min="1" step="1" value="1" required></div>
           </div>
-          <p class="hint">Informe a quantidade de cada insumo usada na receita. Deixe zero para não incluir.</p>
-          <div id="recipeLines" class="recipe-lines empty">Cadastre os insumos primeiro.</div>
+          <p class="hint">Inclua os alimentos e as embalagens usados em cada porção. Para embalagem, normalmente informe 1 unidade.</p>
+          <div id="recipeLines" class="recipe-lines empty">Cadastre os insumos e embalagens primeiro.</div>
           <button type="submit">Salvar ficha e calcular</button>
         </form>
       </div>
@@ -95,7 +97,7 @@ export const mvpPageHtml = `<!doctype html>
       <div class="card form-card">
         <div class="section-title"><div><small>PASSO 4</small><h2>Entrada de compra</h2></div></div>
         <form id="purchaseForm" class="grid">
-          <div class="wide"><label>Insumo</label><select id="purchaseIngredient" required></select></div>
+          <div class="wide"><label>Insumo ou embalagem</label><select id="purchaseIngredient" required></select></div>
           <div><label>Quantidade comprada</label><input name="quantity" type="number" min="0.000001" step="0.001" required placeholder="25"></div>
           <div><label>Valor total (R$)</label><input name="cost" type="number" min="0.01" step="0.01" required placeholder="100,00"></div>
           <div class="wide"><label>Referência</label><input name="reference" required maxlength="256" placeholder="Ex.: Compra CEASA 28/07"></div>
@@ -104,7 +106,7 @@ export const mvpPageHtml = `<!doctype html>
         <hr>
         <h2>Consumo ou ajuste</h2>
         <form id="movementForm" class="grid">
-          <div class="wide"><label>Insumo</label><select id="movementIngredient" required></select></div>
+          <div class="wide"><label>Insumo ou embalagem</label><select id="movementIngredient" required></select></div>
           <div><label>Operação</label><select name="operation"><option value="CONSUMPTION">Consumo</option><option value="ADJUSTMENT_OUT">Ajuste de saída</option><option value="ADJUSTMENT_IN">Ajuste de entrada</option></select></div>
           <div><label>Quantidade</label><input name="quantity" type="number" min="0.000001" step="0.001" required></div>
           <div class="wide"><label>Motivo</label><input name="reason" required maxlength="256" placeholder="Ex.: Produção do dia ou contagem física"></div>
@@ -178,20 +180,20 @@ function headers(){return {'content-type':'application/json','authorization':'Be
 async function api(path,options={}){const response=await fetch(path,{...options,headers:{...headers(),...(options.headers||{})}});if(!response.ok){throw new Error(response.status===401?'Acesso negado. Confira a chave e a empresa.':'Não foi possível concluir a operação.');}return response.json();}
 function toast(message,error=false){const el=$('toast');el.textContent=message;el.className=error?'show error':'show';setTimeout(()=>el.className='',2800);}
 function render(){
-  $('ingredientCount').textContent=state.ingredients.length;$('productCount').textContent=state.products.length;
+  $('ingredientCount').textContent=state.ingredients.filter(i=>i.kind!=='PACKAGING').length;$('packagingCount').textContent=state.ingredients.filter(i=>i.kind==='PACKAGING').length;$('productCount').textContent=state.products.length;
   $('stockValue').textContent=money(state.positions.reduce((total,item)=>total+item.inventoryValueCents,0));
   $('productionCount').textContent=state.productionSummary.productionCount;$('productionCmv').textContent=money(state.productionSummary.realizedCmvCents);
   $('salesCount').textContent=state.salesSummary.salesCount;$('grossRevenue').textContent=money(state.salesSummary.grossRevenueCents);$('realizedMargin').textContent=money(state.salesSummary.marginCents);
   $('ingredientList').className=state.ingredients.length?'list':'list empty';
-  $('ingredientList').innerHTML=state.ingredients.length?state.ingredients.map(i=>'<div class="row"><div><strong>'+escapeHtml(i.name)+'</strong><small>'+escapeHtml(i.unit)+'</small></div><strong>'+money(i.packageCostCents)+'</strong></div>').join(''):'Nenhum insumo cadastrado.';
+  $('ingredientList').innerHTML=state.ingredients.length?state.ingredients.map(i=>'<div class="row"><div><strong>'+escapeHtml(i.name)+'</strong><small>'+(i.kind==='PACKAGING'?'Embalagem':'Insumo')+' · '+escapeHtml(i.unit)+'</small></div><strong>'+money(i.packageCostCents)+'</strong></div>').join(''):'Nenhum item cadastrado.';
   $('productList').className=state.products.length?'list':'list empty';
   $('productList').innerHTML=state.products.length?state.products.map(p=>'<div class="row"><div><strong>'+escapeHtml(p.name)+'</strong><small>Preço de venda</small></div><strong>'+money(p.salePriceCents)+'</strong></div>').join(''):'Nenhum produto cadastrado.';
   $('recipeProduct').innerHTML=state.products.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
   $('productionProduct').innerHTML=state.products.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
   $('saleProduct').innerHTML=state.products.map(p=>'<option value="'+p.id+'">'+escapeHtml(p.name)+'</option>').join('');
-  const ingredientOptions=state.ingredients.map(i=>'<option value="'+i.id+'">'+escapeHtml(i.name)+'</option>').join('');$('purchaseIngredient').innerHTML=ingredientOptions;$('movementIngredient').innerHTML=ingredientOptions;
+  const ingredientOptions=state.ingredients.map(i=>'<option value="'+i.id+'">'+(i.kind==='PACKAGING'?'[Embalagem] ':'')+escapeHtml(i.name)+'</option>').join('');$('purchaseIngredient').innerHTML=ingredientOptions;$('movementIngredient').innerHTML=ingredientOptions;
   $('recipeLines').className=state.ingredients.length?'recipe-lines':'recipe-lines empty';
-  $('recipeLines').innerHTML=state.ingredients.length?state.ingredients.map(i=>'<div class="recipe-line"><label>'+escapeHtml(i.name)+'<small> · '+escapeHtml(i.unit)+'</small></label><input data-ingredient="'+i.id+'" type="number" min="0" step="0.001" value="0" aria-label="Quantidade usada"></div>').join(''):'Cadastre os insumos primeiro.';
+  $('recipeLines').innerHTML=state.ingredients.length?state.ingredients.map(i=>'<div class="recipe-line"><label>'+escapeHtml(i.name)+'<small> · '+(i.kind==='PACKAGING'?'Embalagem':'Insumo')+' · '+escapeHtml(i.unit)+'</small></label><input data-ingredient="'+i.id+'" type="number" min="0" step="0.001" value="0" aria-label="Quantidade usada"></div>').join(''):'Cadastre os insumos e embalagens primeiro.';
   $('stockList').className=state.positions.length?'list':'list empty';$('stockList').innerHTML=state.positions.length?state.positions.map(p=>{const i=state.ingredients.find(item=>item.id===p.ingredientId);return '<div class="row"><div><strong>'+escapeHtml(i?i.name:p.ingredientId)+'</strong><small>'+formatQuantity(p.quantityOnHandMicros,i?i.unit:'UNIT')+' · custo médio '+formatUnitCost(p.averageUnitCostMicros,i?i.unit:'UNIT')+'</small></div><strong>'+money(p.inventoryValueCents)+'</strong></div>';}).join(''):'Nenhuma movimentação registrada.';
   $('productionList').className=state.production.length?'list':'list empty';$('productionList').innerHTML=state.production.length?state.production.map(p=>'<div class="row"><div><strong>'+escapeHtml(p.productName)+' · '+p.quantity+' un.</strong><small>'+new Date(p.producedAt).toLocaleString('pt-BR')+' · ficha v'+p.recipeVersion+'</small></div><strong>'+money(p.realizedCmvCents)+'</strong></div>').join(''):'Nenhuma produção registrada.';
   $('saleList').className=state.sales.length?'list':'list empty';$('saleList').innerHTML=state.sales.length?state.sales.map(s=>'<div class="row"><div><strong>'+escapeHtml(s.productName)+' · '+s.quantity+' un.</strong><small>'+new Date(s.soldAt).toLocaleString('pt-BR')+' · CMV '+money(s.realizedCmvCents)+'</small></div><strong>'+money(s.grossRevenueCents)+'</strong></div>').join(''):'Nenhuma venda registrada.';
@@ -202,7 +204,7 @@ function formatUnitCost(micros,unit){return money(Math.round(micros/1000000))+'/
 async function refresh(){if(!$('apiKey').value)return;try{[state.ingredients,state.products,state.positions,state.production,state.productionSummary,state.sales,state.salesSummary]=await Promise.all([api('/v1/catalog/ingredients'),api('/v1/catalog/products'),api('/v1/inventory/positions'),api('/v1/production?limit=20'),api('/v1/production/summary'),api('/v1/sales?limit=20'),api('/v1/sales/summary')]);render();}catch(error){toast(error.message,true);}}
 document.querySelectorAll('nav button').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('nav button,.panel').forEach(el=>el.classList.remove('active'));button.classList.add('active');$(button.dataset.panel).classList.add('active');}));
 $('refresh').addEventListener('click',refresh);$('apiKey').addEventListener('change',refresh);$('tenantId').addEventListener('change',refresh);
-$('ingredientForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{await api('/v1/catalog/ingredients',{method:'POST',body:JSON.stringify({name:data.get('name'),unit:data.get('unit'),packageQuantityMicros:Math.round(Number(data.get('quantity'))*1000000),packageCostCents:Math.round(Number(data.get('cost'))*100)})});event.currentTarget.reset();toast('Insumo salvo.');await refresh();}catch(error){toast(error.message,true);}});
+$('ingredientForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{await api('/v1/catalog/ingredients',{method:'POST',body:JSON.stringify({name:data.get('name'),kind:data.get('kind'),unit:data.get('unit'),packageQuantityMicros:Math.round(Number(data.get('quantity'))*1000000),packageCostCents:Math.round(Number(data.get('cost'))*100)})});event.currentTarget.reset();toast(data.get('kind')==='PACKAGING'?'Embalagem salva.':'Insumo salvo.');await refresh();}catch(error){toast(error.message,true);}});
 $('productForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{await api('/v1/catalog/products',{method:'POST',body:JSON.stringify({name:data.get('name'),salePriceCents:Math.round(Number(data.get('price'))*100)})});event.currentTarget.reset();toast('Produto salvo.');await refresh();}catch(error){toast(error.message,true);}});
 $('recipeForm').addEventListener('submit',async(event)=>{event.preventDefault();const productId=$('recipeProduct').value;const lines=[...document.querySelectorAll('[data-ingredient]')].map(input=>({ingredientId:input.dataset.ingredient,quantityMicros:Math.round(Number(input.value)*1000000)})).filter(line=>line.quantityMicros>0);try{await api('/v1/catalog/products/'+productId+'/recipes',{method:'POST',body:JSON.stringify({yieldUnits:Number($('yieldUnits').value),lines})});const cost=await api('/v1/catalog/products/'+productId+'/cost');const product=state.products.find(item=>item.id===productId);$('costProduct').textContent=product?product.name:'Produto';$('costPerUnit').textContent=money(cost.costPerUnitCents);$('salePrice').textContent=money(cost.salePriceCents);$('marginValue').textContent=money(cost.marginCents);$('marginPercent').textContent=(cost.marginBasisPoints/100).toFixed(2).replace('.',',')+'%';$('currentCost').textContent=money(cost.costPerUnitCents);$('currentMargin').textContent=money(cost.marginCents);$('costCard').classList.remove('hidden');toast('Ficha técnica salva e calculada.');}catch(error){toast(error.message,true);}});
 $('purchaseForm').addEventListener('submit',async(event)=>{event.preventDefault();const data=new FormData(event.currentTarget);try{await api('/v1/inventory/purchases',{method:'POST',body:JSON.stringify({ingredientId:$('purchaseIngredient').value,quantityMicros:Math.round(Number(data.get('quantity'))*1000000),totalCostCents:Math.round(Number(data.get('cost'))*100),reference:data.get('reference')})});event.currentTarget.reset();toast('Compra registrada e estoque atualizado.');await refresh();}catch(error){toast(error.message,true);}});

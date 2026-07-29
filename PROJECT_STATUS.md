@@ -9,7 +9,7 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-C concluída e aprovada no CI; PR #8 permanece em rascunho para a M008-D
+**Estado:** M008-D em validação; embalagens integradas localmente ao estoque e ao CMV
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
 **Atualizado em:** 2026-07-28
@@ -36,6 +36,9 @@
 - CI `30401419715` aprovou vendas, migrations e integração PostgreSQL.
 - CI `30402690997` aprovou produção, migration, integração PostgreSQL e `verify` integral.
 - 106 testes e build dos 15 projetos aprovados.
+- M008-D iniciada com distinção entre insumos e embalagens.
+- Embalagens incluídas na ficha técnica e na baixa transacional de produção/venda.
+- Validação local atualizada para 107 testes e build dos 15 projetos.
 
 ## Estado das linhas GitHub
 
@@ -47,7 +50,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-C aprovada no CI; PR #8 permanece em rascunho para a M008-D |
+| `agent/missao-008-santo-parma-mvp` | M008-D com embalagens implementada localmente; aguardando CI |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -94,6 +97,17 @@
 - APIs, históricos e resumos operacionais na interface responsiva;
 - 106 testes e build dos 15 projetos aprovados localmente e no CI.
 
+## Entrega atual — M008-D
+
+- classificação explícita de item como insumo ou embalagem;
+- cadastro e estoque de embalagens por unidade;
+- embalagens incluídas nas fichas técnicas versionadas;
+- baixa conjunta de alimentos e embalagens na produção ou venda direta;
+- custo estimado e realizado incluindo embalagens;
+- interface responsiva com contadores, identificação e compra de embalagens;
+- migration retrocompatível: cadastros existentes permanecem como insumos;
+- 107 testes, arquitetura, lint e build dos 15 projetos aprovados localmente.
+
 ## Fora do escopo vigente
 
 - integrações automáticas com iFood e Anote Aí;
@@ -106,6 +120,6 @@
 
 ## Próximo gate
 
-1. Executar M008-D com dados reais da Parmegiana de Alcatra individual.
-2. Validar o fluxo guiado e a usabilidade da interface.
-3. Manter o PR em rascunho até o parecer final da MISSÃO 008.
+1. Validar a migration e o cenário transacional de embalagens no CI do PR #8.
+2. Preencher os custos reais de HM05F, MC500 e MO100-4.
+3. Executar a validação guiada da Parmegiana de Alcatra individual.

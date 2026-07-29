@@ -125,6 +125,13 @@ describe(CatalogService.name, () => {
       packageQuantityMicros: 1_000_000,
       packageCostCents: 4000
     });
+    const packaging = await service.createIngredient(await access('catalog.ingredient.create'), {
+      name: 'HM05F',
+      kind: 'PACKAGING',
+      unit: 'UNIT',
+      packageQuantityMicros: 100_000_000,
+      packageCostCents: 5000
+    });
     const product = await service.createProduct(await access('catalog.product.create'), {
       name: 'Parmegiana de Alcatra',
       salePriceCents: 4490
@@ -134,19 +141,22 @@ describe(CatalogService.name, () => {
       yieldUnits: 1,
       lines: [
         { ingredientId: alcatra.id, quantityMicros: 150_000 },
-        { ingredientId: cheese.id, quantityMicros: 70_000 }
+        { ingredientId: cheese.id, quantityMicros: 70_000 },
+        { ingredientId: packaging.id, quantityMicros: 1_000_000 }
       ]
     });
 
     expect(recipe.version).toBe(1);
     expect(await service.getProductCost(await access('catalog.cost.read'), product.id)).toEqual({
-      totalCostCents: 1075,
-      costPerUnitCents: 1075,
+      totalCostCents: 1125,
+      costPerUnitCents: 1125,
       salePriceCents: 4490,
-      marginCents: 3415,
-      marginBasisPoints: 7606
+      marginCents: 3365,
+      marginBasisPoints: 7494
     });
-    expect(await service.listIngredients(await access('catalog.ingredient.read'))).toHaveLength(2);
+    const items = await service.listIngredients(await access('catalog.ingredient.read'));
+    expect(items).toHaveLength(3);
+    expect(items.find((item) => item.name === 'HM05F')?.kind).toBe('PACKAGING');
     expect(await service.listProducts(await access('catalog.product.read'))).toHaveLength(1);
   });
 

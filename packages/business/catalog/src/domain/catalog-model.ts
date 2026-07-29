@@ -3,10 +3,14 @@ import { CatalogTenantMismatchError, InvalidCatalogDataError } from './catalog-e
 export const unitOfMeasureValues = ['UNIT', 'GRAM', 'KILOGRAM', 'MILLILITER', 'LITER'] as const;
 export type UnitOfMeasure = (typeof unitOfMeasureValues)[number];
 
+export const catalogItemKindValues = ['INGREDIENT', 'PACKAGING'] as const;
+export type CatalogItemKind = (typeof catalogItemKindValues)[number];
+
 export interface Ingredient {
   readonly id: string;
   readonly tenantId: string;
   readonly name: string;
+  readonly kind: CatalogItemKind;
   readonly unit: UnitOfMeasure;
   readonly packageQuantityMicros: number;
   readonly packageCostCents: number;
@@ -65,10 +69,17 @@ function nonNegativeSafeInteger(value: number, field: string): number {
   return value;
 }
 
-export function createIngredient(input: Ingredient): Ingredient {
+type CreateIngredientData = Omit<Ingredient, 'kind'> & {
+  readonly kind?: CatalogItemKind;
+};
+
+export function createIngredient(input: CreateIngredientData): Ingredient {
   if (!unitOfMeasureValues.includes(input.unit)) throw new InvalidCatalogDataError('unit');
+  const kind = input.kind ?? 'INGREDIENT';
+  if (!catalogItemKindValues.includes(kind)) throw new InvalidCatalogDataError('kind');
   return Object.freeze({
     ...input,
+    kind,
     id: requiredText(input.id, 'ingredientId'),
     tenantId: requiredText(input.tenantId, 'tenantId'),
     name: requiredText(input.name, 'ingredientName'),
