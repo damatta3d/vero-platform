@@ -3,7 +3,9 @@
 const path = require('node:path');
 
 const REQUIRED_ENV = ['ANOTA_AI_CLIENT_ID', 'ANOTA_AI_CLIENT_SECRET', 'ANOTA_AI_PAGE_ID'];
-const SAFE_FIELD_NAME = /^[A-Za-z0-9_.-]{1,64}$/;
+const SAFE_FIELD_NAME = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+const MAX_SCHEMA_DEPTH = 8;
+const MAX_SCHEMA_PATHS = 240;
 
 let diagnostic = Object.freeze({ operation: 'bootstrap' });
 
@@ -24,6 +26,7 @@ function requestStage(url) {
   if (url.includes('/oauth-client/token')) return 'authentication';
   if (url.includes('/menu/nm-category/simple-item/export')) return 'menu-export';
   if (url.includes('/ping/list')) return 'order-list';
+  if (url.includes('/ping/get/')) return 'order-detail';
   return 'provider-api';
 }
 
@@ -33,6 +36,46 @@ function safeFieldNames(value) {
     .filter((field) => SAFE_FIELD_NAME.test(field))
     .sort()
     .slice(0, 40);
+}
+
+function valueType(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  return typeof value;
+}
+
+function sanitizedSchema(value) {
+  const paths = [];
+
+  function visit(current, currentPath, depth) {
+    if (paths.length >= MAX_SCHEMA_PATHS || depth > MAX_SCHEMA_DEPTH) return;
+
+    const type = valueType(current);
+    paths.push(`${currentPath}:${type}`);
+
+    if (Array.isArray(current)) {
+      const sample = current.find((entry) => entry !== null && entry !== undefined);
+      if (sample !== undefined) visit(sample, `${currentPath}[]`, depth + 1);
+      return;
+    }
+
+    if (type !== 'object') return;
+    for (const field of safeFieldNames(current)) {
+      visit(current[field], `${currentPath}.${field}`, depth + 1);
+      if (paths.length >= MAX_SCHEMA_PATHS) return;
+    }
+  }
+
+  visit(value, '$', 0);
+  return Object.freeze(paths);
+}
+
+function findOrderId(document) {
+  for (const field of ['_id', 'id', 'orderId', 'order_id']) {
+    const value = document[field];
+    if (typeof value === 'string' && value.trim().length > 0) return value.trim();
+  }
+  return undefined;
 }
 
 async function diagnosticFetch(url, init) {
@@ -93,13 +136,27 @@ async function main() {
   diagnostic = Object.freeze({ operation: 'order-list' });
   const orders = await client.listOrders(configuration.pageId, { excludeIfood: false });
 
+  const firstOrder = orders.info.docs[0];
+  const orderId = firstOrder === undefined ? undefined : findOrderId(firstOrder);
+  let orderDetailSchema = [];
+  let orderDetailInspected = false;
+
+  if (orderId !== undefined) {
+    diagnostic = Object.freeze({ operation: 'order-detail' });
+    const detail = await client.getOrder(configuration.pageId, orderId);
+    orderDetailSchema = sanitizedSchema(detail.info);
+    orderDetailInspected = true;
+  }
+
   process.stdout.write(
     `${JSON.stringify({
       connected: true,
       menuCategories: menu.categories.length,
       ordersVisible: orders.info.count,
       page: orders.info.currentpage,
-      limit: orders.info.limit
+      limit: orders.info.limit,
+      orderDetailInspected,
+      orderDetailSchema
     })}\n`
   );
 }
