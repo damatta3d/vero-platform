@@ -146,8 +146,9 @@ function mapPayment(value: unknown, index: number, unit: AnotaAiMoneyUnit): Exte
   const path = `payments[${index}]`;
   const payment = record(value, path);
   const changeFor = payment['changeFor'];
+  const externalId = optionalText(payment['externalId'], `${path}.externalId`, 256);
   return Object.freeze({
-    externalId: text(payment['externalId'], `${path}.externalId`, 256),
+    ...(externalId === undefined ? {} : { externalId }),
     code: text(payment['code'], `${path}.code`, 128),
     name: text(payment['name'], `${path}.name`, 256),
     card: text(payment['cardSelected'], `${path}.cardSelected`, 128, true),
