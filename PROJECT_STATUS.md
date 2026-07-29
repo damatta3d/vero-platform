@@ -9,10 +9,10 @@
 **ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 008 — MVP Santo Parma  
-**Estado:** M008-D com embalagens aprovada no CI; aguardando custos reais e validação guiada
+**Estado:** MISSÃO 008 concluída; parecer técnico favorável e PR #8 pronto para revisão
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **Baseline oficial da `main`:** `ca066dd6966d55bb1699c2643079a538fce097e1`  
-**Atualizado em:** 2026-07-28
+**Atualizado em:** 2026-07-29
 
 ## Concluído
 
@@ -39,6 +39,10 @@
 - M008-D iniciada com distinção entre insumos e embalagens.
 - Embalagens incluídas na ficha técnica e na baixa transacional de produção/venda.
 - CI `30417176073` aprovou migration, persistência de embalagens, 107 testes e 15 builds.
+- Custos reais de HM05F, MC500, MO100-4 e TPMO100 incorporados à validação.
+- CI final `30461716408` aprovou `quality` e `integration` com PostgreSQL real.
+- Validação guiada da Parmegiana de Alcatra individual concluída.
+- Parecer técnico final da MISSÃO 008 favorável à aprovação do PR #8.
 
 ## Estado das linhas GitHub
 
@@ -50,7 +54,7 @@
 | PR #5 | Merged; Tenancy |
 | PR #6 | Merged; Identity |
 | PR #7 | Merged; Access e segurança essencial |
-| `agent/missao-008-santo-parma-mvp` | M008-D com embalagens aprovada no CI; aguardando validação guiada |
+| `agent/missao-008-santo-parma-mvp` | MISSÃO 008 concluída; pronta para revisão e decisão de merge |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -109,6 +113,10 @@
 - 107 testes, arquitetura, lint e build dos 15 projetos aprovados localmente e no CI;
 - migration e baixa transacional das embalagens aprovadas com PostgreSQL real no CI
   `30417176073`.
+- compra real de 300 HM05F por R$ 242,06 e 400 MC500 por R$ 475,34 validada;
+- venda de duas Parmegianas baixou duas unidades de cada embalagem atomicamente;
+- CMV estimado preciso de duas vendas validado em R$ 19,89;
+- CI final `30461716408` aprovou `quality`, migrations e integração PostgreSQL.
 
 ## Fora do escopo vigente
 
@@ -122,5 +130,6 @@
 
 ## Próximo gate
 
-1. Confirmar no CI a validação guiada com HM05F e MC500 pelos custos reais de 28/07/2026.
-2. Emitir o parecer final da MISSÃO 008 antes de qualquer merge.
+1. Submeter o PR #8 à revisão final.
+2. Realizar o merge somente após autorização do Arquiteto-Chefe.
+3. Após o merge, planejar a MISSÃO 009 sem misturá-la ao escopo concluído.

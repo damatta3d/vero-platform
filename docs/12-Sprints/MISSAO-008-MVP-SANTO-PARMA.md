@@ -2,7 +2,7 @@
 
 ## Estado
 
-**Status:** Em execução  
+**Status:** Concluída; parecer técnico favorável
 **Estratégia:** desenvolvimento vertical orientado ao uso real  
 **Tenant piloto:** Santo Parma  
 **Branch:** `agent/missao-008-santo-parma-mvp`
@@ -95,3 +95,6 @@ Christian consegue:
 ## Gate de merge
 
 O PR permanece em rascunho durante a implementação. O merge só poderá ocorrer após fluxo utilizável demonstrado, CI integral aprovado e novo parecer técnico.
+
+Os três requisitos foram cumpridos no CI final `30461716408`. O PR pode ser retirado do rascunho e
+submetido à decisão de merge do Arquiteto-Chefe.

@@ -2,10 +2,10 @@
 
 ## Resultado
 
-**Estado:** custos reais incorporados; aguardando CI final da validação guiada
+**Estado:** concluída e aprovada no CI
 **Branch:** `agent/missao-008-santo-parma-mvp`  
 **PR:** #8 — permanece em rascunho  
-**CI:** run `30417176073` — `quality` e `integration` aprovados
+**CI final:** run `30461716408` — `quality` e `integration` aprovados
 
 ## Fluxo entregue
 
@@ -70,4 +70,14 @@ R$ 4,00 de outras despesas acessórias e não foi rateada nos itens nesta valida
 - venda de duas porções baixa duas unidades de cada embalagem na mesma transação;
 - CMV estimado e realizado incluem ambas as embalagens e preservam o custo histórico.
 
-O fechamento depende somente do CI final desta validação e do parecer técnico da MISSÃO 008.
+## Resultado final
+
+- `quality` aprovado;
+- migrations e integração PostgreSQL aprovadas;
+- compra real de HM05F e MC500 validada;
+- baixa atômica das duas embalagens comprovada;
+- CMV estimado preciso de duas vendas confirmado em R$ 19,89;
+- nenhuma regra financeira alterada para acomodar arredondamento de teste.
+
+A M008-D está encerrada. O parecer técnico consolidado da MISSÃO 008 está registrado em
+`MISSAO-008-PARECER-FINAL.md`.
