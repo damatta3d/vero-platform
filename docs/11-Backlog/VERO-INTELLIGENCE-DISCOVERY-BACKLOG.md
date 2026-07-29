@@ -5,7 +5,9 @@
 **Status:** iniciado em 2026-07-29  
 **Estratégia:** reuse-first, evidência oficial e entrega vertical  
 **Dependências concluídas:** MISSÃO 008 e MISSÃO 009  
-**Implementação funcional:** bloqueada até conclusão do gate arquitetural
+**Implementação funcional:** bloqueada até conclusão do gate arquitetural  
+**D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
+**D2 Portal:** inventário público concluído; validação autenticada pendente
 
 ## Objetivo do discovery
 
@@ -31,26 +33,30 @@ Determinar, sem duplicar capacidades existentes:
 
 ### D1 — iFood oficial
 
-- [ ] registrar autenticação centralizada e distribuída;
-- [ ] registrar módulos, escopos e gates de homologação;
-- [ ] mapear Merchant API;
-- [ ] mapear Catalog API;
-- [ ] mapear Order API e ciclo de eventos;
-- [ ] mapear webhook, polling e acknowledgements;
-- [ ] mapear Promotion API;
-- [ ] mapear Financial APIs;
-- [ ] mapear Reviews API;
-- [ ] registrar rate limits por módulo;
-- [ ] classificar cada campo como leitura, escrita, evento, arquivo ou não comprovado.
+- [x] registrar autenticação centralizada e distribuída;
+- [x] registrar módulos, escopos e gates de homologação;
+- [x] mapear Merchant API;
+- [x] mapear Catalog API;
+- [x] mapear Order API e ciclo de eventos;
+- [x] mapear webhook, polling e acknowledgements;
+- [x] mapear Promotion API;
+- [x] mapear Financial APIs;
+- [x] mapear Reviews API;
+- [x] registrar rate limits publicamente comprovados e marcar os demais para homologação;
+- [x] classificar cada grupo de dados como leitura, escrita, evento, arquivo ou não comprovado.
+
+Evidência: `docs/04-Architecture/VERO-INTELLIGENCE-IFOOD-CAPABILITY-MATRIX.md`.
 
 ### D2 — Portal do Parceiro
 
-- [ ] inventariar Pedidos, Operação, Produtos, Desempenho, Financeiro, Avaliações e Promoções;
-- [ ] registrar formato de exportação por relatório;
-- [ ] registrar janela histórica e frequência de atualização;
-- [ ] identificar correspondência com API oficial;
-- [ ] registrar dados sem acesso programático público como lacuna;
+- [x] inventariar Pedidos, Operação, Produtos, Desempenho, Financeiro, Avaliações e Promoções;
+- [x] registrar formatos de exportação publicamente comprovados e marcar os demais como pendentes;
+- [x] registrar janela histórica e frequência quando públicas; marcar lacunas para validação;
+- [x] identificar correspondência com API oficial;
+- [x] registrar dados sem acesso programático público como lacuna;
 - [ ] validar o inventário em uma sessão autorizada do Portal do Santo Parma, sem scraping.
+
+Evidência: `docs/04-Architecture/VERO-INTELLIGENCE-IFOOD-PARTNER-PORTAL-MATRIX.md`.
 
 ### D3 — Anota AI
 
