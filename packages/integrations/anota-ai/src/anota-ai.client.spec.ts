@@ -161,6 +161,33 @@ describe('AnotaAiClient', () => {
     );
   });
 
+  it.each([
+    [{ success: true, message: 'ok', data: [{ id: 'category-1' }] }],
+    [{ success: true, message: 'ok', data: { categories: [{ id: 'category-1' }] } }]
+  ])('normalizes the provider menu export envelope', async (payload) => {
+    const client = createClient(async (url) =>
+      url.includes('/oauth-client/token') ? json(TOKEN) : json(payload)
+    );
+
+    await expect(client.exportMenu('page-1')).resolves.toMatchObject({
+      success: true,
+      message: 'ok',
+      categories: [{ id: 'category-1' }]
+    });
+  });
+
+  it('rejects malformed menu export envelopes', async () => {
+    const client = createClient(async (url) =>
+      url.includes('/oauth-client/token')
+        ? json(TOKEN)
+        : json({ success: true, data: { categories: [null] } })
+    );
+
+    await expect(client.exportMenu('page-1')).rejects.toMatchObject({
+      code: 'INVALID_PROVIDER_RESPONSE'
+    });
+  });
+
   it('links a page with HTTPS webhooks without exposing the page token in headers', async () => {
     const calls: RecordedCall[] = [];
     const client = createClient(async (url, init) => {
