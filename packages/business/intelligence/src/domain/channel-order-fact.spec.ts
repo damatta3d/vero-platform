@@ -145,6 +145,68 @@ describe('ChannelOrderFact', () => {
     ).toThrow(new InvalidChannelOrderFactError('observedAt'));
   });
 
+  it('supports an order without discounts or delivery fee', () => {
+    const fact = createChannelOrderFact(
+      {
+        tenantId: 'santo-parma',
+        connectionId: 'anota-ai-primary',
+        order: { ...order, discounts: [], deliveryFeeCents: 0 },
+        observedAt: new Date('2026-07-29T18:06:00.000Z')
+      },
+      pseudonymizer
+    );
+
+    expect(fact.adjustments).toEqual([]);
+  });
+
+  it.each([
+    ['tenantId', { tenantId: '' }],
+    ['tenantId', { tenantId: 'x'.repeat(129) }],
+    ['orderKey', {}, { pseudonymize: () => '' }],
+    ['order.items', {}, pseudonymizer, { items: [] }],
+    [
+      'order.lines.quantity',
+      {},
+      pseudonymizer,
+      { items: [{ ...order.items[0]!, quantity: Number.NaN }] }
+    ],
+    [
+      'order.lines.unitPriceCents',
+      {},
+      pseudonymizer,
+      { items: [{ ...order.items[0]!, unitPriceCents: -1 }] }
+    ],
+    [
+      'order.discounts.amountCents',
+      {},
+      pseudonymizer,
+      { discounts: [{ amountCents: -1, tag: 'INVALID' }] }
+    ],
+    ['order.deliveryFeeCents', {}, pseudonymizer, { deliveryFeeCents: -1 }],
+    ['order.additionalFeesCents', {}, pseudonymizer, { additionalFeesCents: [100] }],
+    ['order.source.menuVersion', {}, pseudonymizer, {
+      source: { ...order.source, menuVersion: -1 }
+    }],
+    ['order.totalCents', {}, pseudonymizer, { totalCents: -1 }],
+    ['order.createdAt', {}, pseudonymizer, { createdAt: 'not-a-date' }]
+  ] as const)(
+    'rejects invalid %s',
+    (field, inputOverride = {}, selectedPseudonymizer = pseudonymizer, orderOverride = {}) => {
+      expect(() =>
+        createChannelOrderFact(
+          {
+            tenantId: 'santo-parma',
+            connectionId: 'anota-ai-primary',
+            order: { ...order, ...orderOverride },
+            observedAt: new Date('2026-07-29T18:06:00.000Z'),
+            ...inputOverride
+          },
+          selectedPseudonymizer
+        )
+      ).toThrow(new InvalidChannelOrderFactError(field));
+    }
+  );
+
   it('supports a valid order without modifiers, discounts or delivery fee', () => {
     const item = order.items[0];
     if (item === undefined) throw new Error('Test fixture must contain one item.');
