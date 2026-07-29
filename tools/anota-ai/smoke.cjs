@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const REQUIRED_ENV = ['ANOTA_AI_CLIENT_ID', 'ANOTA_AI_CLIENT_SECRET', 'ANOTA_AI_PAGE_ID'];
 const SAFE_FIELD_NAME = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+const SAFE_FIELD_PATH = /^[A-Za-z0-9_$.[\]-]{1,160}$/;
 const MAX_SCHEMA_DEPTH = 8;
 const MAX_SCHEMA_PATHS = 240;
 
@@ -210,6 +211,14 @@ main().catch((error) => {
     typeof error === 'object' && error !== null && 'code' in error
       ? String(error.code)
       : 'SMOKE_TEST_FAILED';
+  const errorField =
+    typeof error === 'object' &&
+    error !== null &&
+    'field' in error &&
+    typeof error.field === 'string' &&
+    SAFE_FIELD_PATH.test(error.field)
+      ? error.field
+      : undefined;
   const errorStatus =
     typeof error === 'object' &&
     error !== null &&
@@ -222,6 +231,7 @@ main().catch((error) => {
       connected: false,
       code,
       ...diagnostic,
+      ...(errorField === undefined ? {} : { field: errorField }),
       ...(errorStatus === undefined ? {} : { httpStatus: errorStatus })
     })}\n`
   );
