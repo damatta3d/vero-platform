@@ -145,10 +145,7 @@ describe('resolveExternalOrderCatalog', () => {
   });
 });
 
-function expectLinkError(
-  action: () => void,
-  code: ExternalCatalogLinkError['code']
-): void {
+function expectLinkError(action: () => void, code: ExternalCatalogLinkError['code']): void {
   try {
     action();
   } catch (error: unknown) {
