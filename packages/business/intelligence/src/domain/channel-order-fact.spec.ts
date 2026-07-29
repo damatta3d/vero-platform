@@ -183,9 +183,7 @@ describe('ChannelOrderFact', () => {
     expect(() => create({ createdAt: 'not-a-date' })).toThrow(
       new InvalidChannelOrderFactError('order.createdAt')
     );
-    expect(() => create({}, 'x'.repeat(129))).toThrow(
-      new InvalidChannelOrderFactError('tenantId')
-    );
+    expect(() => create({}, 'x'.repeat(129))).toThrow(new InvalidChannelOrderFactError('tenantId'));
 
     const item = order.items[0];
     if (item === undefined) throw new Error('Test fixture must contain one item.');
