@@ -2,8 +2,7 @@ name: Anota AI Connection
 
 on:
   workflow_dispatch:
-  push:
-    branches: [agent/missao-009-anota-ai-connector]
+  pull_request:
     paths:
       - .github/workflows/anota-ai-connection.yml
       - packages/integrations/anota-ai/**
