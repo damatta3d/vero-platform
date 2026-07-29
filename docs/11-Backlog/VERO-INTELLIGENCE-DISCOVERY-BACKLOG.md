@@ -5,12 +5,12 @@
 **Status:** iniciado em 2026-07-29  
 **Estratégia:** reuse-first, evidência oficial e entrega vertical  
 **Dependências concluídas:** MISSÃO 008 e MISSÃO 009  
-**Implementação funcional:** bloqueada até aprovação formal do Gate C  
+**Implementação funcional:** corte vertical read-only autorizado; código ainda não iniciado  
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
 **D2 Portal:** inventário público concluído; validação autenticada pendente  
 **D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
 **D4 Canônico:** revisão normativa concluída; ADR-011 v1.0.0 Approved; implementação condicionada aos gates operacionais  
-**Gate C:** política de retenção e PII v0.1.0 Proposed; Anota AI read-only recomendada, ainda não autorizada
+**Gate C:** concluído; política v1.0.0 Approved e Anota AI read-only autorizada para pedidos homologados
 
 ## Objetivo do discovery
 
@@ -114,9 +114,9 @@ Evidência:
 - [x] definir pseudonimização tenant-scoped para a chave de pedido;
 - [x] definir prazos, expurgo, backups, legal hold e evidência de exclusão;
 - [x] recomendar Anota AI read-only como primeira fonte;
-- [ ] aprovar formalmente a política v0.1.0;
-- [ ] autorizar Anota AI e o recorte exato de pedidos como primeira fonte;
-- [ ] autorizar o início da implementação read-only;
+- [x] aprovar formalmente a política v1.0.0;
+- [x] autorizar Anota AI e o recorte exato de pedidos como primeira fonte;
+- [x] autorizar o início da implementação read-only;
 - [ ] validar papéis de tratamento, base aplicável e prazos legais/fiscais por oferta.
 
 Evidência:
@@ -124,7 +124,7 @@ Evidência:
 
 ### D6 — Primeiro corte vertical
 
-Proposta sujeita ao gate:
+Escopo aprovado no Gate C; implementação ainda não iniciada:
 
 1. ingerir pedidos Anota AI read-only por execução controlada, sem efeito operacional;
 2. persistir revisões imutáveis e linhas com procedência;
@@ -136,6 +136,9 @@ Proposta sujeita ao gate:
 8. manter preço, promoção, venda, estoque e status externo sem alteração automática.
 
 O iFood entra no mesmo pipeline somente após onboarding, escopos e homologação oficiais.
+
+A autorização limita-se a desenvolvimento e testes read-only fora de produção. Ingestão produtiva,
+webhooks, mutações externas, vendas, estoque e ações automáticas de IA permanecem bloqueados.
 
 ## Roadmap preliminar
 
