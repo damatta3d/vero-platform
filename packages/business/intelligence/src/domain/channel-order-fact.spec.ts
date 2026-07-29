@@ -209,8 +209,7 @@ describe('ChannelOrderFact', () => {
         tenantId: inputOverride.tenantId ?? 'santo-parma',
         connectionId: inputOverride.connectionId ?? 'anota-ai-primary',
         order: { ...order, ...orderOverride },
-        observedAt:
-          inputOverride.observedAt ?? new Date('2026-07-29T18:06:00.000Z')
+        observedAt: inputOverride.observedAt ?? new Date('2026-07-29T18:06:00.000Z')
       };
 
       expect(() => createChannelOrderFact(input, selectedPseudonymizer)).toThrow(
