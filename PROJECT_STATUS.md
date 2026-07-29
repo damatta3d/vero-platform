@@ -6,11 +6,11 @@
 **Constituição:** VERO-CONST-001 v1.0.0 — Approved  
 **Blueprint Volumes I e II:** v0.1.0 — Approved  
 **Canonical Domain Model:** VERO-CDM-001 v0.1.0 — Approved  
-**ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved  
+**ADRs vigentes na `main`:** ADR-001 a ADR-009 v1.0.0 — Approved; ADR-010 v1.0.0 — Approved no PR #10  
 **Engineering Playbook:** VERO-ENG-001 v1.1.0 — Ativo  
 **Fase:** MISSÃO 009 — Connector Anota AI
 
-**Estado:** PR #9 integrado; smoke read-only aprovado; governança arquitetural complementar em revisão
+**Estado:** PR #9 integrado; smoke read-only aprovado; Gate A arquitetural aprovado no PR #10
 
 **Branch:** `agent/missao-009-anota-ai-governance`
 
@@ -49,8 +49,8 @@
 - Parecer técnico final da MISSÃO 008 favorável à aprovação do PR #8.
 - PR #8 integrado à `main` no commit `34fdcf4`.
 - MISSÃO 009 implementada no PR #9 e integrada concorrentemente durante a revisão arquitetural.
-- `VERO-INT-001` elaborado em Draft.
-- ADR-010 proposto para Integration Hub e fronteira do Connector Anota AI.
+- `VERO-INT-001` v1.0.0 aprovado no Gate A da MISSÃO 009.
+- ADR-010 v1.0.0 aprovado para Integration Hub e fronteira do Connector Anota AI.
 - Identificado que pedido externo não pode ser convertido diretamente na venda simplificada atual.
 - PR #9 integrado com cliente OAuth, ACL e vínculos de catálogo multitenant.
 - Smoke read-only `30471438277` autenticou, listou 30 categorias e traduziu 1 pedido real.
@@ -69,7 +69,7 @@
 | PR #7 | Merged; Access e segurança essencial |
 | PR #8 | Merged; MVP Santo Parma |
 | PR #9 | Merged; Connector Anota AI read-only e vínculos homologados |
-| `agent/missao-009-anota-ai-governance` | Design, ADR e timeout em validação complementar |
+| PR #10 | Gate A aprovado; Design, ADR e timeout em validação final |
 | ADR-009 | `Approved` e integrado |
 
 ## Escopo da MISSÃO 008
@@ -155,8 +155,8 @@
 
 ## Próximo gate
 
-1. Revisar e aprovar `VERO-INT-001`.
-2. Revisar e aprovar o ADR-010.
-3. Fechar lifecycle, health e governança de conexão.
-4. Confirmar com a Anota AI os contratos operacionais pendentes.
+1. Concluir os gates do PR #10 e submetê-lo à decisão de merge.
+2. Fechar lifecycle, health e governança de conexão.
+3. Confirmar com a Anota AI os contratos operacionais pendentes.
+4. Definir SecretProvider para ambiente compartilhado.
 5. Manter webhooks, venda e estoque bloqueados até o próximo gate.
