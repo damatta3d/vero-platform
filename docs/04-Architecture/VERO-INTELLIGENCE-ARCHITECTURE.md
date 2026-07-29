@@ -4,11 +4,11 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | Discovery para revisão |
+| Estado | Arquitetura revisada; implementação condicionada aos gates operacionais |
 | Data | 2026-07-29 |
 | Branch | agent/vero-intelligence-discovery |
 | Implementação | Bloqueada até aprovação do gate |
-| ADR material | ADR-011 v0.1.0 — Proposed |
+| ADR material | ADR-011 v1.0.0 — Approved |
 
 ## 1. Resultado executivo
 
@@ -233,7 +233,7 @@ Matrizes oficiais, lacunas e comparação concluídas.
 
 ### Gate B — Arquitetura
 
-Revisar este documento, o modelo mínimo e o ADR-011. Nenhum documento Proposed se torna Approved sem autorização do Arquiteto-Chefe.
+Concluído em 2026-07-29. O modelo mínimo e o ADR-011 foram revisados; o ADR-011 v1.0.0 foi aprovado formalmente pelo Arquiteto-Chefe.
 
 ### Gate C — Implementação read-only
 
