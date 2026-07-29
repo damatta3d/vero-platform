@@ -97,6 +97,9 @@ export function createChannelOrderFact(
   ]);
   if (lines.length === 0) throw new InvalidChannelOrderFactError('order.items');
 
+  if (input.order.additionalFeesCents.length > 0) {
+    throw new InvalidChannelOrderFactError('order.additionalFeesCents');
+  }
   const adjustments: ChannelOrderAdjustmentFact[] = input.order.discounts.map((discount) =>
     Object.freeze({
       kind: 'DISCOUNT',
@@ -104,11 +107,15 @@ export function createChannelOrderFact(
       label: requiredText(discount.tag, 'order.discounts.tag', 256)
     })
   );
-  if (input.order.deliveryFeeCents > 0) {
+  const deliveryFeeCents = nonNegativeInteger(
+    input.order.deliveryFeeCents,
+    'order.deliveryFeeCents'
+  );
+  if (deliveryFeeCents > 0) {
     adjustments.push(
       Object.freeze({
         kind: 'DELIVERY_FEE',
-        amountCents: nonNegativeInteger(input.order.deliveryFeeCents, 'order.deliveryFeeCents'),
+        amountCents: deliveryFeeCents,
         label: 'Delivery'
       })
     );
