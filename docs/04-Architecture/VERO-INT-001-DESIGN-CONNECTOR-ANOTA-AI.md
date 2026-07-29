@@ -5,12 +5,12 @@
 | Campo | Valor |
 |---|---|
 | Identificador | `VERO-INT-001` |
-| Versão | `0.1.0` |
-| Estado | Draft |
+| Versão | `1.0.0` |
+| Estado | Approved |
 | Data | 2026-07-29 |
 | Missão | MISSÃO 009 |
 | Tenant piloto | O Santo Parma |
-| Baseline | `main` em `34fdcf456c551bcd580299effde6d500fc5b405d` |
+| Baseline | `main` em `bac02c7aa561f62fb582381fd0b710e948fc3d2a` |
 
 ## 1. Objetivo
 
@@ -300,8 +300,8 @@ registrará autoria, ação, alvo, instante e resultado, sem substituir logs ou 
 - [x] cliente, ACL e smoke read-only integrados pelo PR #9;
 - [x] conectividade real sem exposição de dados;
 - [ ] lacunas operacionais respondidas pela Anota AI;
-- [ ] ADR-010 aprovado;
-- [ ] Design Document aprovado;
+- [x] ADR-010 aprovado;
+- [x] Design Document aprovado;
 - nenhum segredo versionado.
 
 ### Gate B — Fundação governada
@@ -356,5 +356,13 @@ registrará autoria, ação, alvo, instante e resultado, sem substituir logs ou 
 ## 14. Critério para iniciar código
 
 O cliente e a tradução read-only foram integrados pelo PR #9. Nenhum webhook, ação externa,
-criação de venda ou baixa de estoque poderá ser ativado antes da aprovação do ADR-010, deste
-Design Document e dos contratos operacionais pendentes.
+criação de venda ou baixa de estoque poderá ser ativado antes da confirmação dos contratos
+operacionais pendentes e da aprovação específica do próximo gate.
+
+
+## 15. Histórico
+
+| Versão | Data | Alteração | Estado |
+|---|---|---|---|
+| 0.1.0 | 2026-07-29 | Proposta inicial do desenho do conector | Draft |
+| 1.0.0 | 2026-07-29 | Desenho aprovado no Gate A da MISSÃO 009 | Approved |
