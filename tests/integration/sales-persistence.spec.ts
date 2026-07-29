@@ -161,7 +161,7 @@ describe('sales persistence', () => {
       recipeVersion: 1,
       quantity: 2,
       grossRevenueCents: 8980,
-      estimatedCmvCents: 1990,
+      estimatedCmvCents: 1989,
       realizedCmvCents: 1899,
       marginCents: 7081
     });
