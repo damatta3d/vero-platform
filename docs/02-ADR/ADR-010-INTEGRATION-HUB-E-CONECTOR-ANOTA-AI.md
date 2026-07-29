@@ -5,8 +5,8 @@
 | Campo | Valor |
 |---|---|
 | Identificador | ADR-010 |
-| Versão | 0.1.0 |
-| Estado | Proposed |
+| Versão | 1.0.0 |
+| Estado | Approved |
 | Data | 2026-07-29 |
 | Missão | MISSÃO 009 |
 
@@ -20,7 +20,7 @@ transacional confiável.
 
 A baseline possui catálogo, estoque, produção e venda simplificada. O módulo de venda representa
 uma venda concluída de um único produto e não modela o ciclo de um pedido externo. A API oficial da
-Anota AI ainda possui contratos que precisam ser confirmados antes do cliente real.
+Anota AI ainda possui contratos que precisam ser confirmados antes da ativação operacional.
 
 Sem uma decisão explícita, há risco de:
 
@@ -31,7 +31,7 @@ Sem uma decisão explícita, há risco de:
 - prometer exactly-once sem suporte técnico;
 - armazenar credenciais e dados pessoais de forma inadequada.
 
-## Decisão proposta
+## Decisão
 
 1. Criar uma capacidade provider-neutral de **Integration Hub** no grupo `Platform`.
 2. Criar o **Connector Anota AI** no grupo `Integrations`.
@@ -131,7 +131,7 @@ Rejeitada por violar a Anti-Corruption Layer e impedir substituição do provide
 
 - o PR #9 integrou cliente, ACL, contrato `ExternalOrder` e migration de vínculos em modo read-only;
 - a implementação existente não será ativada para captura, mutações externas, venda ou estoque
-  antes da aprovação;
+  antes do próximo gate operacional;
 - a evolução será dividida pelos gates de `VERO-INT-001`;
 - ADR de secret store poderá ser necessário antes da homologação compartilhada;
 - evolução de Order Intake dentro de Sales ou sua futura extração terá contrato próprio;
@@ -161,3 +161,4 @@ Rejeitada por violar a Anti-Corruption Layer e impedir substituição do provide
 | Versão | Data | Alteração | Estado |
 |---|---|---|---|
 | 0.1.0 | 2026-07-29 | Proposta inicial da fronteira de integração | Proposed |
+| 1.0.0 | 2026-07-29 | Decisão aprovada no Gate A da MISSÃO 009 | Approved |
