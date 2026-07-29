@@ -7,7 +7,7 @@
 | Estado | Revisado contra a baseline normativa; ADR-011 v1.0.0 Approved |
 | Data | 2026-07-29 |
 | Escopo | Primeiro corte: pedidos externos + catálogo VERO + CMV/margem |
-| Implementação | Bloqueada até aprovação formal do Gate C |
+| Implementação | Corte vertical read-only autorizado; ainda não iniciado |
 | Princípio | Reuse-first; nenhuma duplicação de agregados transacionais |
 
 ## 1. Objetivo
@@ -286,7 +286,7 @@ Uma margem com 80% dos itens vinculados não pode ser exibida como margem comple
 - `tenantId` e `establishmentId` são obrigatórios em toda chave e consulta;
 - nenhum identificador externo resolve Tenant sozinho;
 - nome, telefone, endereço e coordenadas não entram no fato analítico padrão;
-- retenção, PII, pseudonimização e expurgo seguem a política `VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md`, ainda Proposed no Gate C;
+- retenção, PII, pseudonimização e expurgo seguem a política `VERO-INTELLIGENCE-DATA-RETENTION-AND-PII-POLICY.md` v1.0.0 — Approved no Gate C;
 - arquivos oficiais recebem checksum, controle de acesso e relatório de rejeições;
 - logs e métricas não expõem PII, tokens ou valores de alta cardinalidade;
 - reprocessamento é auditado e não altera revisões imutáveis.
@@ -350,6 +350,6 @@ blocos já existentes/aprovados (`IntegrationConnection`, `ExternalMessageReceip
 estoque e CMV paralelos.
 
 A decisão material de persistência e propriedade foi registrada no ADR-011 v1.0.0 — Approved. A
-política inicial de retenção e PII v0.1.0 foi materializada como Proposed. A implementação permanece
-bloqueada até a aprovação formal dessa política, a autorização da primeira fonte e a autorização
-expressa do corte read-only.
+política inicial de retenção e PII v1.0.0 foi aprovada no Gate C. A Anota AI read-only e o recorte de
+pedidos homologados foram autorizados como primeira fonte; desenvolvimento e testes estão liberados,
+mas ingestão produtiva e qualquer efeito operacional permanecem bloqueados até gates próprios.
