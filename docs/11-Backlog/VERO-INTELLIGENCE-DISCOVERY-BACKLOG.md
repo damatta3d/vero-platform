@@ -7,7 +7,9 @@
 **Dependências concluídas:** MISSÃO 008 e MISSÃO 009  
 **Implementação funcional:** bloqueada até conclusão do gate arquitetural  
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
-**D2 Portal:** inventário público concluído; validação autenticada pendente
+**D2 Portal:** inventário público concluído; validação autenticada pendente  
+**D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
+**D4 Canônico:** modelo mínimo proposto para revisão; implementação bloqueada
 
 ## Objetivo do discovery
 
@@ -62,39 +64,61 @@ Evidência: `docs/04-Architecture/VERO-INTELLIGENCE-IFOOD-PARTNER-PORTAL-MATRIX.
 
 - [x] confirmar pedidos e cardápio no conector existente;
 - [x] confirmar callbacks e vínculo de página;
-- [ ] tipar somente campos observados nos contratos oficiais/homologação;
-- [ ] verificar documentação oficial de clientes, financeiro, estoque e relatórios;
-- [ ] comparar dados de pedido com iFood;
-- [ ] manter automações de status e estoque desabilitadas até gate próprio.
+- [x] confrontar `ExternalOrder`, mapper, smoke real e Design `VERO-INT-001`;
+- [x] comparar cobertura atual com iFood;
+- [x] registrar vantagem de maturidade da Anota AI e amplitude oficial do iFood;
+- [x] manter automações de status e estoque desabilitadas até gate próprio;
+- [ ] obter respostas formais sobre scopes, rate limits, incremental, webhooks e
+  `additionalFees`;
+- [ ] comprovar documentação oficial de clientes, financeiro, estoque e relatórios além de
+  pedidos/cardápio;
+- [ ] tipar campos adicionais somente após contrato ou payload sanitizado.
+
+Evidência:
+`docs/04-Architecture/VERO-INTELLIGENCE-ANOTA-AI-IFOOD-COMPARISON.md`.
 
 ### D4 — Arquitetura canônica
 
-- [ ] separar agregado transacional, fato externo, fato reconciliado e métrica;
-- [ ] definir `SourceConnection`, `IngestionRun`, `SourceEvent` e `IngestionCheckpoint`;
-- [ ] definir pedido e item externos persistidos;
-- [ ] definir dimensões mínimas de canal, estabelecimento, produto, categoria e tempo;
-- [ ] definir fatos de venda, desconto, taxa, repasse, visita e conversão;
-- [ ] definir agregados reproduzíveis;
-- [ ] definir procedência, versão, retenção, LGPD e minimização;
-- [ ] validar compatibilidade com o CDM aprovado.
+- [x] separar agregado transacional, recebimento externo, fato reconciliado e métrica;
+- [x] reutilizar `IntegrationConnection` e `ExternalMessageReceipt` do ADR-010;
+- [x] eliminar `SourceConnection` e `SourceEvent` duplicados;
+- [x] definir `IngestionRun` e `IngestionCheckpoint`;
+- [x] definir pedido, linha, ajuste e financeiro externos persistidos;
+- [x] manter produto, categoria, preço, estoque, compra, CMV e margem em seus donos canônicos;
+- [x] definir dimensões como referências/snapshots, não agregados mestres;
+- [x] definir métricas versionadas, completude, procedência e qualidade;
+- [x] adiar visita, conversão, CRM, tendência e recomendação até fonte ou histórico suficientes;
+- [x] registrar tenancy, minimização de PII e retenção como gates;
+- [ ] revisar o modelo contra a versão integral do CDM e precedência normativa;
+- [ ] decidir em ADR o dono de `ChannelOrderFact` e a estratégia de persistência;
+- [ ] aprovar o modelo no gate arquitetural.
+
+Evidência:
+`docs/04-Architecture/VERO-INTELLIGENCE-MINIMUM-CANONICAL-MODEL.md`.
 
 ### D5 — ADRs candidatos
 
-- [ ] ADR de ingestão externa, idempotência, replay e dead-letter;
-- [ ] ADR de persistência analítica e agregados no Modular Monolith;
-- [ ] ADR de recomendações determinísticas e IA explicável;
-- [ ] eliminar qualquer ADR que apenas repita decisão já coberta pelos ADR-001 a ADR-009.
+- [x] eliminar ADR genérico de inbox/idempotência/replay por já estar coberto pelo ADR-010;
+- [ ] submeter ADR de persistência analítica e agregados no Modular Monolith como `Proposed`;
+- [ ] decidir posição de `ChannelOrderFact`, retenção e materialização no ADR;
+- [ ] detalhar checkpoints/importação de arquivos em Design, salvo decisão material nova;
+- [ ] adiar ADR de IA explicável até existir motor determinístico e contrato de evidências;
+- [x] eliminar qualquer ADR que apenas repita ADR-001 a ADR-010.
 
 ### D6 — Primeiro corte vertical
 
 Proposta sujeita ao gate:
 
-1. importar ou sincronizar pedidos iFood autorizados;
-2. reconciliar itens com `CatalogProduct`;
-3. cruzar receita, descontos e taxas com CMV realizado/estimado;
-4. exibir produto, quantidade, faturamento, CMV, margem de contribuição e impacto promocional;
-5. apontar a origem de cada número;
-6. gerar alertas determinísticos, sem alteração automática de preço ou promoção.
+1. ingerir pedidos Anota AI read-only por execução controlada, sem efeito operacional;
+2. persistir revisões imutáveis e linhas com procedência;
+3. reconciliar itens por `ExternalCatalogLink`;
+4. cruzar receita/desconto observados com CMV estimado e, quando existir venda terminal, realizado;
+5. exibir produto, quantidade, faturamento, cobertura de vínculo, CMV e margem observável;
+6. apontar origem, fórmula, versão e completude de cada número;
+7. gerar alertas determinísticos de qualidade e margem incompleta;
+8. manter preço, promoção, venda, estoque e status externo sem alteração automática.
+
+O iFood entra no mesmo pipeline somente após onboarding, escopos e homologação oficiais.
 
 ## Roadmap preliminar
 
@@ -115,20 +139,24 @@ Portal do Parceiro.
 | Risco | Severidade | Mitigação |
 |---|---|---|
 | Confundir API operacional com analytics do Portal | Alta | matriz de cobertura com evidência por campo |
-| Duplicar vendas/CMV existentes | Alta | fatos externos reconciliados apontam para agregados existentes |
-| Associar item externo ao produto errado | Alta | homologação explícita e fila de não reconciliados |
-| Reprocessamento duplicar fatos | Alta | idempotência, checkpoint e chave natural por fonte |
-| Promoção parecer lucrativa sem taxas/CMV | Alta | margem de contribuição somente com componentes disponíveis |
+| Duplicar Integration Hub/inbox | Alta | reutilizar ADR-010 e eliminar conceitos paralelos |
+| Duplicar vendas/CMV existentes | Alta | fatos externos apontam para agregados existentes |
+| Associar item externo ao produto errado | Alta | vínculo explícito e fila de não reconciliados |
+| Reprocessamento duplicar fatos | Alta | revisão imutável, checkpoint e chave natural |
+| Promoção parecer lucrativa sem taxas/CMV | Alta | margem somente com componentes e completude visíveis |
 | Expor dados pessoais desnecessários | Alta | minimização, pseudonimização, retenção e auditoria |
-| Recomendação de IA sem prova | Alta | fórmula determinística, evidência, confiança e aprovação humana |
-| Limites/homologação mudarem | Média | adapters versionados, feature flags e monitoramento de contrato |
+| Recomendação de IA sem prova | Alta | fórmula, evidência, confiança e aprovação humana |
+| Limites/homologação mudarem | Média | adapters versionados, feature flags e monitoramento |
 
 ## Critérios para iniciar código
 
 - matriz oficial iFood concluída;
-- primeira fonte de dados escolhida;
-- contrato canônico mínimo revisado;
-- ADRs materiais aprovados;
-- acesso e escopos confirmados;
-- política de dados pessoais definida;
-- critérios de aceite do primeiro corte vertical aprovados.
+- comparação Anota AI × iFood concluída;
+- primeira fonte de dados escolhida e autorizada;
+- contrato canônico mínimo revisado e aprovado;
+- ADR de persistência analítica aprovado;
+- dono de `ChannelOrderFact` decidido;
+- política de retenção e PII aprovada;
+- chaves de revisão e checkpoint confirmadas;
+- critérios de aceite do primeiro corte vertical aprovados;
+- nenhum efeito empresarial habilitado pelo Intelligence.
