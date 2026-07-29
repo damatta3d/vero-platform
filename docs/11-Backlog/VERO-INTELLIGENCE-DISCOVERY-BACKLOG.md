@@ -5,7 +5,7 @@
 **Status:** iniciado em 2026-07-29  
 **Estratégia:** reuse-first, evidência oficial e entrega vertical  
 **Dependências concluídas:** MISSÃO 008 e MISSÃO 009  
-**Implementação funcional:** D6.1 iniciado com contrato sanitizado de ChannelOrderFact  
+**Implementação funcional:** D6.2 concluído com persistência append-only de ChannelOrderFact  
 **D1 iFood:** discovery público concluído; homologação e payloads reais pendentes  
 **D2 Portal:** inventário público concluído; validação autenticada pendente  
 **D3 Anota AI:** comparação concluída com base no conector e homologação atuais  
@@ -143,9 +143,18 @@ Escopo aprovado no Gate C; implementação iniciada em 2026-07-29:
 - [x] exigir pseudonimização tenant-scoped por conexão;
 - [x] representar itens, complementos, descontos e entrega sem efeito operacional;
 - [x] adicionar testes unitários de minimização e validação temporal;
-- [ ] persistir revisões imutáveis no PostgreSQL;
+
+#### D6.2 — Persistência analítica append-only
+
+- [x] persistir fato, linhas e ajustes em tabelas próprias do `business/intelligence`;
+- [x] adotar chave natural por Tenant, conexão, pedido pseudonimizado e revisão;
+- [x] persistir hash semântico, `receiptId`, `ingestionRunId` e `schemaVersion`;
+- [x] tratar replay idêntico sem duplicar fatos;
+- [x] rejeitar colisão da mesma revisão com conteúdo comercial divergente;
+- [x] impedir atualização ou exclusão direta de fatos no PostgreSQL;
+- [x] comprovar migration, duplicidade, replay e isolamento entre tenants no CI;
+- [ ] implementar expurgo auditável em lotes conforme a política de retenção;
 - [ ] integrar execução controlada do Anota AI;
-- [ ] homologar replay, duplicidade, isolamento entre tenants e expurgo.
 
 O iFood entra no mesmo pipeline somente após onboarding, escopos e homologação oficiais.
 
