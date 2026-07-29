@@ -2,6 +2,7 @@ import type { ExternalOrder } from '@vero/business-sales';
 import {
   createChannelOrderFact,
   InvalidChannelOrderFactError,
+  type CreateChannelOrderFactInput,
   type OrderPseudonymizer
 } from './channel-order-fact.js';
 
@@ -71,6 +72,13 @@ const order: ExternalOrder = Object.freeze({
     longitude: -54.6
   })
 });
+
+type InvalidCase = readonly [
+  field: string,
+  inputOverride?: Partial<Omit<CreateChannelOrderFactInput, 'order'>>,
+  selectedPseudonymizer?: OrderPseudonymizer,
+  orderOverride?: Partial<ExternalOrder>
+];
 
 describe('ChannelOrderFact', () => {
   const pseudonymizer: OrderPseudonymizer = {
@@ -159,7 +167,7 @@ describe('ChannelOrderFact', () => {
     expect(fact.adjustments).toEqual([]);
   });
 
-  it.each([
+  it.each<InvalidCase>([
     ['tenantId', { tenantId: '' }],
     ['tenantId', { tenantId: 'x'.repeat(129) }],
     ['orderKey', {}, { pseudonymize: () => '' }],
@@ -194,7 +202,7 @@ describe('ChannelOrderFact', () => {
     ],
     ['order.totalCents', {}, pseudonymizer, { totalCents: -1 }],
     ['order.createdAt', {}, pseudonymizer, { createdAt: 'not-a-date' }]
-  ] as const)(
+  ])(
     'rejects invalid %s',
     (field, inputOverride = {}, selectedPseudonymizer = pseudonymizer, orderOverride = {}) => {
       expect(() =>
