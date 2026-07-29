@@ -184,9 +184,14 @@ describe('ChannelOrderFact', () => {
     ],
     ['order.deliveryFeeCents', {}, pseudonymizer, { deliveryFeeCents: -1 }],
     ['order.additionalFeesCents', {}, pseudonymizer, { additionalFeesCents: [100] }],
-    ['order.source.menuVersion', {}, pseudonymizer, {
-      source: { ...order.source, menuVersion: -1 }
-    }],
+    [
+      'order.source.menuVersion',
+      {},
+      pseudonymizer,
+      {
+        source: { ...order.source, menuVersion: -1 }
+      }
+    ],
     ['order.totalCents', {}, pseudonymizer, { totalCents: -1 }],
     ['order.createdAt', {}, pseudonymizer, { createdAt: 'not-a-date' }]
   ] as const)(
@@ -290,5 +295,4 @@ describe('ChannelOrderFact', () => {
       )
     ).toThrow(new InvalidChannelOrderFactError('order.source.menuVersion'));
   });
-
 });
