@@ -81,15 +81,15 @@ model InventoryStockMovement {
 }
 
 model CatalogProduct {
-  id             String             @db.Uuid
-  tenantId       String             @db.VarChar(128)
-  name           String             @db.VarChar(160)
-  salePriceCents Int
-  createdAt      DateTime           @db.Timestamptz(3)
-  updatedAt      DateTime           @db.Timestamptz(3)
-  recipes        CatalogRecipe[]
-  sales          SalesRecord[]
-  productions    ProductionRecord[]
+  id                   String                @db.Uuid
+  tenantId             String                @db.VarChar(128)
+  name                 String                @db.VarChar(160)
+  salePriceCents       Int
+  createdAt            DateTime              @db.Timestamptz(3)
+  updatedAt            DateTime              @db.Timestamptz(3)
+  recipes              CatalogRecipe[]
+  sales                SalesRecord[]
+  productions          ProductionRecord[]
   externalCatalogLinks ExternalCatalogLink[]
 
   @@id([tenantId, id])
@@ -215,16 +215,16 @@ model ProductionCostLine {
 }
 
 model ExternalCatalogLink {
-  tenantId               String         @db.VarChar(128)
-  provider               String         @db.VarChar(64)
-  establishmentExternalId String        @db.VarChar(256)
-  kind                   String         @db.VarChar(16)
-  providerItemId         String         @db.VarChar(256)
-  catalogProductId       String         @db.Uuid
-  authoredBy             String         @db.VarChar(256)
-  createdAt              DateTime       @db.Timestamptz(3)
-  updatedAt              DateTime       @db.Timestamptz(3)
-  catalogProduct         CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
+  tenantId                String         @db.VarChar(128)
+  provider                String         @db.VarChar(64)
+  establishmentExternalId String         @db.VarChar(256)
+  kind                    String         @db.VarChar(16)
+  providerItemId          String         @db.VarChar(256)
+  catalogProductId        String         @db.Uuid
+  authoredBy              String         @db.VarChar(256)
+  createdAt               DateTime       @db.Timestamptz(3)
+  updatedAt               DateTime       @db.Timestamptz(3)
+  catalogProduct          CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
 
   @@id([tenantId, provider, establishmentExternalId, kind, providerItemId])
   @@index([tenantId, catalogProductId])

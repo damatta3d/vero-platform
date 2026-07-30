@@ -2,7 +2,12 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
 
 import { CatalogService, type CatalogRepository } from '@vero/business-catalog';
-import { FinanceService, type FinanceRepository } from '@vero/business-finance';
+import {
+  AccountService,
+  FinanceService,
+  type AccountRepository,
+  type FinanceRepository
+} from '@vero/business-finance';
 import {
   InventoryService,
   type InventoryIngredientCatalog,
@@ -13,13 +18,17 @@ import { SalesService, type SalesRepository } from '@vero/business-sales';
 import type { AppConfig } from '@vero/core-configuration';
 import {
   createDatabaseClient,
+  PrismaAccountRepository,
   PrismaCatalogRepository,
   PrismaFinanceRepository,
   PrismaInventoryRepository,
   PrismaProductionRepository,
   PrismaSalesRepository
 } from '@vero/infrastructure-database';
+
 import { APP_CONFIG } from '../app.tokens.js';
+import { AccountController } from '../finance/account.controller.js';
+import { ACCOUNT_REPOSITORY } from '../finance/account.tokens.js';
 import { FinanceController } from '../finance/finance.controller.js';
 import { FinancePageController } from '../finance/finance-page.controller.js';
 import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
@@ -29,10 +38,11 @@ import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
 import { SalesController } from '../sales/sales.controller.js';
 import { SALES_REPOSITORY } from '../sales/sales.tokens.js';
+
 import { CatalogController } from './catalog.controller.js';
 import { CATALOG_REPOSITORY, DATABASE_CLIENT } from './catalog.tokens.js';
-import { MvpSecurityService } from './mvp-security.service.js';
 import { MvpPageController } from './mvp-page.controller.js';
+import { MvpSecurityService } from './mvp-security.service.js';
 
 type DatabaseClient = ReturnType<typeof createDatabaseClient>;
 
@@ -56,10 +66,14 @@ export class CatalogModule {
         SalesController,
         FinanceController,
         FinancePageController,
+        AccountController,
         MvpPageController
       ],
       providers: [
-        { provide: APP_CONFIG, useValue: config },
+        {
+          provide: APP_CONFIG,
+          useValue: config
+        },
         {
           provide: DATABASE_CLIENT,
           useFactory: () => createDatabaseClient(config.postgres.url)
@@ -73,7 +87,11 @@ export class CatalogModule {
           provide: CatalogService,
           inject: [CATALOG_REPOSITORY],
           useFactory: (repository: CatalogRepository) =>
-            new CatalogService(repository, { generate: randomUUID }, { now: () => new Date() })
+            new CatalogService(
+              repository,
+              { generate: randomUUID },
+              { now: () => new Date() }
+            )
         },
         {
           provide: INVENTORY_REPOSITORY,
@@ -100,7 +118,11 @@ export class CatalogModule {
           provide: ProductionService,
           inject: [PRODUCTION_REPOSITORY],
           useFactory: (repository: ProductionRepository) =>
-            new ProductionService(repository, { generate: randomUUID }, { now: () => new Date() })
+            new ProductionService(
+              repository,
+              { generate: randomUUID },
+              { now: () => new Date() }
+            )
         },
         {
           provide: SALES_REPOSITORY,
@@ -111,7 +133,11 @@ export class CatalogModule {
           provide: SalesService,
           inject: [SALES_REPOSITORY],
           useFactory: (repository: SalesRepository) =>
-            new SalesService(repository, { generate: randomUUID }, { now: () => new Date() })
+            new SalesService(
+              repository,
+              { generate: randomUUID },
+              { now: () => new Date() }
+            )
         },
         {
           provide: FINANCE_REPOSITORY,
@@ -122,7 +148,26 @@ export class CatalogModule {
           provide: FinanceService,
           inject: [FINANCE_REPOSITORY],
           useFactory: (repository: FinanceRepository) =>
-            new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() })
+            new FinanceService(
+              repository,
+              { generate: randomUUID },
+              { now: () => new Date() }
+            )
+        },
+        {
+          provide: ACCOUNT_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaAccountRepository(client)
+        },
+        {
+          provide: AccountService,
+          inject: [ACCOUNT_REPOSITORY],
+          useFactory: (repository: AccountRepository) =>
+            new AccountService(
+              repository,
+              { generate: randomUUID },
+              { now: () => new Date() }
+            )
         },
         MvpSecurityService,
         DatabaseLifecycle

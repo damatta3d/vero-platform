@@ -1,0 +1,31 @@
+
+[2m> [22m[2mnx run[22m api:typecheck
+
+[2m> [22mtsc -p apps/api/tsconfig.app.json --noEmit
+
+apps/api/src/catalog/catalog.module.ts(6,3): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountService'.
+apps/api/src/catalog/catalog.module.ts(8,8): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountRepository'.
+apps/api/src/catalog/catalog.module.ts(30,35): error TS2307: Cannot find module '../finance/account.controller.js' or its corresponding type declarations.
+apps/api/src/finance/controller.ts(15,3): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountService'.
+packages/business/finance/src/application/account-repository.ts(6,8): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountFilter'.
+packages/business/finance/src/application/account-repository.ts(8,8): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountRepository'.
+packages/infrastructure/database/src/prisma-account.repository.ts(6,8): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountFilter'.
+packages/infrastructure/database/src/prisma-account.repository.ts(8,8): error TS2305: Module '"@vero/business-finance"' has no exported member 'AccountRepository'.
+Warning: command "tsc -p apps/api/tsconfig.app.json --noEmit" exited with non-zero status code
+[2m[31m[39m[22m
+
+[7m[1m[31m NX [39m[22m[27m  [31mRunning target [1mtypecheck[22m for project api failed[39m
+
+[2mFailed tasks:[22m
+
+[2m-[22m api:typecheck
+
+[2mHint: run the command with[22m --verbose [2mfor more details.[22m
+
+  Run duration:      9.3s
+  Critical path:     9.2s (1 task)
+  Recoverable time:  <1ms
+
+  Recommendations:
+    - Speed up or split the longest tasks on the critical path:
+        api:typecheck    9.2s
