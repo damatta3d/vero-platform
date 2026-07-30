@@ -21,6 +21,7 @@ import {
 } from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
 import { FinanceController } from '../finance/finance.controller.js';
+import { FinancePageController } from '../finance/finance-page.controller.js';
 import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
@@ -54,6 +55,7 @@ export class CatalogModule {
         ProductionController,
         SalesController,
         FinanceController,
+        FinancePageController,
         MvpPageController
       ],
       providers: [
