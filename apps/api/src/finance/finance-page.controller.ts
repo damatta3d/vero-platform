@@ -1,5 +1,6 @@
 import { Controller, Get, Header } from '@nestjs/common';
 
+import { veroDesignSystemCss } from '../ui/vero-design-system.assets.js';
 import { financePageCss, financePageHtml, financePageJavaScript } from './finance-page.assets.js';
 
 @Controller()
@@ -13,7 +14,7 @@ export class FinancePageController {
   @Get('finance.css')
   @Header('content-type', 'text/css; charset=utf-8')
   css(): string {
-    return financePageCss;
+    return `${veroDesignSystemCss}\n${financePageCss}`;
   }
 
   @Get('finance.js')
