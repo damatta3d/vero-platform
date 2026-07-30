@@ -10,8 +10,8 @@ describe('FinanceController', () => {
       {} as FinanceService,
       {} as MvpSecurityService
     );
-    await expect(controller.create('Bearer token', 'santo-parma', {})).rejects.toBeInstanceOf(
-      BadRequestException
-    );
+    await expect(
+      controller.create('Bearer token', 'santo-parma', {})
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });
