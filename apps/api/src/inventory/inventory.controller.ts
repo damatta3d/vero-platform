@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 
+import { FinanceService } from '@vero/business-finance';
 import { InventoryService } from '@vero/business-inventory';
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 
@@ -18,7 +19,8 @@ const purchaseSchema = z.object({
   ingredientId: z.string().uuid(),
   quantityMicros: z.number().int().positive(),
   totalCostCents: z.number().int().positive(),
-  reference: z.string().trim().min(1).max(256)
+  reference: z.string().trim().min(1).max(256),
+  idempotencyKey: z.string().uuid().optional()
 });
 
 const consumptionSchema = z.object({
@@ -54,6 +56,7 @@ function parse<T>(schema: z.ZodType<T>, body: unknown): T {
 export class InventoryController {
   constructor(
     @Inject(InventoryService) private readonly inventory: InventoryService,
+    @Inject(FinanceService) private readonly finance: FinanceService,
     @Inject(MvpSecurityService) private readonly security: MvpSecurityService
   ) {}
 
@@ -63,10 +66,31 @@ export class InventoryController {
     @Headers('x-tenant-id') tenantId: string | undefined,
     @Body() body: unknown
   ) {
-    return this.inventory.recordPurchase(
+    const input = parse(purchaseSchema, body);
+    const posting = await this.inventory.recordPurchase(
       await this.security.authorize(authorization, tenantId, 'inventory.purchase.create'),
-      parse(purchaseSchema, body)
+      {
+        ingredientId: input.ingredientId,
+        quantityMicros: input.quantityMicros,
+        totalCostCents: input.totalCostCents,
+        reference: input.reference
+      }
     );
+    const operationKey = input.idempotencyKey ?? posting.movement.id;
+    await this.finance.create(
+      await this.security.authorize(authorization, tenantId, 'finance.create'),
+      {
+        idempotencyKey: `inventory-purchase:${operationKey}`,
+        type: 'PAYABLE',
+        description: input.reference,
+        category: 'Compra de insumos e embalagens',
+        amountCents: posting.movement.totalCostCents,
+        dueAt: posting.movement.occurredAt,
+        sourceType: 'INVENTORY_PURCHASE',
+        sourceId: operationKey
+      }
+    );
+    return posting;
   }
 
   @Post('consumptions')
