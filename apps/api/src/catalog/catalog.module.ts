@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
 
 import { CatalogService, type CatalogRepository } from '@vero/business-catalog';
+import { FinanceService, type FinanceRepository } from '@vero/business-finance';
 import {
   InventoryService,
   type InventoryIngredientCatalog,
@@ -13,11 +14,14 @@ import type { AppConfig } from '@vero/core-configuration';
 import {
   createDatabaseClient,
   PrismaCatalogRepository,
+  PrismaFinanceRepository,
   PrismaInventoryRepository,
   PrismaProductionRepository,
   PrismaSalesRepository
 } from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
+import { FinanceController } from '../finance/finance.controller.js';
+import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { ProductionController } from '../production/production.controller.js';
@@ -49,6 +53,7 @@ export class CatalogModule {
         InventoryController,
         ProductionController,
         SalesController,
+        FinanceController,
         MvpPageController
       ],
       providers: [
@@ -105,6 +110,17 @@ export class CatalogModule {
           inject: [SALES_REPOSITORY],
           useFactory: (repository: SalesRepository) =>
             new SalesService(repository, { generate: randomUUID }, { now: () => new Date() })
+        },
+        {
+          provide: FINANCE_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaFinanceRepository(client)
+        },
+        {
+          provide: FinanceService,
+          inject: [FINANCE_REPOSITORY],
+          useFactory: (repository: FinanceRepository) =>
+            new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         MvpSecurityService,
         DatabaseLifecycle
