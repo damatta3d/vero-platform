@@ -35,29 +35,33 @@ export class SalesController {
     @Body() body: unknown
   ) {
     const parsed = recordSaleSchema.safeParse(body);
+
     if (!parsed.success) {
       throw new BadRequestException({
         code: 'INVALID_REQUEST',
         fields: parsed.error.issues.map((issue) => issue.path.join('.'))
       });
     }
+
     const posting = await this.sales.recordSale(
       await this.security.authorize(authorization, tenantId, 'sales.create'),
       parsed.data
     );
+
     await this.finance.create(
       await this.security.authorize(authorization, tenantId, 'finance.create'),
       {
-        idempotencyKey: `sale:${posting.sale.idempotencyKey}`,
+        idempotencyKey: `sale:${posting.idempotencyKey}`,
         type: 'RECEIVABLE',
-        description: `Venda ${posting.sale.productName}`,
+        description: `Venda ${posting.productName}`,
         category: 'Vendas',
-        amountCents: posting.sale.grossRevenueCents,
-        dueAt: posting.sale.soldAt,
+        amountCents: posting.grossRevenueCents,
+        dueAt: posting.soldAt,
         sourceType: 'SALE',
-        sourceId: posting.sale.id
+        sourceId: posting.id
       }
     );
+
     return posting;
   }
 
@@ -68,9 +72,14 @@ export class SalesController {
     @Query('limit') limit: string | undefined
   ) {
     const parsedLimit = limit === undefined ? 50 : Number(limit);
+
     if (!Number.isInteger(parsedLimit) || parsedLimit <= 0) {
-      throw new BadRequestException({ code: 'INVALID_REQUEST', fields: ['limit'] });
+      throw new BadRequestException({
+        code: 'INVALID_REQUEST',
+        fields: ['limit']
+      });
     }
+
     return this.sales.listSales(
       await this.security.authorize(authorization, tenantId, 'sales.read'),
       parsedLimit

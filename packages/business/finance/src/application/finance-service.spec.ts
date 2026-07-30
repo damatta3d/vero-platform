@@ -11,8 +11,7 @@ import { FinanceService } from './finance-service.js';
 async function access(action: string) {
   const authentication = requireTrustedAuthenticationResult(
     await createAuthenticator({
-      verify: () =>
-        Promise.resolve({ authority: 'test', subject: 'owner', type: 'human' as const })
+      verify: () => Promise.resolve({ authority: 'test', subject: 'owner', type: 'human' as const })
     }).authenticate(AuthenticationEvidence.fromUntrusted('ok'))
   );
   if (!authentication.authenticated) throw authentication.error;

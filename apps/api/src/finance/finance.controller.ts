@@ -47,15 +47,29 @@ export class FinanceController {
     @Body() body: unknown
   ) {
     const parsed = createSchema.safeParse(body);
+
     if (!parsed.success) {
       throw new BadRequestException({
         code: 'INVALID_REQUEST',
         fields: parsed.error.issues.map((issue) => issue.path.join('.'))
       });
     }
+
+    const input = {
+      idempotencyKey: parsed.data.idempotencyKey,
+      type: parsed.data.type,
+      description: parsed.data.description,
+      category: parsed.data.category,
+      amountCents: parsed.data.amountCents,
+      dueAt: parsed.data.dueAt,
+      ...(parsed.data.counterparty !== undefined ? { counterparty: parsed.data.counterparty } : {}),
+      ...(parsed.data.sourceType !== undefined ? { sourceType: parsed.data.sourceType } : {}),
+      ...(parsed.data.sourceId !== undefined ? { sourceId: parsed.data.sourceId } : {})
+    };
+
     return this.finance.create(
       await this.security.authorize(authorization, tenantId, 'finance.create'),
-      parsed.data
+      input
     );
   }
 
@@ -66,10 +80,21 @@ export class FinanceController {
     @Query() query: unknown
   ) {
     const parsed = listSchema.safeParse(query);
-    if (!parsed.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
+
+    if (!parsed.success) {
+      throw new BadRequestException({ code: 'INVALID_REQUEST' });
+    }
+
+    const filter = {
+      ...(parsed.data.type !== undefined ? { type: parsed.data.type } : {}),
+      ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
+      ...(parsed.data.from !== undefined ? { from: parsed.data.from } : {}),
+      ...(parsed.data.to !== undefined ? { to: parsed.data.to } : {})
+    };
+
     return this.finance.list(
       await this.security.authorize(authorization, tenantId, 'finance.read'),
-      parsed.data
+      filter
     );
   }
 
@@ -80,10 +105,21 @@ export class FinanceController {
     @Query() query: unknown
   ) {
     const parsed = listSchema.safeParse(query);
-    if (!parsed.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
+
+    if (!parsed.success) {
+      throw new BadRequestException({ code: 'INVALID_REQUEST' });
+    }
+
+    const filter = {
+      ...(parsed.data.type !== undefined ? { type: parsed.data.type } : {}),
+      ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
+      ...(parsed.data.from !== undefined ? { from: parsed.data.from } : {}),
+      ...(parsed.data.to !== undefined ? { to: parsed.data.to } : {})
+    };
+
     return this.finance.summary(
       await this.security.authorize(authorization, tenantId, 'finance.read'),
-      parsed.data
+      filter
     );
   }
 
@@ -94,10 +130,16 @@ export class FinanceController {
     @Param('id') id: string,
     @Body() body: unknown
   ) {
-    const parsed = z.object({ paidAt: z.coerce.date().optional() }).safeParse(body);
+    const parsed = z
+      .object({
+        paidAt: z.coerce.date().optional()
+      })
+      .safeParse(body);
+
     if (!parsed.success || !z.string().uuid().safeParse(id).success) {
       throw new BadRequestException({ code: 'INVALID_REQUEST' });
     }
+
     return this.finance.settle(
       await this.security.authorize(authorization, tenantId, 'finance.update'),
       id,
@@ -114,6 +156,7 @@ export class FinanceController {
     if (!z.string().uuid().safeParse(id).success) {
       throw new BadRequestException({ code: 'INVALID_REQUEST' });
     }
+
     return this.finance.cancel(
       await this.security.authorize(authorization, tenantId, 'finance.update'),
       id

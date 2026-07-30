@@ -54,11 +54,7 @@ function requiredText(value: string, field: string, max = 256): string {
   return normalized;
 }
 
-function optionalText(
-  value: string | null | undefined,
-  field: string,
-  max = 256
-): string | null {
+function optionalText(value: string | null | undefined, field: string, max = 256): string | null {
   if (value == null) return null;
   return requiredText(value, field, max);
 }
@@ -98,10 +94,7 @@ export function createFinancialEntry(input: CreateFinancialEntryInput): Financia
   });
 }
 
-export function settleFinancialEntry(
-  entry: FinancialEntry,
-  paidAt: Date
-): FinancialEntry {
+export function settleFinancialEntry(entry: FinancialEntry, paidAt: Date): FinancialEntry {
   if (entry.status !== 'OPEN') {
     throw new Error('Only open financial entries can be settled');
   }
@@ -137,14 +130,10 @@ export function summarizeCashFlow(
     .filter((entry) => entry.type === 'PAYABLE' && entry.status === 'PAID')
     .reduce((sum, entry) => sum + entry.amountCents, 0);
   const overduePayableCents = active
-    .filter(
-      (entry) => entry.type === 'PAYABLE' && entry.status === 'OPEN' && entry.dueAt < asOf
-    )
+    .filter((entry) => entry.type === 'PAYABLE' && entry.status === 'OPEN' && entry.dueAt < asOf)
     .reduce((sum, entry) => sum + entry.amountCents, 0);
   const overdueReceivableCents = active
-    .filter(
-      (entry) => entry.type === 'RECEIVABLE' && entry.status === 'OPEN' && entry.dueAt < asOf
-    )
+    .filter((entry) => entry.type === 'RECEIVABLE' && entry.status === 'OPEN' && entry.dueAt < asOf)
     .reduce((sum, entry) => sum + entry.amountCents, 0);
 
   return Object.freeze({

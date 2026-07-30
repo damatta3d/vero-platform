@@ -6,12 +6,9 @@ import { FinanceController } from './finance.controller.js';
 
 describe('FinanceController', () => {
   it('rejects an invalid financial entry', async () => {
-    const controller = new FinanceController(
-      {} as FinanceService,
-      {} as MvpSecurityService
+    const controller = new FinanceController({} as FinanceService, {} as MvpSecurityService);
+    await expect(controller.create('Bearer token', 'santo-parma', {})).rejects.toBeInstanceOf(
+      BadRequestException
     );
-    await expect(
-      controller.create('Bearer token', 'santo-parma', {})
-    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

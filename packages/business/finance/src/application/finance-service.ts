@@ -1,7 +1,4 @@
-import {
-  consumeAuthorizedAccess,
-  type AuthorizedAccessContext
-} from '@vero/core-access';
+import { consumeAuthorizedAccess, type AuthorizedAccessContext } from '@vero/core-access';
 import {
   cancelFinancialEntry,
   createFinancialEntry,
@@ -12,10 +9,7 @@ import {
   type FinancialEntryStatus,
   type FinancialEntryType
 } from '../domain/finance-model.js';
-import type {
-  FinanceRepository,
-  FinancialEntryFilter
-} from './finance-repository.js';
+import type { FinanceRepository, FinancialEntryFilter } from './finance-repository.js';
 
 export interface FinanceIdGenerator {
   generate(): string;
@@ -73,10 +67,7 @@ export class FinanceService {
     input: RecordFinancialEntryInput
   ): Promise<FinancialEntry> {
     const { tenantId, authoredBy } = financeAuthorization(access, 'finance.create');
-    const existing = await this.repository.findByIdempotencyKey(
-      tenantId,
-      input.idempotencyKey
-    );
+    const existing = await this.repository.findByIdempotencyKey(tenantId, input.idempotencyKey);
     if (existing) return existing;
     return this.repository.create(
       createFinancialEntry({
@@ -96,9 +87,7 @@ export class FinanceService {
   ): Promise<FinancialEntry> {
     const { tenantId } = financeAuthorization(access, 'finance.update');
     const entry = await this.getRequired(tenantId, id);
-    return this.repository.update(
-      settleFinancialEntry(entry, paidAt ?? this.clock.now())
-    );
+    return this.repository.update(settleFinancialEntry(entry, paidAt ?? this.clock.now()));
   }
 
   async cancel(access: AuthorizedAccessContext, id: string): Promise<FinancialEntry> {

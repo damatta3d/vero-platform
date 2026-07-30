@@ -15,10 +15,7 @@ export interface FinancialEntryFilter {
 export interface FinanceRepository {
   create(entry: FinancialEntry): Promise<FinancialEntry>;
   findById(tenantId: string, id: string): Promise<FinancialEntry | null>;
-  findByIdempotencyKey(
-    tenantId: string,
-    idempotencyKey: string
-  ): Promise<FinancialEntry | null>;
+  findByIdempotencyKey(tenantId: string, idempotencyKey: string): Promise<FinancialEntry | null>;
   list(filter: FinancialEntryFilter): Promise<readonly FinancialEntry[]>;
   update(entry: FinancialEntry): Promise<FinancialEntry>;
 }

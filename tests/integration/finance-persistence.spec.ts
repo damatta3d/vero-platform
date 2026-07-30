@@ -2,10 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 
 import { createFinancialEntry } from '@vero/business-finance';
-import {
-  createDatabaseClient,
-  PrismaFinanceRepository
-} from '@vero/infrastructure-database';
+import { createDatabaseClient, PrismaFinanceRepository } from '@vero/infrastructure-database';
 
 const databaseUrl = process.env.VERO_POSTGRES_URL;
 const describeDatabase = databaseUrl ? describe : describe.skip;
@@ -43,9 +40,7 @@ describeDatabase('finance persistence', () => {
     });
 
     await repository.create(entry);
-    expect(
-      await repository.findByIdempotencyKey(tenantId, entry.idempotencyKey)
-    ).toMatchObject({
+    expect(await repository.findByIdempotencyKey(tenantId, entry.idempotencyKey)).toMatchObject({
       amountCents: 160000,
       status: 'OPEN'
     });
