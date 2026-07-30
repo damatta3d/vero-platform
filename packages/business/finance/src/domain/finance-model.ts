@@ -48,18 +48,26 @@ export interface CashFlowSummary {
 
 function requiredText(value: string, field: string, max = 256): string {
   const normalized = value.trim();
-  if (!normalized || normalized.length > max) throw new Error(`Invalid financial field: ${field}`);
+  if (!normalized || normalized.length > max) {
+    throw new Error(`Invalid financial field: ${field}`);
+  }
   return normalized;
 }
 
-function optionalText(value: string | null | undefined, field: string, max = 256): string | null {
+function optionalText(
+  value: string | null | undefined,
+  field: string,
+  max = 256
+): string | null {
   if (value == null) return null;
   return requiredText(value, field, max);
 }
 
 function validDate(value: Date, field: string): Date {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) throw new Error(`Invalid financial field: ${field}`);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid financial field: ${field}`);
+  }
   return date;
 }
 
@@ -90,24 +98,54 @@ export function createFinancialEntry(input: CreateFinancialEntryInput): Financia
   });
 }
 
-export function settleFinancialEntry(entry: FinancialEntry, paidAt: Date): FinancialEntry {
-  if (entry.status !== 'OPEN') throw new Error('Only open financial entries can be settled');
-  return Object.freeze({ ...entry, status: 'PAID', paidAt: validDate(paidAt, 'paidAt') });
+export function settleFinancialEntry(
+  entry: FinancialEntry,
+  paidAt: Date
+): FinancialEntry {
+  if (entry.status !== 'OPEN') {
+    throw new Error('Only open financial entries can be settled');
+  }
+  return Object.freeze({
+    ...entry,
+    status: 'PAID',
+    paidAt: validDate(paidAt, 'paidAt')
+  });
 }
 
 export function cancelFinancialEntry(entry: FinancialEntry): FinancialEntry {
-  if (entry.status === 'PAID') throw new Error('Paid financial entries cannot be cancelled');
+  if (entry.status === 'PAID') {
+    throw new Error('Paid financial entries cannot be cancelled');
+  }
   return Object.freeze({ ...entry, status: 'CANCELLED' });
 }
 
-export function summarizeCashFlow(entries: readonly FinancialEntry[], asOf = new Date()): CashFlowSummary {
+export function summarizeCashFlow(
+  entries: readonly FinancialEntry[],
+  asOf = new Date()
+): CashFlowSummary {
   const active = entries.filter((entry) => entry.status !== 'CANCELLED');
-  const receivableCents = active.filter((entry) => entry.type === 'RECEIVABLE').reduce((sum, entry) => sum + entry.amountCents, 0);
-  const payableCents = active.filter((entry) => entry.type === 'PAYABLE').reduce((sum, entry) => sum + entry.amountCents, 0);
-  const receivedCents = active.filter((entry) => entry.type === 'RECEIVABLE' && entry.status === 'PAID').reduce((sum, entry) => sum + entry.amountCents, 0);
-  const paidCents = active.filter((entry) => entry.type === 'PAYABLE' && entry.status === 'PAID').reduce((sum, entry) => sum + entry.amountCents, 0);
-  const overduePayableCents = active.filter((entry) => entry.type === 'PAYABLE' && entry.status === 'OPEN' && entry.dueAt < asOf).reduce((sum, entry) => sum + entry.amountCents, 0);
-  const overdueReceivableCents = active.filter((entry) => entry.type === 'RECEIVABLE' && entry.status === 'OPEN' && entry.dueAt < asOf).reduce((sum, entry) => sum + entry.amountCents, 0);
+  const receivableCents = active
+    .filter((entry) => entry.type === 'RECEIVABLE')
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const payableCents = active
+    .filter((entry) => entry.type === 'PAYABLE')
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const receivedCents = active
+    .filter((entry) => entry.type === 'RECEIVABLE' && entry.status === 'PAID')
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const paidCents = active
+    .filter((entry) => entry.type === 'PAYABLE' && entry.status === 'PAID')
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const overduePayableCents = active
+    .filter(
+      (entry) => entry.type === 'PAYABLE' && entry.status === 'OPEN' && entry.dueAt < asOf
+    )
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
+  const overdueReceivableCents = active
+    .filter(
+      (entry) => entry.type === 'RECEIVABLE' && entry.status === 'OPEN' && entry.dueAt < asOf
+    )
+    .reduce((sum, entry) => sum + entry.amountCents, 0);
 
   return Object.freeze({
     receivableCents,
