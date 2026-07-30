@@ -1,4 +1,9 @@
-import { cancelFinancialEntry, createFinancialEntry, settleFinancialEntry, summarizeCashFlow } from './finance-model.js';
+import {
+  cancelFinancialEntry,
+  createFinancialEntry,
+  settleFinancialEntry,
+  summarizeCashFlow
+} from './finance-model.js';
 
 const base = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -25,7 +30,9 @@ describe('finance domain', () => {
       createFinancialEntry({ ...base, type: 'PAYABLE' }),
       new Date('2026-08-01T10:00:00Z')
     );
-    expect(() => cancelFinancialEntry(paid)).toThrow('Paid financial entries cannot be cancelled');
+    expect(() => cancelFinancialEntry(paid)).toThrow(
+      'Paid financial entries cannot be cancelled'
+    );
   });
 
   it('calculates projected and realized balances', () => {
