@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 
+import { FinanceService } from '@vero/business-finance';
 import { SalesService } from '@vero/business-sales';
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 
@@ -23,6 +24,7 @@ const recordSaleSchema = z.object({
 export class SalesController {
   constructor(
     @Inject(SalesService) private readonly sales: SalesService,
+    @Inject(FinanceService) private readonly finance: FinanceService,
     @Inject(MvpSecurityService) private readonly security: MvpSecurityService
   ) {}
 
@@ -39,10 +41,24 @@ export class SalesController {
         fields: parsed.error.issues.map((issue) => issue.path.join('.'))
       });
     }
-    return this.sales.recordSale(
+    const posting = await this.sales.recordSale(
       await this.security.authorize(authorization, tenantId, 'sales.create'),
       parsed.data
     );
+    await this.finance.create(
+      await this.security.authorize(authorization, tenantId, 'finance.create'),
+      {
+        idempotencyKey: `sale:${posting.sale.idempotencyKey}`,
+        type: 'RECEIVABLE',
+        description: `Venda ${posting.sale.productName}`,
+        category: 'Vendas',
+        amountCents: posting.sale.grossRevenueCents,
+        dueAt: posting.sale.soldAt,
+        sourceType: 'SALE',
+        sourceId: posting.sale.id
+      }
+    );
+    return posting;
   }
 
   @Get()
