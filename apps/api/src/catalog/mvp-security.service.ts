@@ -25,6 +25,14 @@ function equalSecret(received: string, expected: string): boolean {
   );
 }
 
+function resourceFor(action: string): string {
+  if (action.startsWith('inventory.')) return 'inventory.management';
+  if (action.startsWith('production.')) return 'production.management';
+  if (action.startsWith('sales.')) return 'sales.management';
+  if (action.startsWith('finance.')) return 'finance.management';
+  return 'catalog.management';
+}
+
 @Injectable()
 export class MvpSecurityService {
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
@@ -34,13 +42,7 @@ export class MvpSecurityService {
     tenantHeader: string | undefined,
     action: string
   ): Promise<AuthorizedAccessContext> {
-    const resource = action.startsWith('inventory.')
-      ? 'inventory.management'
-      : action.startsWith('production.')
-        ? 'production.management'
-        : action.startsWith('sales.')
-          ? 'sales.management'
-          : 'catalog.management';
+    const resource = resourceFor(action);
     const token = authorizationHeader?.startsWith('Bearer ')
       ? authorizationHeader.slice('Bearer '.length)
       : '';
@@ -80,7 +82,9 @@ export class MvpSecurityService {
               (request.action.value.startsWith('production.') &&
                 request.resource.value === 'production.management') ||
               (request.action.value.startsWith('sales.') &&
-                request.resource.value === 'sales.management')
+                request.resource.value === 'sales.management') ||
+              (request.action.value.startsWith('finance.') &&
+                request.resource.value === 'finance.management')
                 ? 'allow'
                 : 'deny',
             reason: 'santo-parma-mvp-owner',
