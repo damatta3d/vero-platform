@@ -1,5 +1,7 @@
-import type { Money } from '../value-objects/money';
+import { Entity, UniqueEntityId } from '@vero/core-domain';
+
 import type { PaymentMethod } from '../enums/payment-method.js';
+import type { Money } from '../value-objects/money.js';
 
 export interface CreatePaymentProps {
   id: string;
@@ -11,9 +13,8 @@ export interface CreatePaymentProps {
   notes?: string;
 }
 
-export class Payment {
-  readonly id: string;
-  readonly payableId: string;
+export class Payment extends Entity<UniqueEntityId> {
+  readonly payableId: UniqueEntityId;
   readonly amount: Money;
   readonly paymentDate: Date;
   readonly method: PaymentMethod;
@@ -21,8 +22,8 @@ export class Payment {
   readonly notes?: string;
 
   private constructor(props: CreatePaymentProps) {
-    this.id = props.id;
-    this.payableId = props.payableId;
+    super(UniqueEntityId.create(props.id));
+    this.payableId = UniqueEntityId.create(props.payableId);
     this.amount = props.amount;
     this.paymentDate = new Date(props.paymentDate);
     this.method = props.method;
