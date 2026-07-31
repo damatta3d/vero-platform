@@ -11,7 +11,12 @@ export type OperationalEntryType =
 
 export type OperationalEntryStatus = 'PAID' | 'PENDING';
 
-export type OperationalEntryChannel = 'IFOOD' | 'ANOTA_AI' | 'PIX' | 'CASH' | 'OTHER';
+export type OperationalEntryChannel =
+  | 'IFOOD'
+  | 'ANOTA_AI'
+  | 'PIX'
+  | 'CASH'
+  | 'OTHER';
 
 export interface OperationalEntry {
   readonly id: string;
