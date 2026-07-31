@@ -3,12 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/api/src",
   "projectType": "application",
-  "tags": [
-    "type:app",
-    "scope:platform",
-    "runtime:node",
-    "stability:internal"
-  ],
+  "tags": ["type:app", "scope:platform", "runtime:node", "stability:internal"],
   "targets": {
     "serve": {
       "executor": "@nx/js:node",
