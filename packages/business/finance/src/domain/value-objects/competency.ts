@@ -17,9 +17,7 @@ export class Competency {
     const month = Number(match[2]);
 
     if (month < 1 || month > 12) {
-      throw new Error(
-        'Invalid competency month. Expected a value between 01 and 12.'
-      );
+      throw new Error('Invalid competency month. Expected a value between 01 and 12.');
     }
 
     return new Competency(year, month);
@@ -35,8 +33,7 @@ export class Competency {
 
   equals(other: Competency): boolean {
     return (
-      this.competencyYear === other.competencyYear &&
-      this.competencyMonth === other.competencyMonth
+      this.competencyYear === other.competencyYear && this.competencyMonth === other.competencyMonth
     );
   }
 
