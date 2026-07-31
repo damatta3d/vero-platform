@@ -32,10 +32,27 @@ describe(OperationalEntryService.name, () => {
   });
 
   it('creates an operational entry for the authorized tenant', async () => {
-    repository.create.mockImplementation(async (input) => input);
-    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.create');
     const occurredAt = new Date('2026-07-31T12:00:00.000Z');
     const competenceDate = new Date('2026-07-31T12:00:00.000Z');
+    repository.create.mockResolvedValue({
+      id: '0f579813-1634-4d9a-8070-2debd24028b4',
+      tenantId: 'santo-parma',
+      type: 'INCOME',
+      status: 'PAID',
+      channel: 'IFOOD',
+      category: 'Faturamento iFood',
+      description: 'Fechamento diário',
+      counterparty: null,
+      paymentMethod: null,
+      amountCents: 125000,
+      orderCount: 14,
+      occurredAt,
+      competenceDate,
+      notes: null,
+      createdAt: occurredAt,
+      updatedAt: occurredAt
+    });
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.create');
 
     const result = await service.create(access, {
       type: 'INCOME',
