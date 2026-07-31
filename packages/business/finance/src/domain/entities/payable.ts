@@ -1,8 +1,10 @@
+import { AggregateRoot, DomainValidationError, UniqueEntityId } from '@vero/core-domain';
+
 import type { AccountCode } from '../value-objects/account-code.js';
-import type { Competency } from '../value-objects/competency';
+import type { Competency } from '../value-objects/competency.js';
 import type { DocumentNumber } from '../value-objects/document-number.js';
 import type { DueDate } from '../value-objects/due-date.js';
-import type { Money } from '../value-objects/money';
+import type { Money } from '../value-objects/money.js';
 import { PayableStatus } from '../enums/payable-status.js';
 
 export interface CreatePayableProps {
@@ -16,8 +18,7 @@ export interface CreatePayableProps {
   documentNumber: DocumentNumber;
 }
 
-export class Payable {
-  readonly id: string;
+export class Payable extends AggregateRoot<UniqueEntityId> {
   readonly accountCode: AccountCode;
   readonly description: string;
   readonly supplier: string;
@@ -27,13 +28,11 @@ export class Payable {
   readonly documentNumber: DocumentNumber;
 
   private status: PayableStatus;
-
   private readonly installments: unknown[] = [];
-
   private readonly payments: unknown[] = [];
 
   private constructor(props: CreatePayableProps) {
-    this.id = props.id;
+    super(UniqueEntityId.create(props.id));
     this.accountCode = props.accountCode;
     this.description = props.description.trim();
     this.supplier = props.supplier.trim();
@@ -46,11 +45,14 @@ export class Payable {
 
   static create(props: CreatePayableProps): Payable {
     if (!props.description.trim()) {
-      throw new Error('Description is required.');
+      throw new DomainValidationError(
+        'Description is required.',
+        'FINANCE_PAYABLE_DESCRIPTION_REQUIRED'
+      );
     }
 
     if (!props.supplier.trim()) {
-      throw new Error('Supplier is required.');
+      throw new DomainValidationError('Supplier is required.', 'FINANCE_PAYABLE_SUPPLIER_REQUIRED');
     }
 
     return new Payable(props);
