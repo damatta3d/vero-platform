@@ -27,7 +27,9 @@ function structurallyEqual(left: unknown, right: unknown): boolean {
 
   return (
     leftKeys.length === rightKeys.length &&
-    leftKeys.every((key) => Object.hasOwn(right, key) && structurallyEqual(left[key], right[key]))
+    leftKeys.every(
+      (key) => Object.hasOwn(right, key) && structurallyEqual(left[key], right[key])
+    )
   );
 }
 
@@ -39,6 +41,14 @@ export abstract class ValueObject<TProps extends object> {
   }
 
   equals(other: ValueObject<TProps> | null | undefined): boolean {
-    return other != null && structurallyEqual(this.props, other.props);
+    if (other == null) {
+      return false;
+    }
+
+    if (this.constructor !== other.constructor) {
+      return false;
+    }
+
+    return structurallyEqual(this.props, other.props);
   }
 }

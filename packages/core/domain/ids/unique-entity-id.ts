@@ -7,14 +7,19 @@ interface UniqueEntityIdProps {
   readonly value: string;
 }
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class UniqueEntityId extends ValueObject<UniqueEntityIdProps> {
   private constructor(value: string) {
     super({ value });
   }
 
-  static create(value: string = randomUUID()): UniqueEntityId {
+  static create(): UniqueEntityId {
+    return new UniqueEntityId(randomUUID());
+  }
+
+  static from(value: string): UniqueEntityId {
     const normalized = value.trim().toLowerCase();
 
     if (!UUID_PATTERN.test(normalized)) {
