@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountGroupType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum PayableStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  PIX
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  BOLETO
+}
+
+model AccountGroup {
+  id          String           @id @default(uuid()) @db.Uuid
+  tenantId    String           @db.Uuid
+
+  code        String           @db.VarChar(20)
+  name        String           @db.VarChar(100)
+  type        AccountGroupType
+
+  active      Boolean          @default(true)
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  createdBy   String?          @db.Uuid
+  updatedBy   String?          @db.Uuid
+
+  accounts    Account[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([type])
+}
+
+model Account {
+  id               String           @id @default(uuid()) @db.Uuid
+  tenantId         String           @db.Uuid
+
+  groupId          String           @db.Uuid
+
+  code             String           @db.VarChar(30)
+  name             String           @db.VarChar(150)
+
+  parentId         String?          @db.Uuid
+
+  acceptsPosting   Boolean          @default(true)
+  active           Boolean          @default(true)
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  createdBy        String?          @db.Uuid
+  updatedBy        String?          @db.Uuid
+
+  group            AccountGroup     @relation(fields: [groupId], references: [id], onDelete: Restrict)
+
+  parent           Account?         @relation("AccountHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children         Account[]        @relation("AccountHierarchy")
+
+  payables         Payable[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([groupId])
+  @@index([parentId])
+}
+
+model Payable {
+  id               String           @id @default(uuid()) @db.Uuid
+  tenantId         String           @db.Uuid
+
+  accountId        String           @db.Uuid
+
+  supplier         String           @db.VarChar(150)
+  description      String           @db.VarChar(255)
+
+  amountCents      BigInt
+
+  competency       String           @db.VarChar(7)
+
+  dueDate          DateTime
+
+  documentNumber   String           @db.VarChar(60)
+
+  status           PayableStatus    @default(PENDING)
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  createdBy        String?          @db.Uuid
+  updatedBy        String?          @db.Uuid
+
+  account          Account          @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  payments         Payment[]
+
+  @@unique([tenantId, supplier, documentNumber])
+
+  @@index([tenantId])
+  @@index([accountId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([tenantId, status])
+}
+
+model Payment {
+  id               String           @id @default(uuid()) @db.Uuid
+  tenantId         String           @db.Uuid
+
+  payableId        String           @db.Uuid
+
+  amountCents      BigInt
+
+  paymentDate      DateTime
+
+  method           PaymentMethod
+
+  reference        String?          @db.VarChar(100)
+  notes            String?          @db.VarChar(500)
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  createdBy        String?          @db.Uuid
+  updatedBy        String?          @db.Uuid
+
+  payable          Payable          @relation(fields: [payableId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([payableId])
+  @@index([paymentDate])
+  @@index([tenantId, paymentDate])
+}

@@ -1,11 +1,6 @@
 import { consumeAuthorizedAccess, type AuthorizedAccessContext } from '@vero/core-access';
 
-import {
-  activateAccount,
-  createAccount,
-  deactivateAccount,
-  type Account
-} from '../domain/entities/account.js';
+import { Account } from '../domain/entities/account.js';
 import type { AccountGroupType } from '../domain/enums/account-group.js';
 import type { AccountRepository } from './account-repository.js';
 
@@ -25,7 +20,10 @@ export interface CreateAccountCommand {
   readonly acceptsPosting?: boolean;
 }
 
-function authorize(context: AuthorizedAccessContext, expectedAction: string): { tenantId: string } {
+function authorize(
+  context: AuthorizedAccessContext,
+  expectedAction: string
+): { tenantId: string } {
   const authorized = consumeAuthorizedAccess(context);
 
   if (
@@ -47,17 +45,23 @@ export class AccountService {
     private readonly clock: AccountClock
   ) {}
 
-  async create(access: AuthorizedAccessContext, input: CreateAccountCommand): Promise<Account> {
+  async create(
+    access: AuthorizedAccessContext,
+    input: CreateAccountCommand
+  ): Promise<Account> {
     const { tenantId } = authorize(access, 'finance.create');
 
-    const existing = await this.repository.findByCode(tenantId, input.code);
+    const existing = await this.repository.findByCode(
+      tenantId,
+      input.code
+    );
 
     if (existing) {
       throw new Error('Account already exists');
     }
 
     return this.repository.create(
-      createAccount({
+      Account.create({
         id: this.ids.generate(),
         tenantId,
         code: input.code,
@@ -70,29 +74,44 @@ export class AccountService {
     );
   }
 
-  async activate(access: AuthorizedAccessContext, id: string): Promise<Account> {
+  async activate(
+    access: AuthorizedAccessContext,
+    id: string
+  ): Promise<Account> {
     const { tenantId } = authorize(access, 'finance.update');
+
     const account = await this.getRequired(tenantId, id);
 
-    return this.repository.update(activateAccount(account, this.clock.now()));
+    account.activate(this.clock.now());
+
+    return this.repository.update(account);
   }
 
-  async deactivate(access: AuthorizedAccessContext, id: string): Promise<Account> {
+  async deactivate(
+    access: AuthorizedAccessContext,
+    id: string
+  ): Promise<Account> {
     const { tenantId } = authorize(access, 'finance.update');
+
     const account = await this.getRequired(tenantId, id);
 
-    return this.repository.update(deactivateAccount(account, this.clock.now()));
+    account.deactivate(this.clock.now());
+
+    return this.repository.update(account);
   }
 
-  list(access: AuthorizedAccessContext): Promise<readonly Account[]> {
+  list(
+    access: AuthorizedAccessContext
+  ): Promise<readonly Account[]> {
     const { tenantId } = authorize(access, 'finance.read');
 
-    return this.repository.list({
-      tenantId
-    });
+    return this.repository.list({ tenantId });
   }
 
-  private async getRequired(tenantId: string, id: string): Promise<Account> {
+  private async getRequired(
+    tenantId: string,
+    id: string
+  ): Promise<Account> {
     const account = await this.repository.findById(tenantId, id);
 
     if (!account) {

@@ -10,6 +10,7 @@ module.exports = {
     '^@vero/core-tenancy$': '<rootDir>/../../packages/core/tenancy/src/public-api.ts',
     '^@vero/core-identity$': '<rootDir>/../../packages/core/identity/src/public-api.ts',
     '^@vero/core-access$': '<rootDir>/../../packages/core/access/src/public-api.ts',
+    '^@vero/core-domain$': '<rootDir>/../../packages/core/domain/public-api.ts',
     '^@vero/infrastructure-database$':
       '<rootDir>/../../packages/infrastructure/database/src/public-api.ts',
     '^@vero/infrastructure-cache$':
