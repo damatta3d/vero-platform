@@ -1,5 +1,8 @@
-import { AccountCode } from '../value-objects/account-code.js';
+import { DomainValidationError } from '@vero/core-domain';
+
 import type { AccountGroupType } from '../enums/account-group.js';
+import { AccountCode } from '../value-objects/account-code.js';
+
 export interface Account {
   readonly id: string;
   readonly tenantId: string;
@@ -28,7 +31,7 @@ function required(value: string, field: string): string {
   const normalized = value.trim();
 
   if (!normalized) {
-    throw new Error(`Invalid ${field}`);
+    throw new DomainValidationError(`Invalid ${field}`, 'FINANCE_ACCOUNT_FIELD_INVALID', { field });
   }
 
   return normalized;
