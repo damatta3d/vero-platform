@@ -8,8 +8,8 @@ import {
   createAccount,
   deactivateAccount,
   type Account
-} from '../domain/account.js';
-import type { AccountGroupType } from '../domain/account-group.js';
+} from '../domain/entities/account.js';
+import type { AccountGroupType } from '../domain/enums/account-group.js';
 import type { AccountRepository } from './account-repository.js';
 
 export interface AccountIdGenerator {

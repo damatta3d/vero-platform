@@ -1,5 +1,5 @@
-import { AccountCode } from './account-code.js';
-import type { AccountGroupType } from './account-group.js';
+import { AccountCode } from '../value-objects/account-code.js';
+import type { AccountGroupType } from '../enums/account-group.js';
 export interface Account {
   readonly id: string;
   readonly tenantId: string;

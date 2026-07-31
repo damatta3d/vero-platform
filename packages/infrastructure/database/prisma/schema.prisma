@@ -81,15 +81,15 @@ model InventoryStockMovement {
 }
 
 model CatalogProduct {
-  id                   String                @db.Uuid
-  tenantId             String                @db.VarChar(128)
-  name                 String                @db.VarChar(160)
-  salePriceCents       Int
-  createdAt            DateTime              @db.Timestamptz(3)
-  updatedAt            DateTime              @db.Timestamptz(3)
-  recipes              CatalogRecipe[]
-  sales                SalesRecord[]
-  productions          ProductionRecord[]
+  id             String             @db.Uuid
+  tenantId       String             @db.VarChar(128)
+  name           String             @db.VarChar(160)
+  salePriceCents Int
+  createdAt      DateTime           @db.Timestamptz(3)
+  updatedAt      DateTime           @db.Timestamptz(3)
+  recipes        CatalogRecipe[]
+  sales          SalesRecord[]
+  productions    ProductionRecord[]
   externalCatalogLinks ExternalCatalogLink[]
 
   @@id([tenantId, id])
@@ -215,18 +215,99 @@ model ProductionCostLine {
 }
 
 model ExternalCatalogLink {
-  tenantId                String         @db.VarChar(128)
-  provider                String         @db.VarChar(64)
-  establishmentExternalId String         @db.VarChar(256)
-  kind                    String         @db.VarChar(16)
-  providerItemId          String         @db.VarChar(256)
-  catalogProductId        String         @db.Uuid
-  authoredBy              String         @db.VarChar(256)
-  createdAt               DateTime       @db.Timestamptz(3)
-  updatedAt               DateTime       @db.Timestamptz(3)
-  catalogProduct          CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
+  tenantId               String         @db.VarChar(128)
+  provider               String         @db.VarChar(64)
+  establishmentExternalId String        @db.VarChar(256)
+  kind                   String         @db.VarChar(16)
+  providerItemId         String         @db.VarChar(256)
+  catalogProductId       String         @db.Uuid
+  authoredBy             String         @db.VarChar(256)
+  createdAt              DateTime       @db.Timestamptz(3)
+  updatedAt              DateTime       @db.Timestamptz(3)
+  catalogProduct         CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
 
   @@id([tenantId, provider, establishmentExternalId, kind, providerItemId])
   @@index([tenantId, catalogProductId])
   @@map("external_catalog_links")
+}
+enum FinancialEntryType {
+  RECEIVABLE
+  PAYABLE
+}
+
+enum FinancialEntryStatus {
+  OPEN
+  PAID
+  CANCELLED
+}
+
+model FinancialEntry {
+  id             String               @db.Uuid
+  tenantId       String               @db.VarChar(128)
+  idempotencyKey String               @db.VarChar(160)
+
+  type           FinancialEntryType
+
+  description    String               @db.VarChar(256)
+  category       String               @db.VarChar(120)
+  counterparty   String?              @db.VarChar(256)
+
+  amountCents    Int
+
+  dueAt          DateTime             @db.Timestamptz(3)
+  paidAt         DateTime?            @db.Timestamptz(3)
+
+  status         FinancialEntryStatus @default(OPEN)
+
+  sourceType     String?              @db.VarChar(64)
+  sourceId       String?              @db.VarChar(160)
+
+  authoredBy     String               @db.VarChar(256)
+
+  createdAt      DateTime             @db.Timestamptz(3)
+  updatedAt      DateTime             @db.Timestamptz(3)
+
+  @@id([tenantId, id])
+
+  @@unique([tenantId, idempotencyKey])
+
+  @@index([tenantId, dueAt])
+
+  @@index([tenantId, type, status, dueAt])
+
+  @@map("financial_entries")
+}
+enum FinanceAccountGroupType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+model FinanceAccount {
+  id             String                  @db.Uuid
+  tenantId       String                  @db.VarChar(128)
+  code           String                  @db.VarChar(64)
+  name           String                  @db.VarChar(160)
+  group          FinanceAccountGroupType
+  parentId       String?                 @db.Uuid
+  acceptsPosting Boolean                 @default(true)
+  active         Boolean                 @default(true)
+  createdAt      DateTime                @db.Timestamptz(3)
+  updatedAt      DateTime                @db.Timestamptz(3)
+
+  parent   FinanceAccount?  @relation(
+    "FinanceAccountHierarchy",
+    fields: [tenantId, parentId],
+    references: [tenantId, id],
+    onDelete: Restrict
+  )
+  children FinanceAccount[] @relation("FinanceAccountHierarchy")
+
+  @@id([tenantId, id])
+  @@unique([tenantId, code])
+  @@index([tenantId, group, active])
+  @@index([tenantId, parentId])
+  @@map("finance_accounts")
 }

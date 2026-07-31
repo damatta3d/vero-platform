@@ -1,5 +1,5 @@
-import type { Account } from '../domain/account.js';
-import type { AccountGroupType } from '../domain/account-group.js';
+import type { Account } from '../domain/entities/account.js';
+import type { AccountGroupType } from '../domain/enums/account-group.js';
 
 export interface AccountFilter {
   readonly tenantId: string;

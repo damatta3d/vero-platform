@@ -1,0 +1,25 @@
+ delete mode 100644 packages/business/finance/src/domain/account-repository.ts
+ rename packages/business/finance/src/domain/{ => entities}/account.ts (92%)
+ create mode 100644 packages/business/finance/src/domain/entities/payable.spec.ts
+ create mode 100644 packages/business/finance/src/domain/entities/payable.ts
+ create mode 100644 packages/business/finance/src/domain/entities/payment.ts
+ rename packages/business/finance/src/domain/{ => enums}/account-group.ts (100%)
+ create mode 100644 packages/business/finance/src/domain/enums/payable-status.ts
+ create mode 100644 packages/business/finance/src/domain/enums/payment-method.ts
+ rename packages/business/finance/src/domain/{ => value-objects}/account-code.ts (100%)
+ create mode 100644 packages/business/finance/src/domain/value-objects/competency.spec.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/competency.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/document-number.spec.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/document-number.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/due-date.spec.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/due-date.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/money.spec.ts
+ create mode 100644 packages/business/finance/src/domain/value-objects/money.ts
+ rename packages/{business/finance/src/domain/competency.ts => core/domain/entities/aggregate-root.ts} (100%)
+ rename packages/{business/finance/src/domain/document-number.ts => core/domain/entities/entity.ts} (100%)
+ rename packages/{business/finance/src/domain/due-date.ts => core/domain/errors/business-rule-violation-error.ts} (100%)
+ rename packages/{business/finance/src/domain/installment.ts => core/domain/errors/domain-error.ts} (100%)
+ rename packages/{business/finance/src/domain/money.ts => core/domain/errors/domain-validation-error.ts} (100%)
+ rename packages/{business/finance/src/domain/payable-status.ts => core/domain/events/domain-event.ts} (100%)
+ rename packages/{business/finance/src/domain/payable.ts => core/domain/ids/unique-entity-id.ts} (100%)
+ rename packages/{business/finance/src/domain/payment.ts => core/domain/value-objects/value-object.ts} (100%)
