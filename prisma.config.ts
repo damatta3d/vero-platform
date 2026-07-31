@@ -10,9 +10,9 @@ if (existsSync('.env')) {
 export default defineConfig({
   schema: 'packages/infrastructure/database/prisma/schema.prisma',
   migrations: {
-    path: 'packages/infrastructure/database/prisma/migrations',
+    path: 'packages/infrastructure/database/prisma/migrations'
   },
   datasource: {
-    url: env('VERO_DATABASE_URL'),
-  },
+    url: env('VERO_DATABASE_URL')
+  }
 });
