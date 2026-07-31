@@ -87,11 +87,7 @@ export class CatalogModule {
           provide: CatalogService,
           inject: [CATALOG_REPOSITORY],
           useFactory: (repository: CatalogRepository) =>
-            new CatalogService(
-              repository,
-              { generate: randomUUID },
-              { now: () => new Date() }
-            )
+            new CatalogService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         {
           provide: INVENTORY_REPOSITORY,
@@ -118,11 +114,7 @@ export class CatalogModule {
           provide: ProductionService,
           inject: [PRODUCTION_REPOSITORY],
           useFactory: (repository: ProductionRepository) =>
-            new ProductionService(
-              repository,
-              { generate: randomUUID },
-              { now: () => new Date() }
-            )
+            new ProductionService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         {
           provide: SALES_REPOSITORY,
@@ -133,11 +125,7 @@ export class CatalogModule {
           provide: SalesService,
           inject: [SALES_REPOSITORY],
           useFactory: (repository: SalesRepository) =>
-            new SalesService(
-              repository,
-              { generate: randomUUID },
-              { now: () => new Date() }
-            )
+            new SalesService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         {
           provide: FINANCE_REPOSITORY,
@@ -148,11 +136,7 @@ export class CatalogModule {
           provide: FinanceService,
           inject: [FINANCE_REPOSITORY],
           useFactory: (repository: FinanceRepository) =>
-            new FinanceService(
-              repository,
-              { generate: randomUUID },
-              { now: () => new Date() }
-            )
+            new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         {
           provide: ACCOUNT_REPOSITORY,
@@ -163,11 +147,7 @@ export class CatalogModule {
           provide: AccountService,
           inject: [ACCOUNT_REPOSITORY],
           useFactory: (repository: AccountRepository) =>
-            new AccountService(
-              repository,
-              { generate: randomUUID },
-              { now: () => new Date() }
-            )
+            new AccountService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
         MvpSecurityService,
         DatabaseLifecycle
