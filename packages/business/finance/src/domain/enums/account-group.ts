@@ -36,9 +36,7 @@ function required(value: string, field: string): string {
   return normalized;
 }
 
-export function createAccountGroup(
-  input: CreateAccountGroupInput
-): AccountGroup {
+export function createAccountGroup(input: CreateAccountGroupInput): AccountGroup {
   return Object.freeze({
     id: required(input.id, 'id'),
     tenantId: required(input.tenantId, 'tenantId'),
