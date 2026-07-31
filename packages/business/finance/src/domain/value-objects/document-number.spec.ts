@@ -29,15 +29,11 @@ describe('DocumentNumber', () => {
   });
 
   it('rejects empty values', () => {
-    expect(() => DocumentNumber.from('')).toThrow(
-      'Document number cannot be empty.'
-    );
+    expect(() => DocumentNumber.from('')).toThrow('Document number cannot be empty.');
   });
 
   it('rejects blank values', () => {
-    expect(() => DocumentNumber.from('     ')).toThrow(
-      'Document number cannot be empty.'
-    );
+    expect(() => DocumentNumber.from('     ')).toThrow('Document number cannot be empty.');
   });
 
   it('rejects values longer than 100 characters', () => {
