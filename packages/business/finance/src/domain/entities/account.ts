@@ -1,5 +1,8 @@
-import { AccountCode } from '../value-objects/account-code.js';
+import { DomainValidationError } from '@vero/core-domain';
+
 import type { AccountGroupType } from '../enums/account-group.js';
+import { AccountCode } from '../value-objects/account-code.js';
+
 export interface Account {
   readonly id: string;
   readonly tenantId: string;
@@ -28,15 +31,13 @@ function required(value: string, field: string): string {
   const normalized = value.trim();
 
   if (!normalized) {
-    throw new Error(`Invalid ${field}`);
+    throw new DomainValidationError(`Invalid ${field}`, 'FINANCE_ACCOUNT_FIELD_INVALID', { field });
   }
 
   return normalized;
 }
 
-export function createAccount(
-  input: CreateAccountInput
-): Account {
+export function createAccount(input: CreateAccountInput): Account {
   return Object.freeze({
     id: required(input.id, 'id'),
     tenantId: required(input.tenantId, 'tenantId'),
@@ -51,10 +52,7 @@ export function createAccount(
   });
 }
 
-export function deactivateAccount(
-  account: Account,
-  updatedAt: Date
-): Account {
+export function deactivateAccount(account: Account, updatedAt: Date): Account {
   return Object.freeze({
     ...account,
     active: false,
@@ -62,10 +60,7 @@ export function deactivateAccount(
   });
 }
 
-export function activateAccount(
-  account: Account,
-  updatedAt: Date
-): Account {
+export function activateAccount(account: Account, updatedAt: Date): Account {
   return Object.freeze({
     ...account,
     active: true,
