@@ -50,10 +50,7 @@ export class DueDate {
   daysUntil(other: DueDate): number {
     const millisecondsPerDay = 24 * 60 * 60 * 1000;
 
-    return Math.round(
-      (other.dueDate.getTime() - this.dueDate.getTime()) /
-        millisecondsPerDay
-    );
+    return Math.round((other.dueDate.getTime() - this.dueDate.getTime()) / millisecondsPerDay);
   }
 
   toISODate(): string {
