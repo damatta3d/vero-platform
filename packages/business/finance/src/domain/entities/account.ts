@@ -34,9 +34,7 @@ function required(value: string, field: string): string {
   return normalized;
 }
 
-export function createAccount(
-  input: CreateAccountInput
-): Account {
+export function createAccount(input: CreateAccountInput): Account {
   return Object.freeze({
     id: required(input.id, 'id'),
     tenantId: required(input.tenantId, 'tenantId'),
@@ -51,10 +49,7 @@ export function createAccount(
   });
 }
 
-export function deactivateAccount(
-  account: Account,
-  updatedAt: Date
-): Account {
+export function deactivateAccount(account: Account, updatedAt: Date): Account {
   return Object.freeze({
     ...account,
     active: false,
@@ -62,10 +57,7 @@ export function deactivateAccount(
   });
 }
 
-export function activateAccount(
-  account: Account,
-  updatedAt: Date
-): Account {
+export function activateAccount(account: Account, updatedAt: Date): Account {
   return Object.freeze({
     ...account,
     active: true,
