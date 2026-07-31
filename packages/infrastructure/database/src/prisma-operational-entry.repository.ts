@@ -117,9 +117,30 @@ export class PrismaOperationalEntryRepository {
       }>
     >(Prisma.sql`
       SELECT
-        COALESCE(SUM(CASE WHEN "type" = 'INCOME' AND "status" = 'PAID' THEN "amountCents" ELSE 0 END), 0)::int AS "incomeCents",
-        COALESCE(SUM(CASE WHEN "type" IN ('EXPENSE', 'PURCHASE', 'WITHDRAWAL') AND "status" = 'PAID' THEN "amountCents" ELSE 0 END), 0)::int AS "outflowCents",
-        COALESCE(SUM(CASE WHEN "status" = 'PENDING' THEN "amountCents" ELSE 0 END), 0)::int AS "pendingCents",
+        COALESCE(
+          SUM(
+            CASE
+              WHEN "type" = 'INCOME' AND "status" = 'PAID' THEN "amountCents"
+              ELSE 0
+            END
+          ),
+          0
+        )::int AS "incomeCents",
+        COALESCE(
+          SUM(
+            CASE
+              WHEN "type" IN ('EXPENSE', 'PURCHASE', 'WITHDRAWAL')
+                AND "status" = 'PAID'
+                THEN "amountCents"
+              ELSE 0
+            END
+          ),
+          0
+        )::int AS "outflowCents",
+        COALESCE(
+          SUM(CASE WHEN "status" = 'PENDING' THEN "amountCents" ELSE 0 END),
+          0
+        )::int AS "pendingCents",
         COALESCE(SUM("orderCount"), 0)::int AS "orderCount"
       FROM "operational_entries"
       WHERE "tenantId" = ${tenantId}
