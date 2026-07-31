@@ -24,6 +24,7 @@ import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { OperationalEntryController } from '../operations/operational-entry.controller.js';
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
+import { OperationsPageController } from '../operations/operations-page.controller.js';
 import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
 import { SalesController } from '../sales/sales.controller.js';
@@ -54,6 +55,7 @@ export class CatalogModule {
         ProductionController,
         SalesController,
         OperationalEntryController,
+        OperationsPageController,
         MvpPageController
       ],
       providers: [
