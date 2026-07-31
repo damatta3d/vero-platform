@@ -1,3 +1,5 @@
+import { BusinessRuleViolationError, DomainValidationError } from '@vero/core-domain';
+
 export type FinancialEntryType = 'RECEIVABLE' | 'PAYABLE';
 export type FinancialEntryStatus = 'OPEN' | 'PAID' | 'CANCELLED';
 
@@ -48,31 +50,45 @@ export interface CashFlowSummary {
 
 function requiredText(value: string, field: string, max = 256): string {
   const normalized = value.trim();
+
   if (!normalized || normalized.length > max) {
-    throw new Error(`Invalid financial field: ${field}`);
+    throw invalidField(field);
   }
+
   return normalized;
 }
 
 function optionalText(value: string | null | undefined, field: string, max = 256): string | null {
-  if (value == null) return null;
+  if (value == null) {
+    return null;
+  }
+
   return requiredText(value, field, max);
 }
 
 function validDate(value: Date, field: string): Date {
   const date = new Date(value);
+
   if (Number.isNaN(date.getTime())) {
-    throw new Error(`Invalid financial field: ${field}`);
+    throw invalidField(field);
   }
+
   return date;
+}
+
+function invalidField(field: string): DomainValidationError {
+  return new DomainValidationError(`Invalid financial field: ${field}`, 'FINANCE_FIELD_INVALID', {
+    field
+  });
 }
 
 export function createFinancialEntry(input: CreateFinancialEntryInput): FinancialEntry {
   if (!Number.isSafeInteger(input.amountCents) || input.amountCents <= 0) {
-    throw new Error('Invalid financial field: amountCents');
+    throw invalidField('amountCents');
   }
+
   if (input.type !== 'PAYABLE' && input.type !== 'RECEIVABLE') {
-    throw new Error('Invalid financial field: type');
+    throw invalidField('type');
   }
 
   return Object.freeze({
@@ -96,8 +112,12 @@ export function createFinancialEntry(input: CreateFinancialEntryInput): Financia
 
 export function settleFinancialEntry(entry: FinancialEntry, paidAt: Date): FinancialEntry {
   if (entry.status !== 'OPEN') {
-    throw new Error('Only open financial entries can be settled');
+    throw new BusinessRuleViolationError(
+      'Only open financial entries can be settled',
+      'FINANCE_ENTRY_NOT_OPEN'
+    );
   }
+
   return Object.freeze({
     ...entry,
     status: 'PAID',
@@ -107,8 +127,12 @@ export function settleFinancialEntry(entry: FinancialEntry, paidAt: Date): Finan
 
 export function cancelFinancialEntry(entry: FinancialEntry): FinancialEntry {
   if (entry.status === 'PAID') {
-    throw new Error('Paid financial entries cannot be cancelled');
+    throw new BusinessRuleViolationError(
+      'Paid financial entries cannot be cancelled',
+      'FINANCE_PAID_ENTRY_CANNOT_BE_CANCELLED'
+    );
   }
+
   return Object.freeze({ ...entry, status: 'CANCELLED' });
 }
 
