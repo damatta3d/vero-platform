@@ -18,7 +18,7 @@
     "typecheck": "tsc -p tsconfig.check.json --noEmit",
     "audit": "pnpm audit --audit-level high",
     "format": "prettier --write .",
-    "format:check": "prettier --write packages/infrastructure/database/src/prisma-operational-entry.repository.ts && git diff -- packages/infrastructure/database/src/prisma-operational-entry.repository.ts && exit 1",
+    "format:check": "prettier --check .",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:architecture && pnpm build",
     "prisma:generate": "nx run infrastructure-database:prisma-generate",
     "prisma:validate": "nx run infrastructure-database:prisma-validate",
