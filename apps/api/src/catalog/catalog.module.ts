@@ -14,12 +14,16 @@ import {
   createDatabaseClient,
   PrismaCatalogRepository,
   PrismaInventoryRepository,
+  PrismaOperationalEntryRepository,
   PrismaProductionRepository,
   PrismaSalesRepository
 } from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
+import { OperationalEntryController } from '../operations/operational-entry.controller.js';
+import { OperationalEntryService } from '../operations/operational-entry.service.js';
+import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
 import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
 import { SalesController } from '../sales/sales.controller.js';
@@ -49,6 +53,7 @@ export class CatalogModule {
         InventoryController,
         ProductionController,
         SalesController,
+        OperationalEntryController,
         MvpPageController
       ],
       providers: [
@@ -106,6 +111,12 @@ export class CatalogModule {
           useFactory: (repository: SalesRepository) =>
             new SalesService(repository, { generate: randomUUID }, { now: () => new Date() })
         },
+        {
+          provide: OPERATIONAL_ENTRY_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client)
+        },
+        OperationalEntryService,
         MvpSecurityService,
         DatabaseLifecycle
       ]
