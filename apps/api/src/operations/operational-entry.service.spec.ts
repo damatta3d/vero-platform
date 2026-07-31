@@ -33,11 +33,7 @@ describe(OperationalEntryService.name, () => {
 
   it('creates an operational entry for the authorized tenant', async () => {
     repository.create.mockImplementation(async (input) => input);
-    const access = await security.authorize(
-      `Bearer ${apiKey}`,
-      'santo-parma',
-      'finance.create'
-    );
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.create');
     const occurredAt = new Date('2026-07-31T12:00:00.000Z');
     const competenceDate = new Date('2026-07-31T12:00:00.000Z');
 
@@ -71,11 +67,7 @@ describe(OperationalEntryService.name, () => {
 
   it('lists entries only for the authorized tenant', async () => {
     repository.list.mockResolvedValue([]);
-    const access = await security.authorize(
-      `Bearer ${apiKey}`,
-      'santo-parma',
-      'finance.read'
-    );
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.read');
     const from = new Date('2026-07-01T00:00:00.000Z');
     const to = new Date('2026-08-01T00:00:00.000Z');
 
@@ -92,11 +84,7 @@ describe(OperationalEntryService.name, () => {
       orderCount: 32
     };
     repository.summarize.mockResolvedValue(summary);
-    const access = await security.authorize(
-      `Bearer ${apiKey}`,
-      'santo-parma',
-      'finance.read'
-    );
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.read');
     const from = new Date('2026-07-01T00:00:00.000Z');
     const to = new Date('2026-08-01T00:00:00.000Z');
 
@@ -105,11 +93,7 @@ describe(OperationalEntryService.name, () => {
   });
 
   it('rejects an access context authorized for a different action', async () => {
-    const access = await security.authorize(
-      `Bearer ${apiKey}`,
-      'santo-parma',
-      'finance.read'
-    );
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.read');
 
     expect(() =>
       service.create(access, {
