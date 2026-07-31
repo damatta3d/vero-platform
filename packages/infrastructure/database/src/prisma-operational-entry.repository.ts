@@ -104,7 +104,7 @@ export class PrismaOperationalEntryRepository {
     tenantId: string,
     from: Date,
     to: Date,
-    limit: number
+    limit: number,
   ): Promise<OperationalEntry[]> {
     return this.client.$queryRaw<OperationalEntry[]>(Prisma.sql`
       SELECT *
@@ -120,7 +120,7 @@ export class PrismaOperationalEntryRepository {
   async summarize(
     tenantId: string,
     from: Date,
-    to: Date
+    to: Date,
   ): Promise<OperationalSummary> {
     const rows = await this.client.$queryRaw<
       Array<{
@@ -166,12 +166,12 @@ export class PrismaOperationalEntryRepository {
       incomeCents: 0,
       outflowCents: 0,
       pendingCents: 0,
-      orderCount: 0
+      orderCount: 0,
     };
 
     return {
       ...summary,
-      balanceCents: summary.incomeCents - summary.outflowCents
+      balanceCents: summary.incomeCents - summary.outflowCents,
     };
   }
 }
