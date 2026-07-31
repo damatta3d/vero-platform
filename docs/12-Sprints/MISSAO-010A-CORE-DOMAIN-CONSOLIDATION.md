@@ -72,3 +72,11 @@ Foram identificadas:
 3. Unificar erros específicos de Tenancy, Identity e Access apenas por ADR e
    plano de compatibilidade.
 4. Introduzir dispatcher de eventos somente quando existir um consumidor real.
+
+## Validação
+
+- TypeScript estrito local: aprovado.
+- Prettier 3.8.1: aprovado.
+- Core Domain: 14 testes, com 100% de cobertura local.
+- Branch Finance base: CI #163 aprovado em qualidade, integração e PostgreSQL.
+- PR 010.A: validação integral executada pelo CI do GitHub.
