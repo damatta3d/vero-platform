@@ -10,10 +10,7 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 
-import {
-  AccountGroupType,
-  AccountService
-} from '@vero/business-finance';
+import { AccountGroupType, AccountService } from '@vero/business-finance';
 
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 
@@ -50,11 +47,7 @@ export class AccountController {
     }
 
     return this.accounts.create(
-      await this.security.authorize(
-        authorization,
-        tenantId,
-        'finance.create'
-      ),
+      await this.security.authorize(authorization, tenantId, 'finance.create'),
       {
         code: parsed.data.code,
         name: parsed.data.name,
@@ -71,11 +64,7 @@ export class AccountController {
     @Headers('x-tenant-id') tenantId: string | undefined
   ) {
     return this.accounts.list(
-      await this.security.authorize(
-        authorization,
-        tenantId,
-        'finance.read'
-      )
+      await this.security.authorize(authorization, tenantId, 'finance.read')
     );
   }
 
@@ -92,11 +81,7 @@ export class AccountController {
     }
 
     return this.accounts.activate(
-      await this.security.authorize(
-        authorization,
-        tenantId,
-        'finance.update'
-      ),
+      await this.security.authorize(authorization, tenantId, 'finance.update'),
       id
     );
   }
@@ -114,11 +99,7 @@ export class AccountController {
     }
 
     return this.accounts.deactivate(
-      await this.security.authorize(
-        authorization,
-        tenantId,
-        'finance.update'
-      ),
+      await this.security.authorize(authorization, tenantId, 'finance.update'),
       id
     );
   }
