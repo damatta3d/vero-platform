@@ -16,7 +16,7 @@ describe('Payable', () => {
       amount: Money.fromDecimal(250.75),
       competency: Competency.from('2026-07'),
       dueDate: DueDate.from('2026-08-10'),
-      documentNumber: DocumentNumber.from('NF-000123'),
+      documentNumber: DocumentNumber.from('NF-000123')
     });
 
   it('creates a payable', () => {
@@ -55,7 +55,7 @@ describe('Payable', () => {
         amount: Money.fromDecimal(10),
         competency: Competency.from('2026-07'),
         dueDate: DueDate.from('2026-08-01'),
-        documentNumber: DocumentNumber.from('NF-1'),
+        documentNumber: DocumentNumber.from('NF-1')
       })
     ).toThrow('Description is required.');
   });
@@ -70,7 +70,7 @@ describe('Payable', () => {
         amount: Money.fromDecimal(10),
         competency: Competency.from('2026-07'),
         dueDate: DueDate.from('2026-08-01'),
-        documentNumber: DocumentNumber.from('NF-1'),
+        documentNumber: DocumentNumber.from('NF-1')
       })
     ).toThrow('Supplier is required.');
   });
