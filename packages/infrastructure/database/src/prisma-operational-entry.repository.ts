@@ -2,21 +2,11 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 
 type DatabaseClient = InstanceType<typeof PrismaClient>;
 
-export type OperationalEntryType =
-  | 'INCOME'
-  | 'EXPENSE'
-  | 'PURCHASE'
-  | 'WITHDRAWAL'
-  | 'ADJUSTMENT';
+export type OperationalEntryType = 'INCOME' | 'EXPENSE' | 'PURCHASE' | 'WITHDRAWAL' | 'ADJUSTMENT';
 
 export type OperationalEntryStatus = 'PAID' | 'PENDING';
 
-export type OperationalEntryChannel =
-  | 'IFOOD'
-  | 'ANOTA_AI'
-  | 'PIX'
-  | 'CASH'
-  | 'OTHER';
+export type OperationalEntryChannel = 'IFOOD' | 'ANOTA_AI' | 'PIX' | 'CASH' | 'OTHER';
 
 export interface OperationalEntry {
   readonly id: string;
@@ -100,12 +90,7 @@ export class PrismaOperationalEntryRepository {
     return created;
   }
 
-  list(
-    tenantId: string,
-    from: Date,
-    to: Date,
-    limit: number,
-  ): Promise<OperationalEntry[]> {
+  list(tenantId: string, from: Date, to: Date, limit: number): Promise<OperationalEntry[]> {
     return this.client.$queryRaw<OperationalEntry[]>(Prisma.sql`
       SELECT *
       FROM "operational_entries"
@@ -117,11 +102,7 @@ export class PrismaOperationalEntryRepository {
     `);
   }
 
-  async summarize(
-    tenantId: string,
-    from: Date,
-    to: Date,
-  ): Promise<OperationalSummary> {
+  async summarize(tenantId: string, from: Date, to: Date): Promise<OperationalSummary> {
     const rows = await this.client.$queryRaw<
       Array<{
         incomeCents: number;
@@ -166,12 +147,12 @@ export class PrismaOperationalEntryRepository {
       incomeCents: 0,
       outflowCents: 0,
       pendingCents: 0,
-      orderCount: 0,
+      orderCount: 0
     };
 
     return {
       ...summary,
-      balanceCents: summary.incomeCents - summary.outflowCents,
+      balanceCents: summary.incomeCents - summary.outflowCents
     };
   }
 }
