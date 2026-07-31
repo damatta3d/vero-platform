@@ -13,15 +13,9 @@ export interface AccountRepository {
 
   update(account: Account): Promise<Account>;
 
-  findById(
-    tenantId: string,
-    id: string
-  ): Promise<Account | null>;
+  findById(tenantId: string, id: string): Promise<Account | null>;
 
-  findByCode(
-    tenantId: string,
-    code: string
-  ): Promise<Account | null>;
+  findByCode(tenantId: string, code: string): Promise<Account | null>;
 
   list(filter: AccountFilter): Promise<readonly Account[]>;
 
