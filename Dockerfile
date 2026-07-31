@@ -16,7 +16,7 @@ COPY packages ./packages
 COPY tools ./tools
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm prisma:generate
+RUN VERO_DATABASE_URL=postgresql://vero:vero@localhost:5432/vero pnpm prisma:generate
 RUN pnpm nx build api
 
 FROM node:24-bookworm-slim AS runtime
