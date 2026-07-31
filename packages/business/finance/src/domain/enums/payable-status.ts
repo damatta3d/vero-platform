@@ -2,5 +2,5 @@ export enum PayableStatus {
   PENDING = 'PENDING',
   PARTIALLY_PAID = 'PARTIALLY_PAID',
   PAID = 'PAID',
-  CANCELLED = 'CANCELLED',
+  CANCELLED = 'CANCELLED'
 }
