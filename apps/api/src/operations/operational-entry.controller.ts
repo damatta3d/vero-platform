@@ -5,6 +5,8 @@ import {
   Get,
   Headers,
   Inject,
+  Param,
+  Patch,
   Post,
   Query
 } from '@nestjs/common';
@@ -27,6 +29,8 @@ const entrySchema = z.object({
   competenceDate: z.coerce.date(),
   notes: z.string().trim().max(512).nullable().default(null)
 });
+
+const entryIdSchema = z.string().uuid();
 
 const rangeSchema = z.object({
   from: z.coerce.date(),
@@ -58,6 +62,34 @@ export class OperationalEntryController {
     return this.operations.create(
       await this.security.authorize(authorization, tenantId, 'finance.create'),
       parsed.data
+    );
+  }
+
+  @Patch(':entryId')
+  async update(
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantId: string | undefined,
+    @Param('entryId') entryId: string,
+    @Body() body: unknown
+  ) {
+    const parsedId = entryIdSchema.safeParse(entryId);
+    const parsedBody = entrySchema.safeParse(body);
+    if (!parsedId.success || !parsedBody.success) {
+      throw new BadRequestException({
+        code: 'INVALID_REQUEST',
+        fields: [
+          ...(parsedId.success ? [] : ['entryId']),
+          ...(parsedBody.success
+            ? []
+            : parsedBody.error.issues.map((issue) => issue.path.join('.')))
+        ]
+      });
+    }
+
+    return this.operations.update(
+      await this.security.authorize(authorization, tenantId, 'finance.update'),
+      parsedId.data,
+      parsedBody.data
     );
   }
 
