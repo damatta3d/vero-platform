@@ -79,4 +79,4 @@ Foram identificadas:
 - Prettier 3.8.1: aprovado.
 - Core Domain: 14 testes, com 100% de cobertura local.
 - Branch Finance base: CI #163 aprovado em qualidade, integração e PostgreSQL.
-- PR 010.A: validação integral executada pelo CI do GitHub.
+- PR 010.A: head sincronizado com a base Finance verde; validação integral executada pelo CI do GitHub.
