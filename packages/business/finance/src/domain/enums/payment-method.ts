@@ -6,5 +6,5 @@ export enum PaymentMethod {
   BANK_TRANSFER = 'BANK_TRANSFER',
   BOLETO = 'BOLETO',
   CHECK = 'CHECK',
-  OTHER = 'OTHER',
+  OTHER = 'OTHER'
 }
