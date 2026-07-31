@@ -13,11 +13,11 @@ services:
       - key: VERO_SERVICE_NAME
         value: vero-santo-parma-mvp
       - key: VERO_SERVICE_VERSION
-        value: 0.1.0
+        value: "0.1.0"
       - key: VERO_HTTP_HOST
-        value: 0.0.0.0
+        value: "0.0.0.0"
       - key: VERO_HTTP_PORT
-        value: 3000
+        value: "3000"
       - key: VERO_LOG_LEVEL
         value: info
       - key: VERO_POSTGRES_ENABLED
