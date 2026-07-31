@@ -9,36 +9,8 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@vero/core-tenancy$': '<rootDir>/../../packages/core/tenancy/src/public-api.ts',
     '^@vero/core-identity$': '<rootDir>/../../packages/core/identity/src/public-api.ts',
-    '^@vero/core-access    '^@vero/infrastructure-database$':
-      '<rootDir>/../../packages/infrastructure/database/src/public-api.ts',
-    '^@vero/infrastructure-cache$':
-      '<rootDir>/../../packages/infrastructure/cache/src/public-api.ts',
-    '^@vero/infrastructure-messaging$':
-      '<rootDir>/../../packages/infrastructure/messaging/src/public-api.ts',
-    '^@vero/business-catalog$': '<rootDir>/../../packages/business/catalog/src/public-api.ts',
-    '^@vero/business-inventory$': '<rootDir>/../../packages/business/inventory/src/public-api.ts',
-    '^@vero/business-production$': '<rootDir>/../../packages/business/production/src/public-api.ts',
-    '^@vero/business-sales$': '<rootDir>/../../packages/business/sales/src/public-api.ts',
-    '^@vero/business-finance$': '<rootDir>/../../packages/business/finance/src/public-api.ts'
-  },
-  moduleFileExtensions: ['ts', 'js']
-};
-: '<rootDir>/../../packages/core/access/src/public-api.ts',
-    '^@vero/core-domain    '^@vero/infrastructure-database$':
-      '<rootDir>/../../packages/infrastructure/database/src/public-api.ts',
-    '^@vero/infrastructure-cache$':
-      '<rootDir>/../../packages/infrastructure/cache/src/public-api.ts',
-    '^@vero/infrastructure-messaging$':
-      '<rootDir>/../../packages/infrastructure/messaging/src/public-api.ts',
-    '^@vero/business-catalog$': '<rootDir>/../../packages/business/catalog/src/public-api.ts',
-    '^@vero/business-inventory$': '<rootDir>/../../packages/business/inventory/src/public-api.ts',
-    '^@vero/business-production$': '<rootDir>/../../packages/business/production/src/public-api.ts',
-    '^@vero/business-sales$': '<rootDir>/../../packages/business/sales/src/public-api.ts',
-    '^@vero/business-finance$': '<rootDir>/../../packages/business/finance/src/public-api.ts'
-  },
-  moduleFileExtensions: ['ts', 'js']
-};
-: '<rootDir>/../../packages/core/domain/public-api.ts',
+    '^@vero/core-access$': '<rootDir>/../../packages/core/access/src/public-api.ts',
+    '^@vero/core-domain$': '<rootDir>/../../packages/core/domain/public-api.ts',
     '^@vero/infrastructure-database$':
       '<rootDir>/../../packages/infrastructure/database/src/public-api.ts',
     '^@vero/infrastructure-cache$':
