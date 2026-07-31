@@ -17,7 +17,9 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "options": { "lintFilePatterns": ["packages/infrastructure/database/**/*.ts"] }
+      "options": {
+        "lintFilePatterns": ["packages/infrastructure/database/**/*.ts"]
+      }
     },
     "typecheck": {
       "executor": "nx:run-commands",
@@ -30,6 +32,48 @@
       "options": {
         "jestConfig": "packages/infrastructure/database/jest.config.cjs",
         "passWithNoTests": true
+      }
+    },
+    "prisma-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma generate"
+      }
+    },
+    "prisma-validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma validate"
+      }
+    },
+    "prisma-format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma format"
+      }
+    },
+    "prisma-migrate-dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma migrate dev"
+      }
+    },
+    "prisma-migrate-deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma migrate deploy"
+      }
+    },
+    "prisma-db-push": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma db push"
+      }
+    },
+    "prisma-studio": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec prisma studio"
       }
     }
   }
