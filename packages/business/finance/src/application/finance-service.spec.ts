@@ -56,8 +56,7 @@ describe('FinanceService', () => {
       },
 
       findById(_tenantId, id) {
-        const found =
-          [...entries.values()].find((entry) => entry.id === id) ?? null;
+        const found = [...entries.values()].find((entry) => entry.id === id) ?? null;
 
         return Promise.resolve(found);
       },
