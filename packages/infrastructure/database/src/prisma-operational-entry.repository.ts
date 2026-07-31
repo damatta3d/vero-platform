@@ -45,6 +45,24 @@ export interface CreateOperationalEntryInput {
   readonly now: Date;
 }
 
+export interface UpdateOperationalEntryInput {
+  readonly id: string;
+  readonly tenantId: string;
+  readonly type: OperationalEntryType;
+  readonly status: OperationalEntryStatus;
+  readonly channel: OperationalEntryChannel | null;
+  readonly category: string;
+  readonly description: string;
+  readonly counterparty: string | null;
+  readonly paymentMethod: string | null;
+  readonly amountCents: number;
+  readonly orderCount: number;
+  readonly occurredAt: Date;
+  readonly competenceDate: Date;
+  readonly notes: string | null;
+  readonly now: Date;
+}
+
 export interface OperationalSummary {
   readonly incomeCents: number;
   readonly outflowCents: number;
@@ -88,6 +106,31 @@ export class PrismaOperationalEntryRepository {
       throw new Error('Operational entry was not created');
     }
     return created;
+  }
+
+  async update(input: UpdateOperationalEntryInput): Promise<OperationalEntry | undefined> {
+    const rows = await this.client.$queryRaw<OperationalEntry[]>(Prisma.sql`
+      UPDATE "operational_entries"
+      SET
+        "type" = ${input.type}::"OperationalEntryType",
+        "status" = ${input.status}::"OperationalEntryStatus",
+        "channel" = ${input.channel}::"OperationalEntryChannel",
+        "category" = ${input.category},
+        "description" = ${input.description},
+        "counterparty" = ${input.counterparty},
+        "paymentMethod" = ${input.paymentMethod},
+        "amountCents" = ${input.amountCents},
+        "orderCount" = ${input.orderCount},
+        "occurredAt" = ${input.occurredAt},
+        "competenceDate" = ${input.competenceDate}::date,
+        "notes" = ${input.notes},
+        "updatedAt" = ${input.now}
+      WHERE "id" = ${input.id}::uuid
+        AND "tenantId" = ${input.tenantId}
+      RETURNING *
+    `);
+
+    return rows[0];
   }
 
   list(tenantId: string, from: Date, to: Date, limit: number): Promise<OperationalEntry[]> {

@@ -1,3 +1,5 @@
+import { NotFoundException } from '@nestjs/common';
+
 import { parseConfiguration } from '@vero/core-configuration';
 import type { PrismaOperationalEntryRepository } from '@vero/infrastructure-database';
 
@@ -19,6 +21,7 @@ describe(OperationalEntryService.name, () => {
 
   const repository = {
     create: jest.fn(),
+    update: jest.fn(),
     list: jest.fn(),
     summarize: jest.fn()
   };
@@ -80,6 +83,79 @@ describe(OperationalEntryService.name, () => {
       })
     );
     expect(result.tenantId).toBe('santo-parma');
+  });
+
+  it('updates an operational entry only inside the authorized tenant', async () => {
+    const entryId = '0f579813-1634-4d9a-8070-2debd24028b4';
+    const occurredAt = new Date('2026-07-31T14:00:00.000Z');
+    const competenceDate = new Date('2026-07-31T12:00:00.000Z');
+    repository.update.mockResolvedValue({
+      id: entryId,
+      tenantId: 'santo-parma',
+      type: 'INCOME',
+      status: 'PAID',
+      channel: 'ANOTA_AI',
+      category: 'Faturamento Anota AI',
+      description: 'Fechamento corrigido',
+      counterparty: null,
+      paymentMethod: 'PIX',
+      amountCents: 135000,
+      orderCount: 16,
+      occurredAt,
+      competenceDate,
+      notes: 'Valor conferido',
+      createdAt: competenceDate,
+      updatedAt: occurredAt
+    });
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.update');
+
+    const result = await service.update(access, entryId, {
+      type: 'INCOME',
+      status: 'PAID',
+      channel: 'ANOTA_AI',
+      category: 'Faturamento Anota AI',
+      description: 'Fechamento corrigido',
+      counterparty: null,
+      paymentMethod: 'PIX',
+      amountCents: 135000,
+      orderCount: 16,
+      occurredAt,
+      competenceDate,
+      notes: 'Valor conferido'
+    });
+
+    expect(repository.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: entryId,
+        tenantId: 'santo-parma',
+        amountCents: 135000,
+        orderCount: 16,
+        now: expect.any(Date)
+      })
+    );
+    expect(result.description).toBe('Fechamento corrigido');
+  });
+
+  it('returns not found when the entry does not belong to the authorized tenant', async () => {
+    repository.update.mockResolvedValue(undefined);
+    const access = await security.authorize(`Bearer ${apiKey}`, 'santo-parma', 'finance.update');
+
+    await expect(
+      service.update(access, '0f579813-1634-4d9a-8070-2debd24028b4', {
+        type: 'EXPENSE',
+        status: 'PAID',
+        channel: null,
+        category: 'Despesa',
+        description: 'Conta operacional',
+        counterparty: null,
+        paymentMethod: 'PIX',
+        amountCents: 1000,
+        orderCount: 0,
+        occurredAt: new Date('2026-07-31T12:00:00.000Z'),
+        competenceDate: new Date('2026-07-31T12:00:00.000Z'),
+        notes: null
+      })
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('lists entries only for the authorized tenant', async () => {

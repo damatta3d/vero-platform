@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { consumeAuthorizedAccess, type AuthorizedAccessContext } from '@vero/core-access';
 import {
@@ -24,6 +24,8 @@ export interface CreateOperationalEntryRequest {
   readonly competenceDate: Date;
   readonly notes: string | null;
 }
+
+export type UpdateOperationalEntryRequest = CreateOperationalEntryRequest;
 
 function tenantFrom(access: AuthorizedAccessContext, expectedAction: string): string {
   const authorized = consumeAuthorizedAccess(access);
@@ -50,6 +52,25 @@ export class OperationalEntryService {
       tenantId: tenantFrom(access, 'finance.create'),
       now: new Date()
     });
+  }
+
+  async update(
+    access: AuthorizedAccessContext,
+    entryId: string,
+    input: UpdateOperationalEntryRequest
+  ) {
+    const updated = await this.repository.update({
+      ...input,
+      id: entryId,
+      tenantId: tenantFrom(access, 'finance.update'),
+      now: new Date()
+    });
+
+    if (updated === undefined) {
+      throw new NotFoundException({ code: 'OPERATIONAL_ENTRY_NOT_FOUND' });
+    }
+
+    return updated;
   }
 
   list(access: AuthorizedAccessContext, from: Date, to: Date, limit: number) {
