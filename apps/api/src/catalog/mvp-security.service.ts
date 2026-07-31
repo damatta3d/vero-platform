@@ -40,7 +40,9 @@ export class MvpSecurityService {
         ? 'production.management'
         : action.startsWith('sales.')
           ? 'sales.management'
-          : 'catalog.management';
+          : action.startsWith('finance.')
+            ? 'finance.operations'
+            : 'catalog.management';
     const token = authorizationHeader?.startsWith('Bearer ')
       ? authorizationHeader.slice('Bearer '.length)
       : '';
@@ -80,7 +82,9 @@ export class MvpSecurityService {
               (request.action.value.startsWith('production.') &&
                 request.resource.value === 'production.management') ||
               (request.action.value.startsWith('sales.') &&
-                request.resource.value === 'sales.management')
+                request.resource.value === 'sales.management') ||
+              (request.action.value.startsWith('finance.') &&
+                request.resource.value === 'finance.operations')
                 ? 'allow'
                 : 'deny',
             reason: 'santo-parma-mvp-owner',
