@@ -145,18 +145,14 @@ export class PrismaAccountRepository implements AccountRepository {
   }
 
   async list(filter: AccountFilter): Promise<readonly Account[]> {
-    const conditions: Prisma.Sql[] = [
-      Prisma.sql`"tenantId" = ${filter.tenantId}`
-    ];
+    const conditions: Prisma.Sql[] = [Prisma.sql`"tenantId" = ${filter.tenantId}`];
 
     if (filter.active !== undefined) {
       conditions.push(Prisma.sql`"active" = ${filter.active}`);
     }
 
     if (filter.group !== undefined) {
-      conditions.push(
-        Prisma.sql`"group" = ${filter.group}::"FinanceAccountGroupType"`
-      );
+      conditions.push(Prisma.sql`"group" = ${filter.group}::"FinanceAccountGroupType"`);
     }
 
     if (filter.parentId !== undefined) {
