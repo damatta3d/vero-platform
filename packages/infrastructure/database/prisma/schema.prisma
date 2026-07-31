@@ -297,12 +297,7 @@ model FinanceAccount {
   createdAt      DateTime                @db.Timestamptz(3)
   updatedAt      DateTime                @db.Timestamptz(3)
 
-  parent   FinanceAccount?  @relation(
-    "FinanceAccountHierarchy",
-    fields: [tenantId, parentId],
-    references: [tenantId, id],
-    onDelete: Restrict
-  )
+  parent   FinanceAccount?  @relation("FinanceAccountHierarchy", fields: [tenantId, parentId], references: [tenantId, id], onDelete: Restrict)
   children FinanceAccount[] @relation("FinanceAccountHierarchy")
 
   @@id([tenantId, id])
