@@ -38,8 +38,7 @@ const mvpWebContentSecurityPolicy = [
   "object-src 'none'",
   "script-src 'self' 'unsafe-inline'",
   "script-src-attr 'unsafe-inline'",
-  "style-src 'self' https: 'unsafe-inline'",
-  'upgrade-insecure-requests'
+  "style-src 'self' https: 'unsafe-inline'"
 ].join(';');
 
 async function bootstrap(): Promise<void> {
