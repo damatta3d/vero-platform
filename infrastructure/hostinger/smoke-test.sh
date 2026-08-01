@@ -88,13 +88,13 @@ expect_http_page_without_upgrade /operacao
 expect_http_page_without_upgrade /financeiro
 
 expect_inline_page / '.modules' 'vero_token'
-expect_inline_page /mvp ':root' 'vero_token'
+expect_inline_page /mvp ':root' 'Promise.all'
 expect_inline_page /financeiro '.message' 'financeForm'
 
 expect_asset /portal.css 'text/css' '.shell'
 expect_asset /portal.js 'application/javascript' 'vero_token'
 expect_asset /mvp.css 'text/css' ':root'
-expect_asset /mvp.js 'application/javascript' 'vero_token'
+expect_asset /mvp.js 'application/javascript' 'Promise.all'
 expect_asset /financeiro.css 'text/css' '.message'
 expect_asset /financeiro.js 'application/javascript' 'financeForm'
 
