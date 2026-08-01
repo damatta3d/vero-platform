@@ -14,7 +14,7 @@ import {
 import { AppModule } from './app.module.js';
 
 const externalIdPattern = /^[A-Za-z0-9._:-]{1,128}$/;
-const mvpWebPaths = new Set(['/operacao', '/financeiro']);
+const mvpWebPaths = new Set(['/', '/inicio', '/mvp', '/operacao', '/financeiro']);
 const defaultContentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",

@@ -34,12 +34,32 @@ expect_status() {
   pass "${method} ${path}: ${actual}"
 }
 
+expect_http_page_without_upgrade() {
+  local path="$1" headers
+  headers="$(curl --silent --show-error --head --max-time 10 "${BASE_URL}${path}")"
+  grep -qi '^content-type: text/html' <<<"${headers}" || fail "${path}: content-type HTML ausente."
+  if grep -qi '^content-security-policy:.*upgrade-insecure-requests' <<<"${headers}"; then
+    fail "${path}: CSP tenta forçar HTTPS durante homologação por IP."
+  fi
+  pass "${path}: CSP compatível com HTTP."
+}
+
+expect_asset() {
+  local path="$1" expected_type="$2" marker="$3" headers
+  headers="$(curl --silent --show-error --head --max-time 10 "${BASE_URL}${path}")"
+  grep -qi "^content-type: ${expected_type}" <<<"${headers}" || fail "${path}: content-type inesperado."
+  curl --silent --show-error --max-time 10 "${BASE_URL}${path}" | grep -Fq "${marker}" \
+    || fail "${path}: conteúdo esperado não encontrado."
+  pass "${path}: asset válido."
+}
+
 AUTH_HEADERS=(
   -H "Authorization: Bearer ${VERO_MVP_API_KEY}"
   -H "x-tenant-id: ${VERO_MVP_TENANT_ID}"
 )
 
 expect_status 200 GET /
+expect_status 200 GET /inicio
 expect_status 200 GET /portal.css
 expect_status 200 GET /portal.js
 expect_status 200 GET /mvp
@@ -47,6 +67,17 @@ expect_status 200 GET /operacao
 expect_status 200 GET /financeiro
 expect_status 200 GET /financeiro.css
 expect_status 200 GET /financeiro.js
+
+expect_http_page_without_upgrade /
+expect_http_page_without_upgrade /inicio
+expect_http_page_without_upgrade /mvp
+expect_http_page_without_upgrade /operacao
+expect_http_page_without_upgrade /financeiro
+expect_asset /portal.css 'text/css' '.shell'
+expect_asset /portal.js 'application/javascript' 'vero_token'
+expect_asset /financeiro.css 'text/css' '.message'
+expect_asset /financeiro.js 'application/javascript' 'financeForm'
+
 expect_status 200 GET /health/live
 expect_status 200 GET /health/ready
 expect_status 401 GET /v1/finance
