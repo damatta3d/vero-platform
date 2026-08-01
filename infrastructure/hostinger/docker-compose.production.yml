@@ -1,0 +1,78 @@
+name: vero-production
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${VERO_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${VERO_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${VERO_POSTGRES_DB}
+    volumes:
+      - postgres-production-data:/var/lib/postgresql
+    networks:
+      - vero-internal
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${VERO_POSTGRES_USER} -d ${VERO_POSTGRES_DB}
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 768m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../../.env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3000"
+    networks:
+      - vero-internal
+    mem_limit: 1536m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - vero-internal
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+networks:
+  vero-internal:
+    driver: bridge
+
+volumes:
+  postgres-production-data:
+  caddy-data:
+  caddy-config:
