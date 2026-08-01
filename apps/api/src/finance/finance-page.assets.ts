@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 export const financePageHtml = `<!doctype html>
 <html lang="pt-BR">
 <head>
