@@ -16,7 +16,7 @@ const mobileOperationsPageHtml = operationsPageHtml
     '<div class="grid period-grid">'
   )
   .replace(
-    "const money=(cents)=>",
+    'const money=(cents)=>',
     "const apiKeyInput=document.querySelector('#apiKey');const tenantInput=document.querySelector('#tenantId');apiKeyInput.value=localStorage.getItem('vero_token')||'';tenantInput.value=localStorage.getItem('vero_tenant')||'santo-parma';apiKeyInput.addEventListener('change',()=>localStorage.setItem('vero_token',apiKeyInput.value.trim()));tenantInput.addEventListener('change',()=>localStorage.setItem('vero_tenant',tenantInput.value.trim()||'santo-parma'));const money=(cents)=>"
   );
 
