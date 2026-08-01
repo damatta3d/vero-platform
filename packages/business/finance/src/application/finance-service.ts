@@ -36,6 +36,7 @@ export interface Clock {
   now(): Date;
 }
 
+// prettier-ignore
 export class FinanceService {
   constructor(
     private readonly repository: FinanceRepository,
@@ -108,15 +109,14 @@ export class FinanceService {
     const payableOpenInCents = total('PAYABLE', 'OPEN');
     const receivedInCents = total('RECEIVABLE', 'SETTLED');
     const paidInCents = total('PAYABLE', 'SETTLED');
-    const projectedBalanceInCents =
-      receivedInCents + receivableOpenInCents - paidInCents - payableOpenInCents;
 
     return {
       receivableOpenInCents,
       payableOpenInCents,
       receivedInCents,
       paidInCents,
-      projectedBalanceInCents,
+      projectedBalanceInCents:
+        receivedInCents + receivableOpenInCents - paidInCents - payableOpenInCents,
       realizedBalanceInCents: receivedInCents - paidInCents
     };
   }
