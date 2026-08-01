@@ -1,7 +1,7 @@
 import {
   FinanceEntry,
   type FinanceEntryStatus,
-  type FinanceEntryType,
+  type FinanceEntryType
 } from '../domain/finance-entry.js';
 import type { FinanceRepository } from './finance-repository.js';
 
@@ -40,12 +40,12 @@ export class FinanceService {
   constructor(
     private readonly repository: FinanceRepository,
     private readonly ids: IdGenerator,
-    private readonly clock: Clock,
+    private readonly clock: Clock
   ) {}
 
   async create(
     context: FinanceAccessContext,
-    input: CreateFinanceEntryInput,
+    input: CreateFinanceEntryInput
   ): Promise<FinanceEntry> {
     const sourceKey = input.sourceKey?.trim() || null;
     if (sourceKey) {
@@ -67,7 +67,7 @@ export class FinanceService {
       sourceKey,
       settledAt: null,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     });
     await this.repository.save(entry);
     return entry;
@@ -89,11 +89,11 @@ export class FinanceService {
 
   async list(
     context: FinanceAccessContext,
-    status?: FinanceEntryStatus,
+    status?: FinanceEntryStatus
   ): Promise<FinanceEntry[]> {
     return this.repository.list({
       tenantId: context.tenantId,
-      ...(status ? { status } : {}),
+      ...(status ? { status } : {})
     });
   }
 
@@ -108,15 +108,16 @@ export class FinanceService {
     const payableOpenInCents = total('PAYABLE', 'OPEN');
     const receivedInCents = total('RECEIVABLE', 'SETTLED');
     const paidInCents = total('PAYABLE', 'SETTLED');
+    const projectedBalanceInCents =
+      receivedInCents + receivableOpenInCents - paidInCents - payableOpenInCents;
 
     return {
       receivableOpenInCents,
       payableOpenInCents,
       receivedInCents,
       paidInCents,
-      projectedBalanceInCents:
-        receivedInCents + receivableOpenInCents - paidInCents - payableOpenInCents,
-      realizedBalanceInCents: receivedInCents - paidInCents,
+      projectedBalanceInCents,
+      realizedBalanceInCents: receivedInCents - paidInCents
     };
   }
 
