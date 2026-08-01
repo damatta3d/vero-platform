@@ -1,0 +1,42 @@
+{
+  "name": "business-finance",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/business/finance/src",
+  "projectType": "library",
+  "tags": ["type:business", "scope:business", "runtime:agnostic", "stability:public"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/business/finance",
+        "main": "packages/business/finance/src/public-api.ts",
+        "tsConfig": "packages/business/finance/tsconfig.lib.json",
+        "platform": "node",
+        "format": ["cjs"],
+        "bundle": true,
+        "thirdParty": false,
+        "generatePackageJson": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["packages/business/finance/src/**/*.ts"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/business/finance/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "packages/business/finance/jest.config.cjs",
+        "coverage": true
+      }
+    }
+  }
+}
