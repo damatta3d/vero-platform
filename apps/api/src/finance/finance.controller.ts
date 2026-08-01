@@ -48,7 +48,7 @@ export class FinanceController {
       });
     }
     const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.create');
-    return this.finance.create(
+    const entry = await this.finance.create(
       { tenantId: tenant },
       {
         ...parsed.data,
@@ -56,6 +56,7 @@ export class FinanceController {
         sourceKey: parsed.data.sourceKey ?? null
       }
     );
+    return entry.snapshot;
   }
 
   @Get()
@@ -67,7 +68,8 @@ export class FinanceController {
     const parsedStatus = statusSchema.safeParse(status);
     if (!parsedStatus.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
     const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.read');
-    return this.finance.list({ tenantId: tenant }, parsedStatus.data);
+    const entries = await this.finance.list({ tenantId: tenant }, parsedStatus.data);
+    return entries.map((entry) => entry.snapshot);
   }
 
   @Get('summary')
@@ -88,7 +90,8 @@ export class FinanceController {
     const parsedId = idSchema.safeParse(id);
     if (!parsedId.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
     const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.update');
-    return this.finance.settle({ tenantId: tenant }, parsedId.data);
+    const entry = await this.finance.settle({ tenantId: tenant }, parsedId.data);
+    return entry.snapshot;
   }
 
   @Patch(':id/cancel')
@@ -100,7 +103,8 @@ export class FinanceController {
     const parsedId = idSchema.safeParse(id);
     if (!parsedId.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
     const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.update');
-    return this.finance.cancel({ tenantId: tenant }, parsedId.data);
+    const entry = await this.finance.cancel({ tenantId: tenant }, parsedId.data);
+    return entry.snapshot;
   }
 
   private async authorizedTenant(
