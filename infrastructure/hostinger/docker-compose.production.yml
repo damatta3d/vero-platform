@@ -14,8 +14,10 @@ services:
       - vero-internal
     healthcheck:
       test:
-        - CMD-SHELL
-        - pg_isready -U ${VERO_POSTGRES_USER} -d ${VERO_POSTGRES_DB}
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${VERO_POSTGRES_USER} -d ${VERO_POSTGRES_DB}',
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -23,8 +25,8 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: 10m
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   api:
     build:
@@ -37,15 +39,15 @@ services:
       postgres:
         condition: service_healthy
     expose:
-      - "3000"
+      - '3000'
     networks:
       - vero-internal
     mem_limit: 1536m
     logging:
       driver: json-file
       options:
-        max-size: 10m
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
   caddy:
     image: caddy:2-alpine
@@ -53,8 +55,8 @@ services:
     depends_on:
       - api
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -65,8 +67,8 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: 10m
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
 networks:
   vero-internal:
