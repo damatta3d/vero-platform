@@ -47,9 +47,9 @@ export class FinanceController {
         fields: parsed.error.issues.map((issue) => issue.path.join('.'))
       });
     }
-    const access = await this.security.authorize(authorization, tenantId, 'finance.create');
+    const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.create');
     return this.finance.create(
-      { tenantId: access.tenant.tenantId },
+      { tenantId: tenant },
       {
         ...parsed.data,
         counterparty: parsed.data.counterparty ?? null,
@@ -66,8 +66,8 @@ export class FinanceController {
   ) {
     const parsedStatus = statusSchema.safeParse(status);
     if (!parsedStatus.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
-    const access = await this.security.authorize(authorization, tenantId, 'finance.read');
-    return this.finance.list({ tenantId: access.tenant.tenantId }, parsedStatus.data);
+    const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.read');
+    return this.finance.list({ tenantId: tenant }, parsedStatus.data);
   }
 
   @Get('summary')
@@ -75,8 +75,8 @@ export class FinanceController {
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-tenant-id') tenantId: string | undefined
   ) {
-    const access = await this.security.authorize(authorization, tenantId, 'finance.read');
-    return this.finance.summary({ tenantId: access.tenant.tenantId });
+    const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.read');
+    return this.finance.summary({ tenantId: tenant });
   }
 
   @Patch(':id/settle')
@@ -87,8 +87,8 @@ export class FinanceController {
   ) {
     const parsedId = idSchema.safeParse(id);
     if (!parsedId.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
-    const access = await this.security.authorize(authorization, tenantId, 'finance.update');
-    return this.finance.settle({ tenantId: access.tenant.tenantId }, parsedId.data);
+    const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.update');
+    return this.finance.settle({ tenantId: tenant }, parsedId.data);
   }
 
   @Patch(':id/cancel')
@@ -99,7 +99,17 @@ export class FinanceController {
   ) {
     const parsedId = idSchema.safeParse(id);
     if (!parsedId.success) throw new BadRequestException({ code: 'INVALID_REQUEST' });
-    const access = await this.security.authorize(authorization, tenantId, 'finance.update');
-    return this.finance.cancel({ tenantId: access.tenant.tenantId }, parsedId.data);
+    const tenant = await this.authorizedTenant(authorization, tenantId, 'finance.update');
+    return this.finance.cancel({ tenantId: tenant }, parsedId.data);
+  }
+
+  private async authorizedTenant(
+    authorization: string | undefined,
+    tenantId: string | undefined,
+    action: string
+  ): Promise<string> {
+    await this.security.authorize(authorization, tenantId, action);
+    if (!tenantId) throw new BadRequestException({ code: 'INVALID_TENANT' });
+    return tenantId;
   }
 }
