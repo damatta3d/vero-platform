@@ -38,10 +38,11 @@ expect_http_page_without_upgrade() {
   local path="$1" headers
   headers="$(curl --silent --show-error --head --max-time 10 "${BASE_URL}${path}")"
   grep -qi '^content-type: text/html' <<<"${headers}" || fail "${path}: content-type HTML ausente."
+  grep -qi '^cache-control:.*no-store' <<<"${headers}" || fail "${path}: cache-control no-store ausente."
   if grep -qi '^content-security-policy:.*upgrade-insecure-requests' <<<"${headers}"; then
     fail "${path}: CSP tenta forçar HTTPS durante homologação por IP."
   fi
-  pass "${path}: CSP compatível com HTTP."
+  pass "${path}: CSP e cache compatíveis com homologação HTTP."
 }
 
 expect_asset() {
@@ -51,6 +52,16 @@ expect_asset() {
   curl --silent --show-error --max-time 10 "${BASE_URL}${path}" | grep -Fq "${marker}" \
     || fail "${path}: conteúdo esperado não encontrado."
   pass "${path}: asset válido."
+}
+
+expect_inline_page() {
+  local path="$1" style_marker="$2" script_marker="$3" body
+  body="$(curl --silent --show-error --max-time 10 "${BASE_URL}${path}")"
+  grep -Fq '<style>' <<<"${body}" || fail "${path}: CSS crítico não está incorporado."
+  grep -Fq "${style_marker}" <<<"${body}" || fail "${path}: marcador CSS não encontrado."
+  grep -Fq '<script>' <<<"${body}" || fail "${path}: JavaScript crítico não está incorporado."
+  grep -Fq "${script_marker}" <<<"${body}" || fail "${path}: marcador JavaScript não encontrado."
+  pass "${path}: CSS e JavaScript críticos incorporados."
 }
 
 AUTH_HEADERS=(
@@ -63,6 +74,8 @@ expect_status 200 GET /inicio
 expect_status 200 GET /portal.css
 expect_status 200 GET /portal.js
 expect_status 200 GET /mvp
+expect_status 200 GET /mvp.css
+expect_status 200 GET /mvp.js
 expect_status 200 GET /operacao
 expect_status 200 GET /financeiro
 expect_status 200 GET /financeiro.css
@@ -73,8 +86,15 @@ expect_http_page_without_upgrade /inicio
 expect_http_page_without_upgrade /mvp
 expect_http_page_without_upgrade /operacao
 expect_http_page_without_upgrade /financeiro
+
+expect_inline_page / '.modules' 'vero_token'
+expect_inline_page /mvp ':root' 'vero_token'
+expect_inline_page /financeiro '.message' 'financeForm'
+
 expect_asset /portal.css 'text/css' '.shell'
 expect_asset /portal.js 'application/javascript' 'vero_token'
+expect_asset /mvp.css 'text/css' ':root'
+expect_asset /mvp.js 'application/javascript' 'vero_token'
 expect_asset /financeiro.css 'text/css' '.message'
 expect_asset /financeiro.js 'application/javascript' 'financeForm'
 
