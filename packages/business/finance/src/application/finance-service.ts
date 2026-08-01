@@ -1,4 +1,8 @@
-import { FinanceEntry, type FinanceEntryStatus, type FinanceEntryType } from '../domain/finance-entry.js';
+import {
+  FinanceEntry,
+  type FinanceEntryStatus,
+  type FinanceEntryType
+} from '../domain/finance-entry.js';
 import type { FinanceRepository } from './finance-repository.js';
 
 export interface FinanceAccessContext {
@@ -39,7 +43,10 @@ export class FinanceService {
     private readonly clock: Clock
   ) {}
 
-  async create(context: FinanceAccessContext, input: CreateFinanceEntryInput): Promise<FinanceEntry> {
+  async create(
+    context: FinanceAccessContext,
+    input: CreateFinanceEntryInput
+  ): Promise<FinanceEntry> {
     const sourceKey = input.sourceKey?.trim() || null;
     if (sourceKey) {
       const existing = await this.repository.findBySourceKey(context.tenantId, sourceKey);
@@ -80,8 +87,14 @@ export class FinanceService {
     return cancelled;
   }
 
-  async list(context: FinanceAccessContext, status?: FinanceEntryStatus): Promise<FinanceEntry[]> {
-    return this.repository.list({ tenantId: context.tenantId, ...(status ? { status } : {}) });
+  async list(
+    context: FinanceAccessContext,
+    status?: FinanceEntryStatus
+  ): Promise<FinanceEntry[]> {
+    return this.repository.list({
+      tenantId: context.tenantId,
+      ...(status ? { status } : {})
+    });
   }
 
   async summary(context: FinanceAccessContext): Promise<FinanceSummary> {
