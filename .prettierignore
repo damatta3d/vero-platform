@@ -5,3 +5,4 @@ coverage/
 tmp/
 packages/infrastructure/database/src/generated/
 **/*.md
+infrastructure/hostinger/docker-compose.production.yml
