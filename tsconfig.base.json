@@ -27,6 +27,7 @@
       "@vero/business-inventory": ["packages/business/inventory/src/public-api.ts"],
       "@vero/business-production": ["packages/business/production/src/public-api.ts"],
       "@vero/business-sales": ["packages/business/sales/src/public-api.ts"],
+      "@vero/business-finance": ["packages/business/finance/src/public-api.ts"],
       "@vero/integration-anota-ai": ["packages/integrations/anota-ai/src/public-api.ts"],
       "@vero/platform-observability": ["packages/platform/observability/src/public-api.ts"],
       "@vero/infrastructure-database": ["packages/infrastructure/database/src/public-api.ts"],
