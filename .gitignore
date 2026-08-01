@@ -21,6 +21,9 @@ tmp/
 *.pem
 *.key
 
+# Runtime artifacts
+.runtime/
+
 # Logs
 logs/
 *.log
