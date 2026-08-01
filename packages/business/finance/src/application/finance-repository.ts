@@ -1,4 +1,8 @@
-import type { FinanceEntry, FinanceEntryStatus, FinanceEntryType } from '../domain/finance-entry.js';
+import type {
+  FinanceEntry,
+  FinanceEntryStatus,
+  FinanceEntryType
+} from '../domain/finance-entry.js';
 
 export interface FinanceEntryFilter {
   tenantId: string;
