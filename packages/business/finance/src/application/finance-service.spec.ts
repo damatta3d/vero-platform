@@ -39,7 +39,11 @@ describe('FinanceService', () => {
   it('creates idempotent entries by tenant and source key', async () => {
     const repository = new MemoryFinanceRepository();
     let sequence = 0;
-    const service = new FinanceService(repository, { generate: () => `id-${++sequence}` }, { now: () => now });
+    const service = new FinanceService(
+      repository,
+      { generate: () => `id-${++sequence}` },
+      { now: () => now }
+    );
 
     const input = {
       type: 'RECEIVABLE' as const,
@@ -61,7 +65,11 @@ describe('FinanceService', () => {
   it('calculates projected and realized balances', async () => {
     const repository = new MemoryFinanceRepository();
     let sequence = 0;
-    const service = new FinanceService(repository, { generate: () => `id-${++sequence}` }, { now: () => now });
+    const service = new FinanceService(
+      repository,
+      { generate: () => `id-${++sequence}` },
+      { now: () => now }
+    );
     const context = { tenantId: 'santo-parma' };
 
     const receivable = await service.create(context, {
