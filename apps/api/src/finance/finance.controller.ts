@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Headers,
+  Inject,
   Param,
   Patch,
   Post,
@@ -30,8 +31,8 @@ const statusSchema = z.enum(['OPEN', 'SETTLED', 'CANCELLED']).optional();
 @Controller('v1/finance')
 export class FinanceController {
   constructor(
-    private readonly finance: FinanceService,
-    private readonly security: MvpSecurityService
+    @Inject(FinanceService) private readonly finance: FinanceService,
+    @Inject(MvpSecurityService) private readonly security: MvpSecurityService
   ) {}
 
   @Post()
