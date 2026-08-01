@@ -4,8 +4,7 @@ import { portalPageCss, portalPageHtml, portalPageJavaScript } from './portal-pa
 
 @Controller()
 export class PortalPageController {
-  @Get()
-  @Get('inicio')
+  @Get(['', 'inicio'])
   @Header('content-type', 'text/html; charset=utf-8')
   page(@Res() reply: FastifyReply): void {
     void reply.send(portalPageHtml);
