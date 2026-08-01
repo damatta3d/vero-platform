@@ -1,0 +1,26 @@
+name: Docker
+
+on:
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - render.yaml
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - apps/api/**
+      - packages/**
+      - .github/workflows/docker.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build --tag vero-api:pr .

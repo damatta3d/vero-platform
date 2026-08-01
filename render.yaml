@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: vero-santo-parma-mvp
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: false
+    healthCheckPath: /health
+    envVars:
+      - key: VERO_ENVIRONMENT
+        value: production
+      - key: VERO_SERVICE_NAME
+        value: vero-santo-parma-mvp
+      - key: VERO_SERVICE_VERSION
+        value: 0.1.0
+      - key: VERO_HTTP_HOST
+        value: 0.0.0.0
+      - key: VERO_HTTP_PORT
+        value: 3000
+      - key: VERO_LOG_LEVEL
+        value: info
+      - key: VERO_POSTGRES_ENABLED
+        value: 'true'
+      - key: VERO_DATABASE_URL
+        fromDatabase:
+          name: vero-santo-parma-db
+          property: connectionString
+      - key: VERO_REDIS_ENABLED
+        value: 'false'
+      - key: VERO_RABBITMQ_ENABLED
+        value: 'false'
+      - key: VERO_OTEL_ENABLED
+        value: 'false'
+      - key: VERO_MVP_ENABLED
+        value: 'true'
+      - key: VERO_MVP_API_KEY
+        generateValue: true
+      - key: VERO_MVP_TENANT_ID
+        value: santo-parma
+
+databases:
+  - name: vero-santo-parma-db
+    plan: basic-256mb
+    databaseName: vero
+    user: vero
