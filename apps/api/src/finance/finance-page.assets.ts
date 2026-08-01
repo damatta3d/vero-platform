@@ -1,26 +1,39 @@
-/* eslint-disable no-useless-escape */
 export const financePageHtml = `<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VERO Finance</title>
-<style>
-body{font-family:Arial,sans-serif;margin:0;background:#f6f3ee;color:#241f1a}.wrap{max-width:980px;margin:auto;padding:24px}.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px #0001}h1{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.metric{background:#f0ebe3;border-radius:12px;padding:16px}.metric b{display:block;font-size:1.4rem;margin-top:6px}label{display:block;margin:10px 0 4px}input,select,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #cfc5b8}button{background:#241f1a;color:#fff;border:0;margin-top:14px;font-weight:700}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee}.actions button{width:auto;padding:7px 10px;margin:2px}.muted{color:#776f66;font-size:.9rem}
-</style>
+<title>VERO Finance</title><link rel="stylesheet" href="/financeiro.css">
 </head>
-<body><main class="wrap">
-<div class="card"><h1>VERO Finance</h1><p class="muted">Contas a pagar e receber do Santo Parma</p><div class="grid" id="summary"></div></div>
-<div class="card"><h2>Novo lançamento</h2><form id="form"><div class="row"><div><label>Tipo</label><select name="type"><option value="RECEIVABLE">A receber</option><option value="PAYABLE">A pagar</option></select></div><div><label>Valor</label><input name="amount" type="number" min="0.01" step="0.01" required></div></div><label>Descrição</label><input name="description" required maxlength="256"><div class="row"><div><label>Categoria</label><input name="category" required maxlength="120"></div><div><label>Vencimento</label><input name="dueDate" type="date" required></div></div><label>Contraparte</label><input name="counterparty" maxlength="160"><button type="submit">Salvar lançamento</button></form></div>
-<div class="card"><h2>Lançamentos</h2><table><thead><tr><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Vencimento</th><th></th></tr></thead><tbody id="entries"></tbody></table></div>
-</main>
-<script>
-const cfg={token:localStorage.getItem('vero_token')||'',tenant:localStorage.getItem('vero_tenant')||'santo-parma'};
-if(!cfg.token){cfg.token=prompt('Chave de acesso VERO')||'';localStorage.setItem('vero_token',cfg.token)}
-const headers={'content-type':'application/json','authorization':'Bearer '+cfg.token,'x-tenant-id':cfg.tenant};
-const money=v=>(v/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-async function api(path,options={}){const r=await fetch(path,{...options,headers});if(!r.ok)throw new Error('Falha '+r.status);return r.json()}
-async function load(){const [s,e]=await Promise.all([api('/v1/finance/summary'),api('/v1/finance')]);document.querySelector('#summary').innerHTML=[['A receber',s.receivableOpenInCents],['A pagar',s.payableOpenInCents],['Recebido',s.receivedInCents],['Pago',s.paidInCents],['Saldo projetado',s.projectedBalanceInCents],['Saldo realizado',s.realizedBalanceInCents]].map(x=>'<div class="metric">'+x[0]+'<b>'+money(x[1])+'</b></div>').join('');document.querySelector('#entries').innerHTML=e.map(x=>{const p=x.props||x.snapshot||x;return '<tr><td>'+p.description+'</td><td>'+(p.type==='RECEIVABLE'?'Receber':'Pagar')+'</td><td>'+money(p.amountInCents)+'</td><td>'+p.status+'</td><td>'+new Date(p.dueDate).toLocaleDateString('pt-BR')+'</td><td class="actions">'+(p.status==='OPEN'?'<button onclick="act(\''+p.id+'\',\'settle\')">Baixar</button><button onclick="act(\''+p.id+'\',\'cancel\')">Cancelar</button>':'')+'</td></tr>'}).join('')}
-async function act(id,a){await api('/v1/finance/'+id+'/'+a,{method:'PATCH'});await load()}
-document.querySelector('#form').addEventListener('submit',async ev=>{ev.preventDefault();const f=new FormData(ev.target);await api('/v1/finance',{method:'POST',body:JSON.stringify({type:f.get('type'),description:f.get('description'),category:f.get('category'),amountInCents:Math.round(Number(f.get('amount'))*100),dueDate:f.get('dueDate'),counterparty:f.get('counterparty')||null})});ev.target.reset();await load()});
-load().catch(e=>alert(e.message));
-</script></body></html>`;
+<body><header><a href="/">← Central VERO</a><strong>VERO Finance</strong><button id="changeAccess" type="button">Trocar acesso</button></header><main class="wrap">
+<div class="card"><h1>Financeiro</h1><p class="muted">Contas a pagar e receber do Santo Parma</p><div id="message" class="message">Carregando…</div><div class="grid" id="summary"></div></div>
+<div class="card access"><h2>Acesso</h2><div class="row"><label>Chave<input id="apiKey" type="password" autocomplete="current-password"></label><label>Empresa<input id="tenantId" value="santo-parma"></label></div><button id="saveAccess" type="button">Salvar e carregar</button></div>
+<div class="card"><h2>Novo lançamento</h2><form id="financeForm" method="post" novalidate><div class="row"><label>Tipo<select name="type"><option value="RECEIVABLE">A receber</option><option value="PAYABLE">A pagar</option></select></label><label>Valor<input name="amount" type="number" min="0.01" step="0.01" required></label></div><label>Descrição<input name="description" required maxlength="256"></label><div class="row"><label>Categoria<input name="category" required maxlength="120"></label><label>Vencimento<input name="dueDate" type="date" required></label></div><label>Contraparte<input name="counterparty" maxlength="160"></label><button type="submit">Salvar lançamento</button></form></div>
+<div class="card"><h2>Lançamentos</h2><div class="table-wrap"><table><thead><tr><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Vencimento</th><th></th></tr></thead><tbody id="entries"></tbody></table></div></div>
+</main><script src="/financeiro.js" defer></script></body></html>`;
+
+export const financePageCss = `
+:root{--ink:#241f1a;--muted:#776f66;--paper:#f6f3ee;--card:#fff;--line:#cfc5b8;--red:#a4382d;--green:#37664d}*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;background:var(--paper);color:var(--ink)}header{height:64px;background:#211d19;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,calc((100% - 980px)/2))}header a{color:#fff;text-decoration:none}header button{width:auto;margin:0;background:transparent;border:1px solid #75685c}.wrap{max-width:980px;margin:auto;padding:24px}.card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 8px 24px #0001}h1{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.metric{background:#f0ebe3;border-radius:12px;padding:16px}.metric b{display:block;font-size:1.4rem;margin-top:6px}label{display:block;margin:10px 0 4px;font-weight:700;font-size:.9rem}input,select,button{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid var(--line);font:inherit}button{background:var(--ink);color:#fff;border:0;margin-top:14px;font-weight:700;cursor:pointer}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee}.actions button{width:auto;padding:7px 10px;margin:2px}.muted{color:var(--muted);font-size:.9rem}.message{padding:10px 12px;border-radius:9px;background:#eee8df;color:var(--muted);margin:12px 0}.message.ok{background:#e5f1e9;color:var(--green)}.message.error{background:#f7e4e1;color:var(--red)}@media(max-width:650px){.row{grid-template-columns:1fr}header strong{display:none}}
+`;
+
+export const financePageJavaScript = `
+const tokenInput=document.querySelector('#apiKey');
+const tenantInput=document.querySelector('#tenantId');
+const message=document.querySelector('#message');
+const form=document.querySelector('#financeForm');
+const entriesBody=document.querySelector('#entries');
+tokenInput.value=localStorage.getItem('vero_token')||'';
+tenantInput.value=localStorage.getItem('vero_tenant')||'santo-parma';
+const money=value=>(Number(value||0)/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function authHeaders(){return {'content-type':'application/json','authorization':'Bearer '+tokenInput.value.trim(),'x-tenant-id':tenantInput.value.trim()||'santo-parma'};}
+function setMessage(text,type=''){message.textContent=text;message.className='message'+(type?' '+type:'');}
+async function api(path,options={}){const response=await fetch(path,{...options,headers:{...authHeaders(),...(options.headers||{})},cache:'no-store'});if(!response.ok){let detail='';try{detail=(await response.json()).message||''}catch{}throw new Error(response.status===401?'Chave de acesso inválida.':detail||'Falha '+response.status);}return response.status===204?null:response.json();}
+function renderSummary(summary){document.querySelector('#summary').innerHTML=[['A receber',summary.receivableOpenInCents],['A pagar',summary.payableOpenInCents],['Recebido',summary.receivedInCents],['Pago',summary.paidInCents],['Saldo projetado',summary.projectedBalanceInCents],['Saldo realizado',summary.realizedBalanceInCents]].map(([label,value])=>'<div class="metric">'+label+'<b>'+money(value)+'</b></div>').join('');}
+function renderEntries(entries){if(!entries.length){entriesBody.innerHTML='<tr><td colspan="6" class="muted">Nenhum lançamento cadastrado.</td></tr>';return;}entriesBody.innerHTML=entries.map(entry=>'<tr><td>'+escapeHtml(entry.description)+'</td><td>'+(entry.type==='RECEIVABLE'?'Receber':'Pagar')+'</td><td>'+money(entry.amountInCents)+'</td><td>'+entry.status+'</td><td>'+new Date(entry.dueDate).toLocaleDateString('pt-BR')+'</td><td class="actions">'+(entry.status==='OPEN'?'<button type="button" data-action="settle" data-id="'+entry.id+'">Baixar</button><button type="button" data-action="cancel" data-id="'+entry.id+'">Cancelar</button>':'')+'</td></tr>').join('');}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));}
+async function load(){if(!tokenInput.value.trim()){setMessage('Informe a chave de acesso.','error');return;}setMessage('Carregando dados…');const [summary,entries]=await Promise.all([api('/v1/finance/summary'),api('/v1/finance')]);renderSummary(summary);renderEntries(entries);setMessage('Dados atualizados.','ok');}
+form.addEventListener('submit',async event=>{event.preventDefault();event.stopPropagation();if(!form.reportValidity())return;const data=new FormData(form);try{setMessage('Salvando lançamento…');await api('/v1/finance',{method:'POST',body:JSON.stringify({type:data.get('type'),description:data.get('description'),category:data.get('category'),amountInCents:Math.round(Number(data.get('amount'))*100),dueDate:data.get('dueDate'),counterparty:data.get('counterparty')||null})});form.reset();await load();setMessage('Lançamento salvo e listado.','ok');}catch(error){setMessage(error.message,'error');}});
+entriesBody.addEventListener('click',async event=>{const button=event.target.closest('button[data-action]');if(!button)return;try{await api('/v1/finance/'+button.dataset.id+'/'+button.dataset.action,{method:'PATCH'});await load();}catch(error){setMessage(error.message,'error');}});
+document.querySelector('#saveAccess').addEventListener('click',()=>{localStorage.setItem('vero_token',tokenInput.value.trim());localStorage.setItem('vero_tenant',tenantInput.value.trim()||'santo-parma');load().catch(error=>setMessage(error.message,'error'));});
+document.querySelector('#changeAccess').addEventListener('click',()=>{localStorage.removeItem('vero_token');tokenInput.value='';setMessage('Informe uma nova chave.');tokenInput.focus();});
+load().catch(error=>setMessage(error.message,'error'));
+`;
