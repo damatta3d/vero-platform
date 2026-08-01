@@ -1,35 +1,38 @@
-import { FinanceEntry } from '../domain/finance-entry.js';
+import type { FinanceEntry } from '../domain/finance-entry.js';
 import type { FinanceEntryFilter, FinanceRepository } from './finance-repository.js';
 import { FinanceService } from './finance-service.js';
 
 class MemoryFinanceRepository implements FinanceRepository {
   private readonly entries = new Map<string, FinanceEntry>();
 
-  async save(entry: FinanceEntry): Promise<void> {
+  save(entry: FinanceEntry): Promise<void> {
     this.entries.set(`${entry.snapshot.tenantId}:${entry.snapshot.id}`, entry);
+    return Promise.resolve();
   }
 
-  async findById(tenantId: string, id: string): Promise<FinanceEntry | null> {
-    return this.entries.get(`${tenantId}:${id}`) ?? null;
+  findById(tenantId: string, id: string): Promise<FinanceEntry | null> {
+    return Promise.resolve(this.entries.get(`${tenantId}:${id}`) ?? null);
   }
 
-  async findBySourceKey(tenantId: string, sourceKey: string): Promise<FinanceEntry | null> {
-    return (
+  findBySourceKey(tenantId: string, sourceKey: string): Promise<FinanceEntry | null> {
+    return Promise.resolve(
       [...this.entries.values()].find(
         (entry) => entry.snapshot.tenantId === tenantId && entry.snapshot.sourceKey === sourceKey
       ) ?? null
     );
   }
 
-  async list(filter: FinanceEntryFilter): Promise<FinanceEntry[]> {
-    return [...this.entries.values()].filter((entry) => {
-      const snapshot = entry.snapshot;
-      return (
-        snapshot.tenantId === filter.tenantId &&
-        (!filter.type || snapshot.type === filter.type) &&
-        (!filter.status || snapshot.status === filter.status)
-      );
-    });
+  list(filter: FinanceEntryFilter): Promise<FinanceEntry[]> {
+    return Promise.resolve(
+      [...this.entries.values()].filter((entry) => {
+        const snapshot = entry.snapshot;
+        return (
+          snapshot.tenantId === filter.tenantId &&
+          (!filter.type || snapshot.type === filter.type) &&
+          (!filter.status || snapshot.status === filter.status)
+        );
+      })
+    );
   }
 }
 
