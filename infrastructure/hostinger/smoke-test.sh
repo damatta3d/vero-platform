@@ -91,7 +91,7 @@ expect_inline_page / '.modules' 'vero_token'
 expect_inline_page /mvp ':root' 'Promise.all'
 expect_inline_page /financeiro '.message' 'financeForm'
 
-expect_asset /portal.css 'text/css' '.shell'
+expect_asset /portal.css 'text/css' '.modules'
 expect_asset /portal.js 'application/javascript' 'vero_token'
 expect_asset /mvp.css 'text/css' ':root'
 expect_asset /mvp.js 'application/javascript' 'Promise.all'
