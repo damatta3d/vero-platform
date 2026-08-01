@@ -30,6 +30,7 @@ import { OperationalEntryController } from '../operations/operational-entry.cont
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
 import { OperationsPageController } from '../operations/operations-page.controller.js';
+import { PortalPageController } from '../portal/portal-page.controller.js';
 import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
 import { SalesController } from '../sales/sales.controller.js';
@@ -55,6 +56,7 @@ export class CatalogModule {
     return {
       module: CatalogModule,
       controllers: [
+        PortalPageController,
         CatalogController,
         InventoryController,
         ProductionController,

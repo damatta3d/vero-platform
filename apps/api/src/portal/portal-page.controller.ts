@@ -1,24 +1,24 @@
 import { Controller, Get, Header, Res } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
-import { financePageCss, financePageHtml, financePageJavaScript } from './finance-page.assets.js';
+import { portalPageCss, portalPageHtml, portalPageJavaScript } from './portal-page.assets.js';
 
 @Controller()
-export class FinancePageController {
-  @Get('financeiro')
+export class PortalPageController {
+  @Get(['', 'inicio'])
   @Header('content-type', 'text/html; charset=utf-8')
   page(@Res() reply: FastifyReply): void {
-    void reply.send(financePageHtml);
+    void reply.send(portalPageHtml);
   }
 
-  @Get('financeiro.css')
+  @Get('portal.css')
   @Header('content-type', 'text/css; charset=utf-8')
   stylesheet(@Res() reply: FastifyReply): void {
-    void reply.send(financePageCss);
+    void reply.send(portalPageCss);
   }
 
-  @Get('financeiro.js')
+  @Get('portal.js')
   @Header('content-type', 'application/javascript; charset=utf-8')
   script(@Res() reply: FastifyReply): void {
-    void reply.send(financePageJavaScript);
+    void reply.send(portalPageJavaScript);
   }
 }
