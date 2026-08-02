@@ -70,10 +70,14 @@ const orderBy = [{ occurredAt: Prisma.SortOrder.desc }, { createdAt: Prisma.Sort
 export class PrismaExternalOrderInboxRepository {
   constructor(private readonly client: DatabaseClient) {}
 
-  async receive(tenantId: string, input: ReceiveExternalOrderInput): Promise<ExternalOrderInboxRecord> {
+  async receive(
+    tenantId: string,
+    input: ReceiveExternalOrderInput
+  ): Promise<ExternalOrderInboxRecord> {
     const mappingStatus: ExternalOrderMappingStatus = input.items.every(
       (item) =>
-        item.mappedProductId !== null && item.modifiers.every((modifier) => modifier.mappedProductId !== null)
+        item.mappedProductId !== null &&
+        item.modifiers.every((modifier) => modifier.mappedProductId !== null)
     )
       ? 'MAPPED'
       : 'PENDING_MAPPING';
@@ -130,7 +134,10 @@ export class PrismaExternalOrderInboxRepository {
     return fromRow(row);
   }
 
-  async list(tenantId: string, filters: ExternalOrderInboxFilters): Promise<ExternalOrderInboxRecord[]> {
+  async list(
+    tenantId: string,
+    filters: ExternalOrderInboxFilters
+  ): Promise<ExternalOrderInboxRecord[]> {
     const rows = await this.client.externalOrderInbox.findMany({
       where: {
         tenantId,
