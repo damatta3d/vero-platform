@@ -104,17 +104,20 @@ expect_status 200 GET /operacao
 expect_status 200 GET /financeiro
 expect_status 200 GET /financeiro.css
 expect_status 200 GET /financeiro.js
+expect_status 200 GET /pedidos
 
 expect_http_page /
 expect_http_page /inicio
 expect_http_page /mvp
 expect_http_page /operacao
 expect_http_page /financeiro
+expect_http_page /pedidos
 
 expect_inline_page /
 expect_inline_page /mvp
 expect_inline_page /operacao
 expect_inline_page /financeiro
+expect_inline_page /pedidos
 
 expect_asset /portal.css 'text/css' css
 expect_asset /portal.js 'application/javascript' js
@@ -130,5 +133,7 @@ expect_status 200 GET /v1/finance "${AUTH_HEADERS[@]}"
 expect_status 200 GET /v1/finance/summary "${AUTH_HEADERS[@]}"
 expect_status 200 GET '/v1/operations?from=2026-01-01T00:00:00.000Z&to=2027-01-01T00:00:00.000Z&limit=1' "${AUTH_HEADERS[@]}"
 expect_status 200 GET '/v1/operations/summary?from=2026-01-01T00:00:00.000Z&to=2027-01-01T00:00:00.000Z' "${AUTH_HEADERS[@]}"
+expect_status 401 GET '/v1/orders?limit=1'
+expect_status 200 GET '/v1/orders?limit=1' "${AUTH_HEADERS[@]}"
 
 pass 'Varredura funcional concluída.'
