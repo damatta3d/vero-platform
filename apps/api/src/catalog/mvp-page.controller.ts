@@ -2,10 +2,12 @@ import { Controller, Get, Header, Res } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 import { mvpPageCss, mvpPageHtml, mvpPageJavaScript } from './mvp-page.assets.js';
 
+// prettier-ignore
 const enhancedMvpPageCss = `${mvpPageCss}
 .header-actions{display:flex;gap:10px;align-items:center}.access.hidden-access{display:none}.access p{grid-column:1/-1}.money-input{text-align:right;font-variant-numeric:tabular-nums}@media(max-width:760px){.header-actions{width:100%}.header-actions button{flex:1}}
 `;
 
+// prettier-ignore
 const enhancedMvpPageJavaScript = mvpPageJavaScript
   .replace(
     "const $=(id)=>document.getElementById(id);",
@@ -55,6 +57,7 @@ refresh();`
     'type="number" min="0" max="9999" step="0.001"'
   );
 
+// prettier-ignore
 const enhancedMvpPageHtml = mvpPageHtml
   .replace(
     '<button id="refresh" class="secondary">Atualizar dados</button>',
