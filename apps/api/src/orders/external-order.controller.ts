@@ -121,7 +121,14 @@ export class ExternalOrderController {
       tenantId,
       'orders.read'
     );
-    return this.orders.list(authorizedTenant, parsed.data);
+    const filters = {
+      limit: parsed.data.limit,
+      ...(parsed.data.provider === undefined ? {} : { provider: parsed.data.provider }),
+      ...(parsed.data.status === undefined ? {} : { status: parsed.data.status }),
+      ...(parsed.data.from === undefined ? {} : { from: parsed.data.from }),
+      ...(parsed.data.to === undefined ? {} : { to: parsed.data.to })
+    };
+    return this.orders.list(authorizedTenant, filters);
   }
 
   @Patch(':provider/:establishmentExternalId/:externalOrderId/status')
