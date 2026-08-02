@@ -8,8 +8,9 @@ const enhancedMvpPageCss = `${mvpPageCss}
 
 const enhancedMvpPageJavaScript = mvpPageJavaScript
   .replace(
-    'const state=',
-    `const ACCESS_TOKEN_KEY='vero_token';
+    "const $=(id)=>document.getElementById(id);",
+    `const $=(id)=>document.getElementById(id);
+const ACCESS_TOKEN_KEY='vero_token';
 const ACCESS_TENANT_KEY='vero_tenant';
 const accessPanel=$('accessPanel');
 const changeAccessButton=$('changeAccess');
@@ -18,8 +19,7 @@ const tenantInput=$('tenantId');
 apiKeyInput.value=localStorage.getItem(ACCESS_TOKEN_KEY)||'';
 tenantInput.value=localStorage.getItem(ACCESS_TENANT_KEY)||'santo-parma';
 function syncAccessPanel(){const hasAccess=apiKeyInput.value.trim().length>0;accessPanel.classList.toggle('hidden-access',hasAccess);changeAccessButton.textContent=hasAccess?'Alterar acesso':'Informar acesso';}
-function persistAccess(){localStorage.setItem(ACCESS_TOKEN_KEY,apiKeyInput.value.trim());localStorage.setItem(ACCESS_TENANT_KEY,tenantInput.value.trim()||'santo-parma');syncAccessPanel();}
-const state=`
+function persistAccess(){localStorage.setItem(ACCESS_TOKEN_KEY,apiKeyInput.value.trim());localStorage.setItem(ACCESS_TENANT_KEY,tenantInput.value.trim()||'santo-parma');syncAccessPanel();}`
   )
   .replace(
     "const money=(cents)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);",
@@ -32,11 +32,11 @@ function formatMoneyInput(input){if(!input.value.trim())return;input.value=(mone
   .replaceAll('escapeHtml(i.unit)', 'unitLabel(i.unit)')
   .replace(
     "function formatQuantity(micros,unit){return new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(micros/1000000)+' '+unit;}",
-    "function formatQuantity(micros,unit){return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3}).format(micros/1000000)+' '+unitLabel(unit);}" 
+    "function formatQuantity(micros,unit){return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:3}).format(micros/1000000)+' '+unitLabel(unit);}"
   )
   .replace(
     "function formatUnitCost(micros,unit){return money(Math.round(micros/1000000))+'/'+unit;}",
-    "function formatUnitCost(micros,unit){return money(Math.round(micros/1000000))+'/'+unitLabel(unit);}" 
+    "function formatUnitCost(micros,unit){return money(Math.round(micros/1000000))+'/'+unitLabel(unit);}"
   )
   .replaceAll("Math.round(Number(data.get('cost'))*100)", "moneyToCents(data.get('cost'))")
   .replace("Math.round(Number(data.get('price'))*100)", "moneyToCents(data.get('price'))")
@@ -50,7 +50,10 @@ document.querySelectorAll('.money-input').forEach(input=>{input.addEventListener
 syncAccessPanel();
 refresh();`
   )
-  .replaceAll('type="number" min="0" step="0.001"', 'type="number" min="0" max="9999" step="0.001"');
+  .replaceAll(
+    'type="number" min="0" step="0.001"',
+    'type="number" min="0" max="9999" step="0.001"'
+  );
 
 const enhancedMvpPageHtml = mvpPageHtml
   .replace(
