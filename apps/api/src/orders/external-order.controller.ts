@@ -110,10 +110,17 @@ export class ExternalOrderController {
     @Query() query: Record<string, string | undefined>
   ) {
     const parsed = listSchema.safeParse(query);
-    if (!parsed.success || (parsed.data.from && parsed.data.to && parsed.data.from >= parsed.data.to)) {
+    if (
+      !parsed.success ||
+      (parsed.data.from && parsed.data.to && parsed.data.from >= parsed.data.to)
+    ) {
       throw new BadRequestException({ code: 'INVALID_REQUEST' });
     }
-    const authorizedTenant = await this.security.authorize(authorization, tenantId, 'orders.read');
+    const authorizedTenant = await this.security.authorize(
+      authorization,
+      tenantId,
+      'orders.read'
+    );
     return this.orders.list(authorizedTenant, parsed.data);
   }
 
