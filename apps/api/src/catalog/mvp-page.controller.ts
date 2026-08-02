@@ -4,7 +4,7 @@ import { mvpPageCss, mvpPageHtml, mvpPageJavaScript } from './mvp-page.assets.js
 
 // prettier-ignore
 const enhancedMvpPageCss = `${mvpPageCss}
-.header-actions{display:flex;gap:10px;align-items:center}.access.hidden-access{display:none}.access p{grid-column:1/-1}.money-input{text-align:right;font-variant-numeric:tabular-nums}@media(max-width:760px){.header-actions{width:100%}.header-actions button{flex:1}}
+body,input,select,button{font-family:"Segoe UI",Roboto,Arial,Verdana,sans-serif}h1,h2,h3,.brand span,.metric strong,.result-grid strong{font-family:"Segoe UI",Roboto,Arial,Verdana,sans-serif;letter-spacing:0}.brand span{font-weight:800}.metric strong,.result-grid strong{font-weight:750}.header-actions{display:flex;gap:10px;align-items:center}.access.hidden-access{display:none}.access p{grid-column:1/-1}.money-input{text-align:right;font-variant-numeric:tabular-nums}@media(max-width:760px){.header-actions{width:100%}.header-actions button{flex:1}}
 `;
 
 // prettier-ignore
