@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
+import { consumeAuthorizedAccess, type AuthorizedAccessContext } from '@vero/core-access';
 import {
   type ExternalOrderInboxFilters,
   type ExternalOrderInboxRecord,
@@ -20,6 +21,17 @@ const transitions: Readonly<Record<ExternalOrderStatus, readonly ExternalOrderSt
   CANCELLED: []
 };
 
+function tenantFrom(access: AuthorizedAccessContext, expectedAction: string): string {
+  const authorized = consumeAuthorizedAccess(access);
+  if (
+    authorized.request.action.value !== expectedAction ||
+    authorized.request.resource.value !== 'orders.operations'
+  ) {
+    throw new Error('Unauthorized order access');
+  }
+  return authorized.request.tenant.tenantId.toString();
+}
+
 @Injectable()
 export class ExternalOrderService {
   constructor(
@@ -27,21 +39,28 @@ export class ExternalOrderService {
     private readonly repository: PrismaExternalOrderInboxRepository
   ) {}
 
-  receive(tenantId: string, input: ReceiveExternalOrderInput): Promise<ExternalOrderInboxRecord> {
-    return this.repository.receive(tenantId, input);
+  receive(
+    access: AuthorizedAccessContext,
+    input: ReceiveExternalOrderInput
+  ): Promise<ExternalOrderInboxRecord> {
+    return this.repository.receive(tenantFrom(access, 'orders.intake'), input);
   }
 
-  list(tenantId: string, filters: ExternalOrderInboxFilters): Promise<ExternalOrderInboxRecord[]> {
-    return this.repository.list(tenantId, filters);
+  list(
+    access: AuthorizedAccessContext,
+    filters: ExternalOrderInboxFilters
+  ): Promise<ExternalOrderInboxRecord[]> {
+    return this.repository.list(tenantFrom(access, 'orders.read'), filters);
   }
 
   async changeStatus(
-    tenantId: string,
+    access: AuthorizedAccessContext,
     provider: ExternalOrderProvider,
     establishmentExternalId: string,
     externalOrderId: string,
     nextStatus: ExternalOrderStatus
   ): Promise<ExternalOrderInboxRecord> {
+    const tenantId = tenantFrom(access, 'orders.update');
     const order = await this.repository.find(
       tenantId,
       provider,
