@@ -1,11 +1,15 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
+  Delete,
   Get,
   Headers,
+  HttpCode,
   Inject,
   Param,
+  Patch,
   Post
 } from '@nestjs/common';
 import { z } from 'zod';
@@ -13,13 +17,23 @@ import { z } from 'zod';
 import { CatalogService, catalogItemKindValues, unitOfMeasureValues } from '@vero/business-catalog';
 import { MvpSecurityService } from './mvp-security.service.js';
 
-const createIngredientSchema = z.object({
-  name: z.string().trim().min(1).max(160),
-  kind: z.enum(catalogItemKindValues).default('INGREDIENT'),
-  unit: z.enum(unitOfMeasureValues),
-  packageQuantityMicros: z.number().int().positive(),
-  packageCostCents: z.number().int().nonnegative()
-});
+const ingredientSchema = z
+  .object({
+    name: z.string().trim().min(1).max(160),
+    kind: z.enum(catalogItemKindValues).default('INGREDIENT'),
+    unit: z.enum(unitOfMeasureValues),
+    packageQuantityMicros: z.number().int().positive(),
+    packageCostCents: z.number().int().nonnegative()
+  })
+  .superRefine((input, context) => {
+    if (input.unit === 'UNIT' && input.packageQuantityMicros % 1_000_000 !== 0) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['packageQuantityMicros'],
+        message: 'Unit quantities must be whole numbers.'
+      });
+    }
+  });
 
 const createProductSchema = z.object({
   name: z.string().trim().min(1).max(160),
@@ -64,8 +78,44 @@ export class CatalogController {
   ) {
     return this.catalog.createIngredient(
       await this.security.authorize(authorization, tenantId, 'catalog.ingredient.create'),
-      parse(createIngredientSchema, body)
+      parse(ingredientSchema, body)
     );
+  }
+
+  @Patch('ingredients/:ingredientId')
+  async updateIngredient(
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantId: string | undefined,
+    @Param('ingredientId') ingredientId: string,
+    @Body() body: unknown
+  ) {
+    return this.catalog.updateIngredient(
+      await this.security.authorize(authorization, tenantId, 'catalog.ingredient.update'),
+      { ...parse(ingredientSchema, body), ingredientId }
+    );
+  }
+
+  @Delete('ingredients/:ingredientId')
+  @HttpCode(204)
+  async deleteIngredient(
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantId: string | undefined,
+    @Param('ingredientId') ingredientId: string
+  ): Promise<void> {
+    try {
+      await this.catalog.deleteIngredient(
+        await this.security.authorize(authorization, tenantId, 'catalog.ingredient.delete'),
+        ingredientId
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message === 'CATALOG_ITEM_IN_USE') {
+        throw new ConflictException({
+          code: 'CATALOG_ITEM_IN_USE',
+          message: 'O item possui histórico ou vínculos e não pode ser excluído.'
+        });
+      }
+      throw error;
+    }
   }
 
   @Get('ingredients')
