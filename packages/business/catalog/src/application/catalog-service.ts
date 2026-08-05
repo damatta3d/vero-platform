@@ -35,6 +35,10 @@ export interface CreateIngredientInput {
   readonly packageCostCents: number;
 }
 
+export interface UpdateIngredientInput extends CreateIngredientInput {
+  readonly ingredientId: string;
+}
+
 export interface CreateProductInput {
   readonly name: string;
   readonly salePriceCents: number;
@@ -83,6 +87,32 @@ export class CatalogService {
     });
     await this.repository.saveIngredient(ingredient);
     return ingredient;
+  }
+
+  async updateIngredient(
+    access: AuthorizedAccessContext,
+    input: UpdateIngredientInput
+  ): Promise<Ingredient> {
+    const tenantId = catalogTenant(access, 'catalog.ingredient.update');
+    const current = await this.repository.findIngredient(tenantId, input.ingredientId);
+    if (!current) throw new CatalogItemNotFoundError('Ingredient');
+    const ingredient = createIngredient({
+      ...current,
+      name: input.name,
+      ...(input.kind === undefined ? {} : { kind: input.kind }),
+      unit: input.unit,
+      packageQuantityMicros: input.packageQuantityMicros,
+      packageCostCents: input.packageCostCents,
+      updatedAt: this.clock.now()
+    });
+    await this.repository.saveIngredient(ingredient);
+    return ingredient;
+  }
+
+  async deleteIngredient(access: AuthorizedAccessContext, ingredientId: string): Promise<void> {
+    const tenantId = catalogTenant(access, 'catalog.ingredient.delete');
+    const deleted = await this.repository.deleteIngredient(tenantId, ingredientId);
+    if (!deleted) throw new CatalogItemNotFoundError('Ingredient');
   }
 
   async createProduct(
