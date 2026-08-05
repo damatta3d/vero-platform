@@ -1,5 +1,5 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type CatalogRecipe as CatalogRecipeRow } from '@prisma/client';
+import { Prisma, PrismaClient, type CatalogRecipe as CatalogRecipeRow } from '@prisma/client';
 
 import {
   createIngredient,
@@ -97,6 +97,20 @@ export class PrismaCatalogRepository implements CatalogRepository {
         updatedAt: ingredient.updatedAt
       }
     });
+  }
+
+  async deleteIngredient(tenantId: string, ingredientId: string): Promise<boolean> {
+    try {
+      const result = await this.client.catalogIngredient.deleteMany({
+        where: { tenantId, id: ingredientId }
+      });
+      return result.count === 1;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error('CATALOG_ITEM_IN_USE');
+      }
+      throw error;
+    }
   }
 
   async saveProduct(product: Product): Promise<void> {
