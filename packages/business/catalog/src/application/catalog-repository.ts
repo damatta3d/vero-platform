@@ -2,6 +2,7 @@ import type { Ingredient, Product, Recipe } from '../domain/catalog-model.js';
 
 export interface CatalogRepository {
   saveIngredient(ingredient: Ingredient): Promise<void>;
+  deleteIngredient(tenantId: string, ingredientId: string): Promise<boolean>;
   saveProduct(product: Product): Promise<void>;
   saveRecipe(recipe: Recipe): Promise<void>;
   findIngredient(tenantId: string, ingredientId: string): Promise<Ingredient | undefined>;

@@ -21,8 +21,21 @@ class MemoryCatalogRepository implements CatalogRepository {
   readonly recipes: Recipe[] = [];
 
   saveIngredient(ingredient: Ingredient): Promise<void> {
-    this.ingredients.push(ingredient);
+    const index = this.ingredients.findIndex(
+      (item) => item.tenantId === ingredient.tenantId && item.id === ingredient.id
+    );
+    if (index >= 0) this.ingredients[index] = ingredient;
+    else this.ingredients.push(ingredient);
     return Promise.resolve();
+  }
+
+  deleteIngredient(tenantId: string, ingredientId: string): Promise<boolean> {
+    const index = this.ingredients.findIndex(
+      (ingredient) => ingredient.tenantId === tenantId && ingredient.id === ingredientId
+    );
+    if (index < 0) return Promise.resolve(false);
+    this.ingredients.splice(index, 1);
+    return Promise.resolve(true);
   }
 
   saveProduct(product: Product): Promise<void> {
@@ -166,6 +179,46 @@ describe(CatalogService.name, () => {
     expect(items).toHaveLength(4);
     expect(items.find((item) => item.name === 'HM05F')?.kind).toBe('PACKAGING');
     expect(await service.listProducts(await access('catalog.product.read'))).toHaveLength(1);
+  });
+
+  it('updates and deletes an ingredient inside the authorized tenant', async () => {
+    const created = await service.createIngredient(await access('catalog.ingredient.create'), {
+      name: 'Alcatra',
+      unit: 'KILOGRAM',
+      packageQuantityMicros: 1_000_000,
+      packageCostCents: 5300
+    });
+
+    const updated = await service.updateIngredient(await access('catalog.ingredient.update'), {
+      ingredientId: created.id,
+      name: 'Alcatra premium',
+      unit: 'KILOGRAM',
+      packageQuantityMicros: 1_200_000,
+      packageCostCents: 6990
+    });
+
+    expect(updated.id).toBe(created.id);
+    expect(updated.packageQuantityMicros).toBe(1_200_000);
+    expect(repository.ingredients).toHaveLength(1);
+
+    await service.deleteIngredient(await access('catalog.ingredient.delete'), created.id);
+    expect(repository.ingredients).toHaveLength(0);
+  });
+
+  it('rejects update and deletion for missing ingredients', async () => {
+    await expect(
+      service.updateIngredient(await access('catalog.ingredient.update'), {
+        ingredientId: 'missing',
+        name: 'Alcatra',
+        unit: 'KILOGRAM',
+        packageQuantityMicros: 1_000_000,
+        packageCostCents: 5300
+      })
+    ).rejects.toThrow(CatalogItemNotFoundError);
+
+    await expect(
+      service.deleteIngredient(await access('catalog.ingredient.delete'), 'missing')
+    ).rejects.toThrow(CatalogItemNotFoundError);
   });
 
   it('denies a context authorized for another operation', async () => {
