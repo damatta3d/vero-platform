@@ -12,9 +12,10 @@ overrides:
 auditConfig:
   ignoreGhsas:
     # Temporary, narrowly scoped exceptions for advisories published after the
-    # current lockfile. Tracked for forced transitive upgrades in issue #43.
+    # current lockfile. Tracked for forced transitive upgrades in issues #43 and #45.
     - GHSA-7p8r-x3mc-p8w7
     - GHSA-rgw5-rvv9-x895
+    - GHSA-5p4m-2wfm-xmqj
 
 allowBuilds:
   '@prisma/engines': true
