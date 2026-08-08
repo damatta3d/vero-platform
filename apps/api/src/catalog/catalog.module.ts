@@ -14,6 +14,7 @@ import type { AppConfig } from '@vero/core-configuration';
 import {
   createDatabaseClient,
   PrismaCatalogRepository,
+  PrismaExternalOrderInboxRepository,
   PrismaFinanceEntryRepository,
   PrismaInventoryRepository,
   PrismaOperationalEntryRepository,
@@ -30,6 +31,10 @@ import { OperationalEntryController } from '../operations/operational-entry.cont
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
 import { OperationsPageController } from '../operations/operations-page.controller.js';
+import { ExternalOrderController } from '../orders/external-order.controller.js';
+import { ExternalOrderService } from '../orders/external-order.service.js';
+import { EXTERNAL_ORDER_INBOX_REPOSITORY } from '../orders/external-order.tokens.js';
+import { OrdersPageController } from '../orders/orders-page.controller.js';
 import { PortalPageController } from '../portal/portal-page.controller.js';
 import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
@@ -65,6 +70,8 @@ export class CatalogModule {
         FinancePageController,
         OperationalEntryController,
         OperationsPageController,
+        ExternalOrderController,
+        OrdersPageController,
         MvpPageController
       ],
       providers: [
@@ -138,7 +145,13 @@ export class CatalogModule {
           inject: [DATABASE_CLIENT],
           useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client)
         },
+        {
+          provide: EXTERNAL_ORDER_INBOX_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaExternalOrderInboxRepository(client)
+        },
         OperationalEntryService,
+        ExternalOrderService,
         MvpSecurityService,
         DatabaseLifecycle
       ]

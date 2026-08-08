@@ -14,3 +14,13 @@ export {
   type OperationalEntryType,
   type OperationalSummary
 } from './prisma-operational-entry.repository.js';
+export {
+  PrismaExternalOrderInboxRepository,
+  type ExternalOrderInboxFilters,
+  type ExternalOrderInboxItem,
+  type ExternalOrderInboxRecord,
+  type ExternalOrderMappingStatus,
+  type ExternalOrderProvider,
+  type ExternalOrderStatus,
+  type ReceiveExternalOrderInput
+} from './prisma-external-order-inbox.repository.js';
