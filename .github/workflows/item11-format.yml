@@ -1,9 +1,7 @@
 name: Item 11 Format
 
 on:
-  push:
-    branches:
-      - feat/vero-menu-item11-persistence
+  workflow_dispatch:
 
 permissions:
   contents: write
