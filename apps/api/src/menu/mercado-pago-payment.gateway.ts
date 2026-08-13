@@ -34,10 +34,12 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
       external_reference: request.checkoutId || idempotencyKey,
       payer: { first_name: request.customerName },
       transactions: {
-        payments: [{
-          amount: (request.amountCents / 100).toFixed(2),
-          payment_method: { id: 'pix', type: 'bank_transfer' }
-        }]
+        payments: [
+          {
+            amount: (request.amountCents / 100).toFixed(2),
+            payment_method: { id: 'pix', type: 'bank_transfer' }
+          }
+        ]
       },
       ...(this.notificationUrl ? { notification_url: this.notificationUrl } : {})
     };
@@ -63,7 +65,9 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
       status: payment?.status === 'approved' ? 'PAID' : 'AWAITING_PAYMENT',
       amountCents: request.amountCents,
       pixCopyPaste: wallet?.qr_code || null,
-      qrCodeUrl: wallet?.qr_code_base64 ? `data:image/png;base64,${wallet.qr_code_base64}` : null,
+      qrCodeUrl: wallet?.qr_code_base64
+        ? `data:image/png;base64,${wallet.qr_code_base64}`
+        : null,
       expiresAt: null
     };
   }
