@@ -1,6 +1,13 @@
 import type { PaymentMethod, PaymentStatus } from './payment.types.js';
 
-export type NativeOrderStatus = 'RECEIVED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
+export type NativeOrderStatus =
+  | 'RECEIVED'
+  | 'CONFIRMED'
+  | 'PREPARING'
+  | 'READY'
+  | 'DISPATCHED'
+  | 'COMPLETED'
+  | 'CANCELLED';
 
 export type NativeOrderItem = {
   menuItemId: string;
