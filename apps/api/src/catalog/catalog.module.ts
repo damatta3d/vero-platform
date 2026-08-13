@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
-
 import { CatalogService, type CatalogRepository } from '@vero/business-catalog';
 import { FinanceService, type FinanceRepository } from '@vero/business-finance';
 import { InventoryService, type InventoryIngredientCatalog, type InventoryRepository } from '@vero/business-inventory';
@@ -15,6 +14,7 @@ import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
+import { NativeOrderController } from '../menu/native-order.controller.js';
 import { PaymentController } from '../menu/payment.controller.js';
 import { PaymentWebhookController } from '../menu/payment-webhook.controller.js';
 import { PublicCheckoutController } from '../menu/public-checkout.controller.js';
@@ -33,19 +33,16 @@ import { CatalogController } from './catalog.controller.js';
 import { CATALOG_REPOSITORY, DATABASE_CLIENT } from './catalog.tokens.js';
 import { MvpSecurityService } from './mvp-security.service.js';
 import { MvpPageController } from './mvp-page.controller.js';
-
 type DatabaseClient = ReturnType<typeof createDatabaseClient>;
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(@Inject(DATABASE_CLIENT) private readonly client: DatabaseClient) {}
   async onApplicationShutdown(): Promise<void> { await this.client.$disconnect(); }
 }
-
 @Module({})
 export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
-    return {
-      module: CatalogModule,
-      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, PaymentWebhookController, MenuAdminController],
+    return { module: CatalogModule,
+      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, PaymentWebhookController, NativeOrderController, MenuAdminController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: DATABASE_CLIENT, useFactory: () => createDatabaseClient(config.postgres.url) },
@@ -61,7 +58,6 @@ export class CatalogModule {
         { provide: FinanceService, inject: [FINANCE_REPOSITORY], useFactory: (repository: FinanceRepository) => new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() }) },
         { provide: OPERATIONAL_ENTRY_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client) },
         OperationalEntryService, MvpSecurityService, DatabaseLifecycle
-      ]
-    };
+      ] };
   }
 }
