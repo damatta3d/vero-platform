@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { PaymentRequest, PaymentResult } from './payment.types.js';
 
 export class PaymentService {
+  // The interface remains promise-based for gateway compatibility.
+  // eslint-disable-next-line @typescript-eslint/require-await
   async create(request: PaymentRequest): Promise<PaymentResult> {
     if (!Number.isInteger(request.amountCents) || request.amountCents <= 0) {
       throw new Error('INVALID_PAYMENT_AMOUNT');
