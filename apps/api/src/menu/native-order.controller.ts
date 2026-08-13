@@ -13,7 +13,8 @@ export class NativeOrderController {
   @Post()
   async create(@Body() request: Request) {
     if (!request.menuSlug?.trim() || !request.customer?.name?.trim() || !request.customer?.phone?.trim() || !request.items?.length) throw new BadRequestException('Invalid native order.');
-    if (request.payment.method === 'PIX' && request.payment.status !== 'PAID') throw new BadRequestException('PIX payment must be confirmed before order creation.');
+    if (request.payment.method === 'PIX' && !request.payment.paymentId?.trim()) throw new BadRequestException('PIX payment id is required.');
+    if (request.payment.method === 'PAY_ON_DELIVERY' && request.payment.status !== 'PENDING') throw new BadRequestException('Invalid pay-on-delivery status.');
     const ids = request.items.map((item) => item.menuItemId);
     const rows = await this.db.$queryRawUnsafe<Row[]>(`SELECT i.tenant_id AS "tenantId",i.id AS "menuItemId",COALESCE(i.display_name,p.name) AS name,COALESCE(i.sale_price_cents,p."salePriceCents") AS "priceCents",i.available FROM commerce_menu_items i JOIN commerce_menus m ON m.tenant_id=i.tenant_id AND m.id=i.menu_id JOIN catalog_products p ON p."tenantId"=i.tenant_id AND p.id=i.catalog_product_id WHERE m.slug=$1 AND m.published=true AND i.active=true AND i.id=ANY($2::uuid[])`, request.menuSlug, ids);
     if (rows.length !== ids.length || rows.some((row) => !row.available)) throw new BadRequestException('One or more items are unavailable.');
