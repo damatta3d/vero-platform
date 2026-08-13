@@ -9,18 +9,55 @@ import {
 } from './dependency-health.adapters.js';
 
 describe(HealthController.name, () => {
-  it('reports liveness without probing external dependencies', async () => {
+  const databaseCheck = jest.fn();
+  const cacheCheck = jest.fn();
+  const messagingCheck = jest.fn();
+
+  async function createController() {
     const module = await Test.createTestingModule({
       imports: [TerminusModule],
       controllers: [HealthController],
       providers: [
-        { provide: DatabaseHealthAdapter, useValue: { check: jest.fn() } },
-        { provide: CacheHealthAdapter, useValue: { check: jest.fn() } },
-        { provide: MessagingHealthAdapter, useValue: { check: jest.fn() } }
+        { provide: DatabaseHealthAdapter, useValue: { check: databaseCheck } },
+        { provide: CacheHealthAdapter, useValue: { check: cacheCheck } },
+        { provide: MessagingHealthAdapter, useValue: { check: messagingCheck } }
       ]
     }).compile();
 
-    const result = await module.get(HealthController).live();
+    return module.get(HealthController);
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    databaseCheck.mockResolvedValue({ postgres: { status: 'up' } });
+    cacheCheck.mockResolvedValue({ redis: { status: 'up' } });
+    messagingCheck.mockResolvedValue({ rabbitmq: { status: 'up' } });
+  });
+
+  it('reports liveness without probing external dependencies', async () => {
+    const controller = await createController();
+    const result = await controller.live();
+
     expect(result.status).toBe('ok');
+    expect(databaseCheck).not.toHaveBeenCalled();
+    expect(cacheCheck).not.toHaveBeenCalled();
+    expect(messagingCheck).not.toHaveBeenCalled();
+  });
+
+  it('reports readiness only after probing all required dependencies', async () => {
+    const controller = await createController();
+    const result = await controller.ready();
+
+    expect(result.status).toBe('ok');
+    expect(databaseCheck).toHaveBeenCalledTimes(1);
+    expect(cacheCheck).toHaveBeenCalledTimes(1);
+    expect(messagingCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails readiness when a required dependency is unavailable', async () => {
+    databaseCheck.mockRejectedValue(new Error('POSTGRES_UNAVAILABLE'));
+    const controller = await createController();
+
+    await expect(controller.ready()).rejects.toThrow();
   });
 });
