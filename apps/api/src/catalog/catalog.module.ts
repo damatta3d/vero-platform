@@ -27,6 +27,7 @@ import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
+import { PublicCheckoutController } from '../menu/public-checkout.controller.js';
 import { PublicMenuController } from '../menu/public-menu.controller.js';
 import { PublicMenuPageController } from '../menu/public-menu-page.controller.js';
 import { OperationalEntryController } from '../operations/operational-entry.controller.js';
@@ -47,10 +48,7 @@ type DatabaseClient = ReturnType<typeof createDatabaseClient>;
 
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(@Inject(DATABASE_CLIENT) private readonly client: DatabaseClient) {}
-
-  async onApplicationShutdown(): Promise<void> {
-    await this.client.$disconnect();
-  }
+  async onApplicationShutdown(): Promise<void> { await this.client.$disconnect(); }
 }
 
 @Module({})
@@ -58,92 +56,21 @@ export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
     return {
       module: CatalogModule,
-      controllers: [
-        PortalPageController,
-        CatalogController,
-        InventoryController,
-        ProductionController,
-        SalesController,
-        FinanceController,
-        FinancePageController,
-        OperationalEntryController,
-        OperationsPageController,
-        MvpPageController,
-        PublicMenuController,
-        PublicMenuPageController,
-        MenuAdminController
-      ],
+      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, MenuAdminController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
-        {
-          provide: DATABASE_CLIENT,
-          useFactory: () => createDatabaseClient(config.postgres.url)
-        },
-        {
-          provide: CATALOG_REPOSITORY,
-          inject: [DATABASE_CLIENT],
-          useFactory: (client: DatabaseClient) => new PrismaCatalogRepository(client)
-        },
-        {
-          provide: CatalogService,
-          inject: [CATALOG_REPOSITORY],
-          useFactory: (repository: CatalogRepository) =>
-            new CatalogService(repository, { generate: randomUUID }, { now: () => new Date() })
-        },
-        {
-          provide: INVENTORY_REPOSITORY,
-          inject: [DATABASE_CLIENT],
-          useFactory: (client: DatabaseClient) => new PrismaInventoryRepository(client)
-        },
-        {
-          provide: InventoryService,
-          inject: [INVENTORY_REPOSITORY],
-          useFactory: (repository: InventoryRepository & InventoryIngredientCatalog) =>
-            new InventoryService(
-              repository,
-              repository,
-              { generate: randomUUID },
-              { now: () => new Date() }
-            )
-        },
-        {
-          provide: PRODUCTION_REPOSITORY,
-          inject: [DATABASE_CLIENT],
-          useFactory: (client: DatabaseClient) => new PrismaProductionRepository(client)
-        },
-        {
-          provide: ProductionService,
-          inject: [PRODUCTION_REPOSITORY],
-          useFactory: (repository: ProductionRepository) =>
-            new ProductionService(repository, { generate: randomUUID }, { now: () => new Date() })
-        },
-        {
-          provide: SALES_REPOSITORY,
-          inject: [DATABASE_CLIENT],
-          useFactory: (client: DatabaseClient) => new PrismaSalesRepository(client)
-        },
-        {
-          provide: SalesService,
-          inject: [SALES_REPOSITORY],
-          useFactory: (repository: SalesRepository) =>
-            new SalesService(repository, { generate: randomUUID }, { now: () => new Date() })
-        },
-        {
-          provide: FINANCE_REPOSITORY,
-          inject: [DATABASE_CLIENT],
-          useFactory: (client: DatabaseClient) => new PrismaFinanceEntryRepository(client)
-        },
-        {
-          provide: FinanceService,
-          inject: [FINANCE_REPOSITORY],
-          useFactory: (repository: FinanceRepository) =>
-            new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() })
-        },
-        {
-          provide: OPERATIONAL_ENTRY_REPOSITORY,
-          inject: [DATABASE_CLIENT],
-          useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client)
-        },
+        { provide: DATABASE_CLIENT, useFactory: () => createDatabaseClient(config.postgres.url) },
+        { provide: CATALOG_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaCatalogRepository(client) },
+        { provide: CatalogService, inject: [CATALOG_REPOSITORY], useFactory: (repository: CatalogRepository) => new CatalogService(repository, { generate: randomUUID }, { now: () => new Date() }) },
+        { provide: INVENTORY_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaInventoryRepository(client) },
+        { provide: InventoryService, inject: [INVENTORY_REPOSITORY], useFactory: (repository: InventoryRepository & InventoryIngredientCatalog) => new InventoryService(repository, repository, { generate: randomUUID }, { now: () => new Date() }) },
+        { provide: PRODUCTION_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaProductionRepository(client) },
+        { provide: ProductionService, inject: [PRODUCTION_REPOSITORY], useFactory: (repository: ProductionRepository) => new ProductionService(repository, { generate: randomUUID }, { now: () => new Date() }) },
+        { provide: SALES_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaSalesRepository(client) },
+        { provide: SalesService, inject: [SALES_REPOSITORY], useFactory: (repository: SalesRepository) => new SalesService(repository, { generate: randomUUID }, { now: () => new Date() }) },
+        { provide: FINANCE_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaFinanceEntryRepository(client) },
+        { provide: FinanceService, inject: [FINANCE_REPOSITORY], useFactory: (repository: FinanceRepository) => new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() }) },
+        { provide: OPERATIONAL_ENTRY_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client) },
         OperationalEntryService,
         MvpSecurityService,
         DatabaseLifecycle
