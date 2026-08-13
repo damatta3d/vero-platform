@@ -26,6 +26,7 @@ import { FinancePageController } from '../finance/finance-page.controller.js';
 import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
+import { MenuAdminController } from '../menu/menu-admin.controller.js';
 import { PublicMenuController } from '../menu/public-menu.controller.js';
 import { OperationalEntryController } from '../operations/operational-entry.controller.js';
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
@@ -67,7 +68,8 @@ export class CatalogModule {
         OperationalEntryController,
         OperationsPageController,
         MvpPageController,
-        PublicMenuController
+        PublicMenuController,
+        MenuAdminController
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
