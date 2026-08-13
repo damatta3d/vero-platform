@@ -97,7 +97,9 @@ describe(ExternalOrderService.name, () => {
       'orders.read',
     );
 
-    await expect(service.list(access, { provider: 'IFOOD', limit: 25 })).resolves.toEqual([]);
+    await expect(
+      service.list(access, { provider: 'IFOOD', limit: 25 }),
+    ).resolves.toEqual([]);
     expect(repository.list).toHaveBeenCalledWith('santo-parma', {
       provider: 'IFOOD',
       limit: 25,
@@ -105,7 +107,9 @@ describe(ExternalOrderService.name, () => {
   });
 
   it('blocks confirmation while catalog mapping is pending', async () => {
-    repository.find.mockResolvedValue(orderRecord({ mappingStatus: 'PENDING_MAPPING' }));
+    repository.find.mockResolvedValue(
+      orderRecord({ mappingStatus: 'PENDING_MAPPING' }),
+    );
     const access = await security.authorize(
       `Bearer ${apiKey}`,
       'santo-parma',
@@ -114,7 +118,9 @@ describe(ExternalOrderService.name, () => {
 
     await expect(
       service.changeStatus(access, 'ANOTA_AI', 'page-1', 'order-1', 'CONFIRMED'),
-    ).rejects.toMatchObject({ response: { code: 'ORDER_CATALOG_MAPPING_REQUIRED' } });
+    ).rejects.toMatchObject({
+      response: { code: 'ORDER_CATALOG_MAPPING_REQUIRED' },
+    });
     expect(repository.updateStatus).not.toHaveBeenCalled();
   });
 
@@ -128,7 +134,9 @@ describe(ExternalOrderService.name, () => {
 
     await expect(
       service.changeStatus(access, 'ANOTA_AI', 'page-1', 'order-1', 'PREPARING'),
-    ).rejects.toMatchObject({ response: { code: 'INVALID_ORDER_STATUS_TRANSITION' } });
+    ).rejects.toMatchObject({
+      response: { code: 'INVALID_ORDER_STATUS_TRANSITION' },
+    });
     expect(repository.updateStatus).not.toHaveBeenCalled();
   });
 
@@ -162,7 +170,9 @@ describe(ExternalOrderService.name, () => {
       'orders.read',
     );
 
-    expect(() => service.receive(access, orderRecord())).toThrow('Unauthorized order access');
+    expect(() => service.receive(access, orderRecord())).toThrow(
+      'Unauthorized order access',
+    );
     expect(repository.receive).not.toHaveBeenCalled();
   });
 });
