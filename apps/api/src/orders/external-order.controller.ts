@@ -8,7 +8,7 @@ import {
   Param,
   Patch,
   Post,
-  Query
+  Query,
 } from '@nestjs/common';
 import { z } from 'zod';
 
@@ -23,7 +23,7 @@ const statusSchema = z.enum([
   'READY',
   'DISPATCHED',
   'COMPLETED',
-  'CANCELLED'
+  'CANCELLED',
 ]);
 const idSchema = z.string().trim().min(1).max(256);
 
@@ -42,10 +42,10 @@ const itemSchema = z.object({
         quantity: z.number().int().positive().max(9999),
         unitPriceCents: z.number().int().nonnegative(),
         totalCents: z.number().int().nonnegative(),
-        mappedProductId: z.string().uuid().nullable()
-      })
+        mappedProductId: z.string().uuid().nullable(),
+      }),
     )
-    .default([])
+    .default([]),
 });
 
 const receiveSchema = z.object({
@@ -64,7 +64,7 @@ const receiveSchema = z.object({
   items: z.array(itemSchema).min(1),
   occurredAt: z.coerce.date(),
   observedAt: z.coerce.date(),
-  sourceRevision: z.string().trim().min(1).max(128)
+  sourceRevision: z.string().trim().min(1).max(128),
 });
 
 const listSchema = z.object({
@@ -72,33 +72,33 @@ const listSchema = z.object({
   status: statusSchema.optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
-  limit: z.coerce.number().int().positive().max(200).default(100)
+  limit: z.coerce.number().int().positive().max(200).default(100),
 });
 
 @Controller('v1/orders')
 export class ExternalOrderController {
   constructor(
     @Inject(ExternalOrderService) private readonly orders: ExternalOrderService,
-    @Inject(MvpSecurityService) private readonly security: MvpSecurityService
+    @Inject(MvpSecurityService) private readonly security: MvpSecurityService,
   ) {}
 
   @Post('intake')
   async receive(
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-tenant-id') tenantId: string | undefined,
-    @Body() body: unknown
+    @Body() body: unknown,
   ) {
     const parsed = receiveSchema.safeParse(body);
     if (!parsed.success) {
       throw new BadRequestException({
         code: 'INVALID_REQUEST',
-        fields: parsed.error.issues.map((issue) => issue.path.join('.'))
+        fields: parsed.error.issues.map((issue) => issue.path.join('.')),
       });
     }
     const authorizedTenant = await this.security.authorize(
       authorization,
       tenantId,
-      'orders.intake'
+      'orders.intake',
     );
     return this.orders.receive(authorizedTenant, parsed.data);
   }
@@ -107,7 +107,7 @@ export class ExternalOrderController {
   async list(
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-tenant-id') tenantId: string | undefined,
-    @Query() query: Record<string, string | undefined>
+    @Query() query: Record<string, string | undefined>,
   ) {
     const parsed = listSchema.safeParse(query);
     if (
@@ -119,14 +119,14 @@ export class ExternalOrderController {
     const authorizedTenant = await this.security.authorize(
       authorization,
       tenantId,
-      'orders.read'
+      'orders.read',
     );
     const filters = {
       limit: parsed.data.limit,
       ...(parsed.data.provider === undefined ? {} : { provider: parsed.data.provider }),
       ...(parsed.data.status === undefined ? {} : { status: parsed.data.status }),
       ...(parsed.data.from === undefined ? {} : { from: parsed.data.from }),
-      ...(parsed.data.to === undefined ? {} : { to: parsed.data.to })
+      ...(parsed.data.to === undefined ? {} : { to: parsed.data.to }),
     };
     return this.orders.list(authorizedTenant, filters);
   }
@@ -138,7 +138,7 @@ export class ExternalOrderController {
     @Param('provider') provider: string,
     @Param('establishmentExternalId') establishmentExternalId: string,
     @Param('externalOrderId') externalOrderId: string,
-    @Body() body: unknown
+    @Body() body: unknown,
   ) {
     const parsedProvider = providerSchema.safeParse(provider);
     const parsedEstablishment = idSchema.safeParse(establishmentExternalId);
@@ -155,14 +155,14 @@ export class ExternalOrderController {
     const authorizedTenant = await this.security.authorize(
       authorization,
       tenantId,
-      'orders.update'
+      'orders.update',
     );
     return this.orders.changeStatus(
       authorizedTenant,
       parsedProvider.data,
       parsedEstablishment.data,
       parsedOrder.data,
-      parsedBody.data.status
+      parsedBody.data.status,
     );
   }
 }
