@@ -123,8 +123,12 @@ export class ExternalOrderController {
     );
     const filters = {
       limit: parsed.data.limit,
-      ...(parsed.data.provider === undefined ? {} : { provider: parsed.data.provider }),
-      ...(parsed.data.status === undefined ? {} : { status: parsed.data.status }),
+      ...(parsed.data.provider === undefined
+        ? {}
+        : { provider: parsed.data.provider }),
+      ...(parsed.data.status === undefined
+        ? {}
+        : { status: parsed.data.status }),
       ...(parsed.data.from === undefined ? {} : { from: parsed.data.from }),
       ...(parsed.data.to === undefined ? {} : { to: parsed.data.to }),
     };
