@@ -6,8 +6,11 @@ type Db = { $executeRawUnsafe(query: string, ...values: unknown[]): Promise<numb
 type MercadoPagoWebhook = { action?: string; type?: string; data?: { id?: string | number } };
 type MercadoPagoPayment = { id?: string | number; status?: string };
 
-function signatureParts(value: string): { ts?: string; v1?: string } {
-  const parts: { ts?: string; v1?: string } = {};
+function signatureParts(value: string): { ts: string | undefined; v1: string | undefined } {
+  const parts: { ts: string | undefined; v1: string | undefined } = {
+    ts: undefined,
+    v1: undefined
+  };
   for (const entry of value.split(',')) {
     const [key, val] = entry.trim().split('=', 2);
     if (key === 'ts') parts.ts = val;
