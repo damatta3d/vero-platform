@@ -22,20 +22,35 @@ export class PublicCheckoutController {
        FROM commerce_menu_items i JOIN commerce_menus m ON m.tenant_id=i.tenant_id AND m.id=i.menu_id
        JOIN catalog_products p ON p."tenantId"=i.tenant_id AND p.id=i.catalog_product_id
        WHERE m.slug=$1 AND m.published=true AND i.active=true AND i.id=ANY($2::uuid[])`,
-      draft.menuSlug, ids
+      draft.menuSlug,
+      ids
     );
-    if (rows.length !== ids.length || rows.some((row) => !row.available)) throw new BadRequestException('One or more items are unavailable.');
+    if (rows.length !== ids.length || rows.some((row) => !row.available))
+      throw new BadRequestException('One or more items are unavailable.');
     const current = new Map(rows.map((row) => [row.menuItemId, row]));
     const items = draft.items.map((request) => {
       const item = current.get(request.menuItemId)!;
-      return { menuItemId: item.menuItemId, name: item.name, quantity: request.quantity,
-        unitPriceCents: item.priceCents, totalCents: item.priceCents * request.quantity,
-        note: request.note?.trim() || null };
+      return {
+        menuItemId: item.menuItemId,
+        name: item.name,
+        quantity: request.quantity,
+        unitPriceCents: item.priceCents,
+        totalCents: item.priceCents * request.quantity,
+        note: request.note?.trim() || null
+      };
     });
     const itemsTotalCents = calculateCheckoutTotal(items);
-    return { valid: true, menuSlug: draft.menuSlug, fulfillment: draft.fulfillment,
-      customer: draft.customer, address: draft.fulfillment === 'DELIVERY' ? draft.address : null,
-      orderNote: draft.orderNote?.trim() || null, items, itemsTotalCents,
-      deliveryFeeCents: null, amountDueCents: itemsTotalCents };
+    return {
+      valid: true,
+      menuSlug: draft.menuSlug,
+      fulfillment: draft.fulfillment,
+      customer: draft.customer,
+      address: draft.fulfillment === 'DELIVERY' ? draft.address : null,
+      orderNote: draft.orderNote?.trim() || null,
+      items,
+      itemsTotalCents,
+      deliveryFeeCents: null,
+      amountDueCents: itemsTotalCents
+    };
   }
 }

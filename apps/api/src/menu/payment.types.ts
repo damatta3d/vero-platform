@@ -1,10 +1,5 @@
 export type PaymentMethod = 'PIX' | 'PAY_ON_DELIVERY';
-export type PaymentStatus =
-  | 'PENDING'
-  | 'AWAITING_PAYMENT'
-  | 'PAID'
-  | 'FAILED'
-  | 'CANCELLED';
+export type PaymentStatus = 'PENDING' | 'AWAITING_PAYMENT' | 'PAID' | 'FAILED' | 'CANCELLED';
 
 export type PaymentRequest = {
   checkoutId?: string;

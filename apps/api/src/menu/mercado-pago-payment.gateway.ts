@@ -65,9 +65,7 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
       status: payment?.status === 'approved' ? 'PAID' : 'AWAITING_PAYMENT',
       amountCents: request.amountCents,
       pixCopyPaste: wallet?.qr_code || null,
-      qrCodeUrl: wallet?.qr_code_base64
-        ? `data:image/png;base64,${wallet.qr_code_base64}`
-        : null,
+      qrCodeUrl: wallet?.qr_code_base64 ? `data:image/png;base64,${wallet.qr_code_base64}` : null,
       expiresAt: null
     };
   }

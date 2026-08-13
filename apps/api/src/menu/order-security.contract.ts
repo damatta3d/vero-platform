@@ -4,4 +4,5 @@ export const ORDER_SECURITY_ACTIONS = {
   readPublicStatus: 'orders.public.status'
 } as const;
 
-export type OrderSecurityAction = (typeof ORDER_SECURITY_ACTIONS)[keyof typeof ORDER_SECURITY_ACTIONS];
+export type OrderSecurityAction =
+  (typeof ORDER_SECURITY_ACTIONS)[keyof typeof ORDER_SECURITY_ACTIONS];
