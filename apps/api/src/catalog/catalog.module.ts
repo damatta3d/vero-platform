@@ -28,6 +28,7 @@ import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
 import { PublicMenuController } from '../menu/public-menu.controller.js';
+import { PublicMenuPageController } from '../menu/public-menu-page.controller.js';
 import { OperationalEntryController } from '../operations/operational-entry.controller.js';
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
@@ -69,6 +70,7 @@ export class CatalogModule {
         OperationsPageController,
         MvpPageController,
         PublicMenuController,
+        PublicMenuPageController,
         MenuAdminController
       ],
       providers: [
