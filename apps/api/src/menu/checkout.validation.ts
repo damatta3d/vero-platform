@@ -5,7 +5,11 @@ export function validateCheckoutDraft(draft: CheckoutDraft): string[] {
   if (!draft.customer?.name?.trim()) errors.push('customer.name');
   if (!draft.customer?.phone?.trim()) errors.push('customer.phone');
   if (!Array.isArray(draft.items) || draft.items.length === 0) errors.push('items');
-  if (draft.items?.some((item) => !item.menuItemId || !Number.isInteger(item.quantity) || item.quantity < 1)) {
+  if (
+    draft.items?.some(
+      (item) => !item.menuItemId || !Number.isInteger(item.quantity) || item.quantity < 1
+    )
+  ) {
     errors.push('items.invalid');
   }
   if (draft.fulfillment === 'DELIVERY') {
