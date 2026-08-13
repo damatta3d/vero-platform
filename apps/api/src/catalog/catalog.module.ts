@@ -13,6 +13,7 @@ import { FinancePageController } from '../finance/finance-page.controller.js';
 import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
+import { KitchenOrderController } from '../menu/kitchen-order.controller.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
 import { NativeOrderController } from '../menu/native-order.controller.js';
 import { PaymentController } from '../menu/payment.controller.js';
@@ -42,7 +43,7 @@ class DatabaseLifecycle implements OnApplicationShutdown {
 export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
     return { module: CatalogModule,
-      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, PaymentWebhookController, NativeOrderController, MenuAdminController],
+      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, PaymentWebhookController, NativeOrderController, KitchenOrderController, MenuAdminController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: DATABASE_CLIENT, useFactory: () => createDatabaseClient(config.postgres.url) },
