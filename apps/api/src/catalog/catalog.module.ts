@@ -3,23 +3,11 @@ import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from '
 
 import { CatalogService, type CatalogRepository } from '@vero/business-catalog';
 import { FinanceService, type FinanceRepository } from '@vero/business-finance';
-import {
-  InventoryService,
-  type InventoryIngredientCatalog,
-  type InventoryRepository
-} from '@vero/business-inventory';
+import { InventoryService, type InventoryIngredientCatalog, type InventoryRepository } from '@vero/business-inventory';
 import { ProductionService, type ProductionRepository } from '@vero/business-production';
 import { SalesService, type SalesRepository } from '@vero/business-sales';
 import type { AppConfig } from '@vero/core-configuration';
-import {
-  createDatabaseClient,
-  PrismaCatalogRepository,
-  PrismaFinanceEntryRepository,
-  PrismaInventoryRepository,
-  PrismaOperationalEntryRepository,
-  PrismaProductionRepository,
-  PrismaSalesRepository
-} from '@vero/infrastructure-database';
+import { createDatabaseClient, PrismaCatalogRepository, PrismaFinanceEntryRepository, PrismaInventoryRepository, PrismaOperationalEntryRepository, PrismaProductionRepository, PrismaSalesRepository } from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
 import { FinanceController } from '../finance/finance.controller.js';
 import { FinancePageController } from '../finance/finance-page.controller.js';
@@ -27,6 +15,7 @@ import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
+import { PaymentController } from '../menu/payment.controller.js';
 import { PublicCheckoutController } from '../menu/public-checkout.controller.js';
 import { PublicMenuController } from '../menu/public-menu.controller.js';
 import { PublicMenuPageController } from '../menu/public-menu-page.controller.js';
@@ -45,7 +34,6 @@ import { MvpSecurityService } from './mvp-security.service.js';
 import { MvpPageController } from './mvp-page.controller.js';
 
 type DatabaseClient = ReturnType<typeof createDatabaseClient>;
-
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(@Inject(DATABASE_CLIENT) private readonly client: DatabaseClient) {}
   async onApplicationShutdown(): Promise<void> { await this.client.$disconnect(); }
@@ -56,7 +44,7 @@ export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
     return {
       module: CatalogModule,
-      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, MenuAdminController],
+      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, MenuAdminController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: DATABASE_CLIENT, useFactory: () => createDatabaseClient(config.postgres.url) },
@@ -71,9 +59,7 @@ export class CatalogModule {
         { provide: FINANCE_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaFinanceEntryRepository(client) },
         { provide: FinanceService, inject: [FINANCE_REPOSITORY], useFactory: (repository: FinanceRepository) => new FinanceService(repository, { generate: randomUUID }, { now: () => new Date() }) },
         { provide: OPERATIONAL_ENTRY_REPOSITORY, inject: [DATABASE_CLIENT], useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client) },
-        OperationalEntryService,
-        MvpSecurityService,
-        DatabaseLifecycle
+        OperationalEntryService, MvpSecurityService, DatabaseLifecycle
       ]
     };
   }
