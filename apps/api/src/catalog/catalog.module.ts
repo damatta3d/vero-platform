@@ -16,6 +16,7 @@ import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
 import { PaymentController } from '../menu/payment.controller.js';
+import { PaymentWebhookController } from '../menu/payment-webhook.controller.js';
 import { PublicCheckoutController } from '../menu/public-checkout.controller.js';
 import { PublicMenuController } from '../menu/public-menu.controller.js';
 import { PublicMenuPageController } from '../menu/public-menu-page.controller.js';
@@ -44,7 +45,7 @@ export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
     return {
       module: CatalogModule,
-      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, MenuAdminController],
+      controllers: [PortalPageController, CatalogController, InventoryController, ProductionController, SalesController, FinanceController, FinancePageController, OperationalEntryController, OperationsPageController, MvpPageController, PublicMenuController, PublicMenuPageController, PublicCheckoutController, PaymentController, PaymentWebhookController, MenuAdminController],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         { provide: DATABASE_CLIENT, useFactory: () => createDatabaseClient(config.postgres.url) },
