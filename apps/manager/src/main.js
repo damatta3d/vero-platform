@@ -63,9 +63,7 @@ function render() {
   for (const [status, label] of statuses) {
     const column = document.createElement('section');
     column.className = 'column';
-    const orders = [...state.orders.values()].filter(
-      (order) => order.status === status
-    );
+    const orders = [...state.orders.values()].filter((order) => order.status === status);
     column.innerHTML = `<header><h2>${label}</h2><span>${orders.length}</span></header><div class="cards"></div>`;
     const cards = column.querySelector('.cards');
     for (const order of orders) cards.append(createCard(order));
