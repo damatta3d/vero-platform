@@ -68,7 +68,7 @@ export class KitchenOrderController {
     await this.security.authorize(authorization, tenantId, 'orders.kitchen.list');
     if (!tenantId) throw new BadRequestException('Tenant is required.');
     const orders = await this.db.$queryRawUnsafe<Array<{ status: NativeOrderStatus }>>(
-      `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",items_total_cents AS "itemsTotalCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
+      `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,NULL::text AS "deliveryAddress",items_total_cents AS "itemsTotalCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
       tenantId
     );
