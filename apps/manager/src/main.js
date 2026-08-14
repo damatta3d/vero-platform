@@ -110,18 +110,31 @@ function renderDashboard() {
     ['Entregas', delivery],
     ['Valor da fila', money(totalCents)]
   ]
-    .map(([label, value]) => `<article class="metric-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`)
+    .map(
+      ([label, value]) =>
+        `<article class="metric-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`
+    )
     .join('');
 
   const recent = orders.slice(0, 5);
   activeOrdersSummary.innerHTML = recent.length
     ? recent
-        .map((order) => `<button class="summary-row" type="button" data-order-id="${escapeHtml(order.orderId)}"><span><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><small>${escapeHtml(order.customerName)}</small></span><span>${money(order.totalCents)}</span></button>`)
+        .map(
+          (order) =>
+            `<button class="summary-row" type="button" data-order-id="${escapeHtml(order.orderId)}"><span><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><small>${escapeHtml(order.customerName)}</small></span><span>${money(order.totalCents)}</span></button>`
+        )
         .join('')
     : '<p class="muted">Nenhum pedido ativo agora.</p>';
-  activeOrdersSummary.querySelectorAll('[data-order-id]').forEach((button) => button.addEventListener('click', () => openDetail(button.dataset.orderId)));
+  activeOrdersSummary
+    .querySelectorAll('[data-order-id]')
+    .forEach((button) =>
+      button.addEventListener('click', () => openDetail(button.dataset.orderId))
+    );
   stageSummary.innerHTML = statuses
-    .map(([status, label]) => `<div class="stage-row"><span>${escapeHtml(label)}</span><strong>${orders.filter((order) => order.status === status).length}</strong></div>`)
+    .map(
+      ([status, label]) =>
+        `<div class="stage-row"><span>${escapeHtml(label)}</span><strong>${orders.filter((order) => order.status === status).length}</strong></div>`
+    )
     .join('');
 }
 
@@ -155,13 +168,23 @@ function createCard(order) {
 }
 
 function actionLabel(status) {
-  return ({ CONFIRMED: 'Confirmar', PREPARING: 'Preparar', READY: 'Pronto', DISPATCHED: 'Despachar', COMPLETED: 'Concluir', CANCELLED: 'Cancelar' }[status] || status);
+  return (
+    {
+      CONFIRMED: 'Confirmar',
+      PREPARING: 'Preparar',
+      READY: 'Pronto',
+      DISPATCHED: 'Despachar',
+      COMPLETED: 'Concluir',
+      CANCELLED: 'Cancelar'
+    }[status] || status
+  );
 }
 
 async function loadOrders({ incremental = true } = {}) {
   try {
     connection.textContent = 'Atualizando…';
-    const query = incremental && state.cursor ? `?updatedAfter=${encodeURIComponent(state.cursor)}` : '';
+    const query =
+      incremental && state.cursor ? `?updatedAfter=${encodeURIComponent(state.cursor)}` : '';
     const result = await api(`/v1/kitchen/orders${query}`);
     for (const order of result.orders) state.orders.set(order.orderId, order);
     state.cursor = result.sync?.serverTime || new Date().toISOString();
@@ -174,7 +197,10 @@ async function loadOrders({ incremental = true } = {}) {
 
 async function transition(orderId, status) {
   try {
-    await api(`/v1/kitchen/orders/${orderId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+    await api(`/v1/kitchen/orders/${orderId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
     const detail = await api(`/v1/kitchen/orders/${orderId}`);
     state.orders.set(orderId, detail.order);
     render();
@@ -187,8 +213,17 @@ async function openDetail(orderId) {
   try {
     const result = await api(`/v1/kitchen/orders/${orderId}`);
     const { order, items, history } = result;
-    const itemRows = items.map((item) => `<li>${escapeHtml(item.quantity)}× ${escapeHtml(item.name)}${item.note ? ` — ${escapeHtml(item.note)}` : ''}</li>`).join('');
-    const historyRows = history.map((entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`).join('');
+    const itemRows = items
+      .map(
+        (item) =>
+          `<li>${escapeHtml(item.quantity)}× ${escapeHtml(item.name)}${item.note ? ` — ${escapeHtml(item.note)}` : ''}</li>`
+      )
+      .join('');
+    const historyRows = history
+      .map(
+        (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
+      )
+      .join('');
     orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
@@ -200,7 +235,8 @@ async function loadMenus() {
   try {
     menuList.innerHTML = '<p class="muted">Carregando…</p>';
     state.menus = await api('/v1/commerce/menus');
-    if (state.selectedMenuId && !state.menus.some((menu) => menu.id === state.selectedMenuId)) state.selectedMenuId = null;
+    if (state.selectedMenuId && !state.menus.some((menu) => menu.id === state.selectedMenuId))
+      state.selectedMenuId = null;
     if (!state.selectedMenuId && state.menus[0]) state.selectedMenuId = state.menus[0].id;
     renderMenus();
     if (state.selectedMenuId) await loadSelectedMenu();
@@ -212,13 +248,20 @@ async function loadMenus() {
 
 function renderMenus() {
   menuList.innerHTML = state.menus.length
-    ? state.menus.map((menu) => `<button class="menu-row${menu.id === state.selectedMenuId ? ' selected' : ''}" type="button" data-menu-id="${escapeHtml(menu.id)}"><span><strong>${escapeHtml(menu.name)}</strong><small>/${escapeHtml(menu.slug)}</small></span><span class="badge ${menu.published ? 'success' : ''}">${menu.published ? 'Publicado' : 'Rascunho'}</span></button>`).join('')
+    ? state.menus
+        .map(
+          (menu) =>
+            `<button class="menu-row${menu.id === state.selectedMenuId ? ' selected' : ''}" type="button" data-menu-id="${escapeHtml(menu.id)}"><span><strong>${escapeHtml(menu.name)}</strong><small>/${escapeHtml(menu.slug)}</small></span><span class="badge ${menu.published ? 'success' : ''}">${menu.published ? 'Publicado' : 'Rascunho'}</span></button>`
+        )
+        .join('')
     : '<p class="muted">Nenhum menu cadastrado.</p>';
-  menuList.querySelectorAll('[data-menu-id]').forEach((button) => button.addEventListener('click', async () => {
-    state.selectedMenuId = button.dataset.menuId;
-    renderMenus();
-    await loadSelectedMenu();
-  }));
+  menuList.querySelectorAll('[data-menu-id]').forEach((button) =>
+    button.addEventListener('click', async () => {
+      state.selectedMenuId = button.dataset.menuId;
+      renderMenus();
+      await loadSelectedMenu();
+    })
+  );
 }
 
 async function loadSelectedMenu() {
@@ -235,23 +278,55 @@ function renderCatalogDetail(detail) {
   const menu = detail.menu;
   const categories = detail.categories || [];
   const items = detail.items || [];
-  catalogDetail.innerHTML = `<div class="catalog-title"><div><p class="eyebrow">MENU</p><h2>${escapeHtml(menu.name)}</h2><p class="muted">${escapeHtml(menu.description || 'Sem descrição')}</p></div><div><button id="edit-menu" class="text-button" type="button">Editar</button><button id="new-category" class="text-button" type="button">Nova categoria</button><button id="toggle-publish" class="primary-button" type="button">${menu.published ? 'Despublicar' : 'Publicar'}</button></div></div><div class="catalog-categories">${categories.length ? categories.map((category) => {
-    const categoryItems = items.filter((item) => item.categoryId === category.id);
-    return `<section class="catalog-category"><div class="category-heading"><div><h3>${escapeHtml(category.name)}</h3><small class="muted">${category.active ? 'Ativa' : 'Inativa'}</small></div><div><button type="button" data-edit-category="${escapeHtml(category.id)}">Editar</button><button type="button" data-new-item="${escapeHtml(category.id)}">Adicionar item</button></div></div>${categoryItems.length ? categoryItems.map((item) => `<article class="catalog-item"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || '')}</small></div><div class="catalog-item-actions"><strong>${money(item.priceCents)}</strong><span class="badge ${item.available && item.active ? 'success' : ''}">${item.active ? (item.available ? 'Disponível' : 'Pausado') : 'Inativo'}</span><button type="button" data-edit-item="${escapeHtml(item.id)}">Editar</button><button type="button" data-item-id="${escapeHtml(item.id)}" data-available="${item.available}">${item.available ? 'Pausar' : 'Ativar'}</button></div></article>`).join('') : '<p class="muted">Categoria sem itens.</p>'}</section>`;
-  }).join('') : '<div class="empty-catalog"><p class="muted">Nenhuma categoria cadastrada neste menu.</p></div>'}</div>`;
+  catalogDetail.innerHTML = `<div class="catalog-title"><div><p class="eyebrow">MENU</p><h2>${escapeHtml(menu.name)}</h2><p class="muted">${escapeHtml(menu.description || 'Sem descrição')}</p></div><div><button id="edit-menu" class="text-button" type="button">Editar</button><button id="new-category" class="text-button" type="button">Nova categoria</button><button id="toggle-publish" class="primary-button" type="button">${menu.published ? 'Despublicar' : 'Publicar'}</button></div></div><div class="catalog-categories">${
+    categories.length
+      ? categories
+          .map((category) => {
+            const categoryItems = items.filter((item) => item.categoryId === category.id);
+            return `<section class="catalog-category"><div class="category-heading"><div><h3>${escapeHtml(category.name)}</h3><small class="muted">${category.active ? 'Ativa' : 'Inativa'}</small></div><div><button type="button" data-edit-category="${escapeHtml(category.id)}">Editar</button><button type="button" data-new-item="${escapeHtml(category.id)}">Adicionar item</button></div></div>${categoryItems.length ? categoryItems.map((item) => `<article class="catalog-item"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || '')}</small></div><div class="catalog-item-actions"><strong>${money(item.priceCents)}</strong><span class="badge ${item.available && item.active ? 'success' : ''}">${item.active ? (item.available ? 'Disponível' : 'Pausado') : 'Inativo'}</span><button type="button" data-edit-item="${escapeHtml(item.id)}">Editar</button><button type="button" data-item-id="${escapeHtml(item.id)}" data-available="${item.available}">${item.available ? 'Pausar' : 'Ativar'}</button></div></article>`).join('') : '<p class="muted">Categoria sem itens.</p>'}</section>`;
+          })
+          .join('')
+      : '<div class="empty-catalog"><p class="muted">Nenhuma categoria cadastrada neste menu.</p></div>'
+  }</div>`;
 
   document.querySelector('#edit-menu')?.addEventListener('click', () => openMenuForm(menu));
   document.querySelector('#new-category')?.addEventListener('click', () => openCategoryForm());
-  document.querySelector('#toggle-publish')?.addEventListener('click', () => updateMenu(menu.id, { published: !menu.published }));
-  catalogDetail.querySelectorAll('[data-edit-category]').forEach((button) => button.addEventListener('click', () => openCategoryForm(categories.find((category) => category.id === button.dataset.editCategory))));
-  catalogDetail.querySelectorAll('[data-new-item]').forEach((button) => button.addEventListener('click', () => openItemForm({ categoryId: button.dataset.newItem })));
-  catalogDetail.querySelectorAll('[data-edit-item]').forEach((button) => button.addEventListener('click', () => openItemForm(items.find((item) => item.id === button.dataset.editItem))));
-  catalogDetail.querySelectorAll('[data-item-id]').forEach((button) => button.addEventListener('click', () => updateItem(menu.id, button.dataset.itemId, { available: button.dataset.available !== 'true' })));
+  document
+    .querySelector('#toggle-publish')
+    ?.addEventListener('click', () => updateMenu(menu.id, { published: !menu.published }));
+  catalogDetail
+    .querySelectorAll('[data-edit-category]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        openCategoryForm(categories.find((category) => category.id === button.dataset.editCategory))
+      )
+    );
+  catalogDetail
+    .querySelectorAll('[data-new-item]')
+    .forEach((button) =>
+      button.addEventListener('click', () => openItemForm({ categoryId: button.dataset.newItem }))
+    );
+  catalogDetail
+    .querySelectorAll('[data-edit-item]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        openItemForm(items.find((item) => item.id === button.dataset.editItem))
+      )
+    );
+  catalogDetail.querySelectorAll('[data-item-id]').forEach((button) =>
+    button.addEventListener('click', () =>
+      updateItem(menu.id, button.dataset.itemId, {
+        available: button.dataset.available !== 'true'
+      })
+    )
+  );
 }
 
 function field(name, label, type = 'text', value = '', options = '') {
-  if (type === 'textarea') return `<label class="form-field"><span>${label}</span><textarea name="${name}">${escapeHtml(value)}</textarea></label>`;
-  if (type === 'select') return `<label class="form-field"><span>${label}</span><select name="${name}">${options}</select></label>`;
+  if (type === 'textarea')
+    return `<label class="form-field"><span>${label}</span><textarea name="${name}">${escapeHtml(value)}</textarea></label>`;
+  if (type === 'select')
+    return `<label class="form-field"><span>${label}</span><select name="${name}">${options}</select></label>`;
   return `<label class="form-field"><span>${label}</span><input name="${name}" type="${type}" value="${escapeHtml(value)}" /></label>`;
 }
 
@@ -288,10 +363,21 @@ async function ensureProducts() {
 async function openItemForm(item = null) {
   try {
     const products = await ensureProducts();
-    if (!products.length) throw new Error('Cadastre ao menos um produto no catálogo antes de adicioná-lo ao menu.');
+    if (!products.length)
+      throw new Error('Cadastre ao menos um produto no catálogo antes de adicioná-lo ao menu.');
     const categories = state.menuDetail?.categories || [];
-    const productOptions = products.map((product) => `<option value="${escapeHtml(product.id)}" ${item?.catalogProductId === product.id ? 'selected' : ''}>${escapeHtml(product.name)} · ${money(product.salePriceCents || 0)}</option>`).join('');
-    const categoryOptions = categories.map((category) => `<option value="${escapeHtml(category.id)}" ${(item?.categoryId || item?.categoryId) === category.id ? 'selected' : ''}>${escapeHtml(category.name)}</option>`).join('');
+    const productOptions = products
+      .map(
+        (product) =>
+          `<option value="${escapeHtml(product.id)}" ${item?.catalogProductId === product.id ? 'selected' : ''}>${escapeHtml(product.name)} · ${money(product.salePriceCents || 0)}</option>`
+      )
+      .join('');
+    const categoryOptions = categories
+      .map(
+        (category) =>
+          `<option value="${escapeHtml(category.id)}" ${(item?.categoryId || item?.categoryId) === category.id ? 'selected' : ''}>${escapeHtml(category.name)}</option>`
+      )
+      .join('');
     openCatalogForm({
       kind: 'item',
       entity: item,
@@ -312,7 +398,9 @@ function optional(value) {
 }
 
 function centsFromInput(value) {
-  const normalized = String(value ?? '').replace(',', '.').trim();
+  const normalized = String(value ?? '')
+    .replace(',', '.')
+    .trim();
   if (!normalized) return undefined;
   const amount = Number(normalized);
   if (!Number.isFinite(amount) || amount < 0) throw new Error('Preço inválido.');
@@ -334,9 +422,16 @@ async function submitCatalogForm(event) {
         logoUrl: optional(values.logoUrl),
         coverUrl: optional(values.coverUrl)
       };
-      if (entity?.id) await api(`/v1/commerce/menus/${entity.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+      if (entity?.id)
+        await api(`/v1/commerce/menus/${entity.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
       else {
-        const created = await api('/v1/commerce/menus', { method: 'POST', body: JSON.stringify(payload) });
+        const created = await api('/v1/commerce/menus', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
         state.selectedMenuId = created.id;
       }
       await loadMenus();
@@ -349,8 +444,15 @@ async function submitCatalogForm(event) {
       };
       if (entity?.id) {
         payload.active = values.active === 'true';
-        await api(`/v1/commerce/menus/${state.selectedMenuId}/categories/${entity.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
-      } else await api(`/v1/commerce/menus/${state.selectedMenuId}/categories`, { method: 'POST', body: JSON.stringify(payload) });
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/categories/${entity.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+      } else
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/categories`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
       await loadSelectedMenu();
     }
     if (kind === 'item') {
@@ -365,10 +467,16 @@ async function submitCatalogForm(event) {
       };
       if (entity?.id) {
         payload.active = values.active === 'true';
-        await api(`/v1/commerce/menus/${state.selectedMenuId}/items/${entity.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/items/${entity.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
       } else {
         payload.catalogProductId = values.catalogProductId;
-        await api(`/v1/commerce/menus/${state.selectedMenuId}/items`, { method: 'POST', body: JSON.stringify(payload) });
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/items`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
       }
       await loadSelectedMenu();
     }
@@ -391,16 +499,25 @@ async function updateMenu(menuId, patch) {
 
 async function updateItem(menuId, itemId, patch) {
   try {
-    await api(`/v1/commerce/menus/${menuId}/items/${itemId}`, { method: 'PATCH', body: JSON.stringify(patch) });
+    await api(`/v1/commerce/menus/${menuId}/items/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch)
+    });
     await loadSelectedMenu();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
 
-document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
-document.querySelectorAll('[data-open-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.openView)));
-refreshButton.addEventListener('click', () => state.view === 'catalog' ? loadMenus() : loadOrders({ incremental: false }));
+document
+  .querySelectorAll('[data-view]')
+  .forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
+document
+  .querySelectorAll('[data-open-view]')
+  .forEach((button) => button.addEventListener('click', () => setView(button.dataset.openView)));
+refreshButton.addEventListener('click', () =>
+  state.view === 'catalog' ? loadMenus() : loadOrders({ incremental: false })
+);
 catalogRefresh.addEventListener('click', loadMenus);
 newMenuButton.addEventListener('click', () => openMenuForm());
 catalogForm.addEventListener('submit', submitCatalogForm);
