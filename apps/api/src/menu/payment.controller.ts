@@ -6,6 +6,7 @@ import type { PaymentMethod } from './payment.types.js';
 
 type Db = { $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T> };
 type PaymentInput = {
+  checkoutId?: string;
   menuSlug: string;
   method: PaymentMethod;
   customerName: string;
@@ -29,6 +30,8 @@ export class PaymentController {
       throw new BadRequestException('Missing payment data.');
     if (request.items.some((item) => !Number.isInteger(item.quantity) || item.quantity <= 0))
       throw new BadRequestException('Invalid payment items.');
+    if (request.checkoutId && request.checkoutId.trim().length < 32)
+      throw new BadRequestException('Invalid checkout id.');
 
     const ids = request.items.map((item) => item.menuItemId);
     const rows = await this.db.$queryRawUnsafe<Row[]>(
@@ -47,6 +50,7 @@ export class PaymentController {
     if (amountCents <= 0) throw new BadRequestException('Invalid payment amount.');
 
     const trusted = {
+      checkoutId: request.checkoutId?.trim(),
       menuSlug: request.menuSlug,
       method: request.method,
       amountCents,
