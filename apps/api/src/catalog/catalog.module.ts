@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from '@nestjs/common';
-
 import { CatalogService, type CatalogRepository } from '@vero/business-catalog';
 import { FinanceService, type FinanceRepository } from '@vero/business-finance';
 import {
@@ -26,6 +25,15 @@ import { FinancePageController } from '../finance/finance-page.controller.js';
 import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
+import { KitchenOrderController } from '../menu/kitchen-order.controller.js';
+import { MenuAdminController } from '../menu/menu-admin.controller.js';
+import { NativeOrderController } from '../menu/native-order.controller.js';
+import { PaymentController } from '../menu/payment.controller.js';
+import { PaymentWebhookController } from '../menu/payment-webhook.controller.js';
+import { PublicCheckoutController } from '../menu/public-checkout.controller.js';
+import { PublicMenuController } from '../menu/public-menu.controller.js';
+import { PublicMenuPageController } from '../menu/public-menu-page.controller.js';
+import { PublicOrderStatusController } from '../menu/public-order-status.controller.js';
 import { OperationalEntryController } from '../operations/operational-entry.controller.js';
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
@@ -39,17 +47,13 @@ import { CatalogController } from './catalog.controller.js';
 import { CATALOG_REPOSITORY, DATABASE_CLIENT } from './catalog.tokens.js';
 import { MvpSecurityService } from './mvp-security.service.js';
 import { MvpPageController } from './mvp-page.controller.js';
-
 type DatabaseClient = ReturnType<typeof createDatabaseClient>;
-
 class DatabaseLifecycle implements OnApplicationShutdown {
   constructor(@Inject(DATABASE_CLIENT) private readonly client: DatabaseClient) {}
-
   async onApplicationShutdown(): Promise<void> {
     await this.client.$disconnect();
   }
 }
-
 @Module({})
 export class CatalogModule {
   static register(config: AppConfig): DynamicModule {
@@ -65,14 +69,20 @@ export class CatalogModule {
         FinancePageController,
         OperationalEntryController,
         OperationsPageController,
-        MvpPageController
+        MvpPageController,
+        PublicMenuController,
+        PublicMenuPageController,
+        PublicCheckoutController,
+        PaymentController,
+        PaymentWebhookController,
+        NativeOrderController,
+        KitchenOrderController,
+        PublicOrderStatusController,
+        MenuAdminController
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
-        {
-          provide: DATABASE_CLIENT,
-          useFactory: () => createDatabaseClient(config.postgres.url)
-        },
+        { provide: DATABASE_CLIENT, useFactory: () => createDatabaseClient(config.postgres.url) },
         {
           provide: CATALOG_REPOSITORY,
           inject: [DATABASE_CLIENT],
