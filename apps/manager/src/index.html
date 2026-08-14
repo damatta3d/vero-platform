@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111827" />
+    <title>VERO Manager</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div><strong>VERO</strong><span> Manager</span></div>
+      <div id="connection" class="connection">Conectando…</div>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">OPERAÇÃO EM TEMPO REAL</p>
+          <h1>Pedidos</h1>
+        </div>
+        <button id="refresh" type="button">Atualizar</button>
+      </section>
+      <section id="board" class="board" aria-live="polite"></section>
+    </main>
+    <dialog id="order-dialog">
+      <div id="order-detail"></div>
+      <form method="dialog"><button>Fechar</button></form>
+    </dialog>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

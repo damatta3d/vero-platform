@@ -10,8 +10,12 @@ const transitions: Record<NativeOrderStatus, readonly NativeOrderStatus[]> = {
   CANCELLED: []
 };
 
+export function nextOrderStatuses(from: NativeOrderStatus): readonly NativeOrderStatus[] {
+  return transitions[from];
+}
+
 export function canTransitionOrder(from: NativeOrderStatus, to: NativeOrderStatus): boolean {
-  return transitions[from].includes(to);
+  return nextOrderStatuses(from).includes(to);
 }
 
 export function assertOrderTransition(from: NativeOrderStatus, to: NativeOrderStatus): void {
