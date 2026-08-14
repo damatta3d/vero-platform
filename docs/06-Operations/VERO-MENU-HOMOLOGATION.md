@@ -8,6 +8,16 @@ The current kitchen state sequence covered by this gate is:
 
 `RECEIVED -> CONFIRMED -> PREPARING -> READY`
 
+Current application routes:
+
+- public menu: `/menu/:slug`;
+- VERO Manager: `/manager`;
+- customer tracking: `/pedido/:orderId?token=:trackingToken`.
+
+For RC validation, use `PAY_ON_DELIVERY` with pickup. Delivery remains disabled in the public RC
+screen until the complete address is persisted with the native order. PIX must not be exposed or
+tested without explicit sandbox credentials.
+
 ## Automated Gate
 
 Run against PostgreSQL with every committed Prisma migration deployed:
