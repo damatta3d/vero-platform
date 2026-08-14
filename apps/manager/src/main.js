@@ -21,7 +21,9 @@ const state = {
   selectedMenuId: null,
   menuDetail: null,
   products: [],
-  catalogForm: null
+  catalogForm: null,
+  storeSettings: null,
+  settingsSaving: false
 };
 
 const board = document.querySelector('#board');
@@ -42,6 +44,23 @@ const catalogForm = document.querySelector('#catalog-form');
 const catalogFormFields = document.querySelector('#catalog-form-fields');
 const catalogFormError = document.querySelector('#catalog-form-error');
 const catalogFormCancel = document.querySelector('#catalog-form-cancel');
+const settingsForm = document.querySelector('#settings-form');
+const settingsLoading = document.querySelector('#settings-loading');
+const settingsError = document.querySelector('#settings-error');
+const settingsStatus = document.querySelector('#settings-status');
+const settingsSubmit = document.querySelector('#settings-submit');
+const scheduleFields = document.querySelector('#schedule-fields');
+const deliveryFields = document.querySelector('#delivery-fields');
+
+const weekdays = [
+  ['MONDAY', 'Segunda-feira'],
+  ['TUESDAY', 'Terça-feira'],
+  ['WEDNESDAY', 'Quarta-feira'],
+  ['THURSDAY', 'Quinta-feira'],
+  ['FRIDAY', 'Sexta-feira'],
+  ['SATURDAY', 'Sábado'],
+  ['SUNDAY', 'Domingo']
+];
 
 const config = {
   apiBase: window.VERO_API_BASE || '',
@@ -78,7 +97,8 @@ async function api(path, options = {}) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message = Array.isArray(payload.message) ? payload.message.join(', ') : payload.message;
-    throw new Error(message || payload.code || `HTTP_${response.status}`);
+    const fields = Array.isArray(payload.fields) ? `: ${payload.fields.join(', ')}` : '';
+    throw new Error(`${message || payload.code || `HTTP_${response.status}`}${fields}`);
   }
   return payload;
 }
@@ -92,6 +112,177 @@ function setView(view) {
   document.querySelector(`#${view}-view`)?.classList.add('active');
   document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
   if (view === 'catalog') loadMenus();
+  if (view === 'settings') loadStoreSettings();
+}
+
+function settingsControl(name) {
+  return settingsForm.elements.namedItem(name);
+}
+
+function setSettingsValue(name, value) {
+  const control = settingsControl(name);
+  if (!control) return;
+  if (control.type === 'checkbox') control.checked = Boolean(value);
+  else control.value = value ?? '';
+}
+
+function decimalFromCents(cents) {
+  return (Number(cents || 0) / 100).toFixed(2);
+}
+
+function nullableInput(name) {
+  return optional(settingsControl(name)?.value) ?? null;
+}
+
+function nullableNumberInput(name) {
+  const value = String(settingsControl(name)?.value ?? '').trim();
+  if (!value) return null;
+  const number = Number(value.replace(',', '.'));
+  if (!Number.isFinite(number) || number < 0) throw new Error('Informe um valor numérico válido.');
+  return number;
+}
+
+function settingsCents(name) {
+  const value = String(settingsControl(name)?.value ?? '').trim();
+  if (!value) return null;
+  const amount = Number(value.replace(',', '.'));
+  if (!Number.isFinite(amount) || amount < 0) throw new Error('Informe um valor monetário válido.');
+  return Math.round(amount * 100);
+}
+
+function renderScheduleFields(schedule) {
+  const byWeekday = new Map((schedule || []).map((day) => [day.weekday, day]));
+  scheduleFields.innerHTML = weekdays
+    .map(([weekday, label]) => {
+      const day = byWeekday.get(weekday) || {
+        weekday,
+        enabled: false,
+        opensAt: '',
+        closesAt: ''
+      };
+      return `<div class="schedule-row" data-schedule-day="${weekday}"><label class="schedule-day"><input type="checkbox" name="scheduleEnabled-${weekday}" ${day.enabled ? 'checked' : ''} /><strong>${label}</strong></label><label class="form-field"><span>Abre</span><input type="time" name="opensAt-${weekday}" value="${escapeHtml(day.opensAt || '')}" /></label><label class="form-field"><span>Fecha</span><input type="time" name="closesAt-${weekday}" value="${escapeHtml(day.closesAt || '')}" /></label></div>`;
+    })
+    .join('');
+  scheduleFields.querySelectorAll('[data-schedule-day]').forEach((row) => {
+    const checkbox = row.querySelector('input[type="checkbox"]');
+    const timeInputs = row.querySelectorAll('input[type="time"]');
+    const sync = () => timeInputs.forEach((input) => (input.disabled = !checkbox.checked));
+    checkbox.addEventListener('change', sync);
+    sync();
+  });
+}
+
+function syncDeliveryFields() {
+  const enabled = settingsControl('deliveryEnabled').checked;
+  deliveryFields.querySelectorAll('input').forEach((input) => (input.disabled = !enabled));
+}
+
+function fillSettings(settings) {
+  const { identity, operation, delivery, payments } = settings;
+  Object.entries(identity).forEach(([name, value]) => setSettingsValue(name, value));
+  Object.entries(operation).forEach(([name, value]) => setSettingsValue(name, value));
+  setSettingsValue('maxRadiusKm', delivery.maxRadiusKm);
+  setSettingsValue('baseFee', decimalFromCents(delivery.baseFeeCents));
+  setSettingsValue(
+    'freeAbove',
+    delivery.freeAboveCents == null ? '' : decimalFromCents(delivery.freeAboveCents)
+  );
+  setSettingsValue('minimumOrder', decimalFromCents(operation.minimumOrderCents));
+  Object.entries(payments).forEach(([name, value]) => setSettingsValue(name, value));
+  renderScheduleFields(settings.schedule);
+  syncDeliveryFields();
+}
+
+async function loadStoreSettings() {
+  settingsLoading.hidden = false;
+  settingsError.hidden = true;
+  settingsForm.hidden = true;
+  settingsStatus.textContent = '';
+  try {
+    const settings = await api('/v1/settings/store');
+    state.storeSettings = settings;
+    fillSettings(settings);
+    settingsLoading.hidden = true;
+    settingsForm.hidden = false;
+    connection.textContent = 'Online';
+  } catch (error) {
+    settingsLoading.hidden = true;
+    settingsError.hidden = false;
+    settingsError.innerHTML = `<p>Não foi possível carregar as configurações: ${escapeHtml(error.message)}</p><button type="button" class="text-button">Tentar novamente</button>`;
+    settingsError.querySelector('button').addEventListener('click', loadStoreSettings);
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
+function settingsPayload() {
+  const schedule = weekdays.map(([weekday]) => {
+    const enabled = settingsControl(`scheduleEnabled-${weekday}`).checked;
+    return {
+      weekday,
+      enabled,
+      opensAt: enabled ? nullableInput(`opensAt-${weekday}`) : null,
+      closesAt: enabled ? nullableInput(`closesAt-${weekday}`) : null
+    };
+  });
+  return {
+    identity: {
+      displayName: settingsControl('displayName').value.trim(),
+      phone: nullableInput('phone'),
+      whatsapp: nullableInput('whatsapp'),
+      address: nullableInput('address'),
+      addressComplement: nullableInput('addressComplement'),
+      neighborhood: nullableInput('neighborhood'),
+      city: nullableInput('city'),
+      stateCode: nullableInput('stateCode')?.toUpperCase() || null,
+      postalCode: nullableInput('postalCode')
+    },
+    operation: {
+      operationallyOpen: settingsControl('operationallyOpen').checked,
+      pickupEnabled: settingsControl('pickupEnabled').checked,
+      deliveryEnabled: settingsControl('deliveryEnabled').checked,
+      preparationTimeMinMinutes: Number(settingsControl('preparationTimeMinMinutes').value),
+      preparationTimeMaxMinutes: Number(settingsControl('preparationTimeMaxMinutes').value),
+      minimumOrderCents: settingsCents('minimumOrder')
+    },
+    delivery: {
+      maxRadiusKm: nullableNumberInput('maxRadiusKm'),
+      baseFeeCents: settingsCents('baseFee'),
+      freeAboveCents: settingsCents('freeAbove')
+    },
+    schedule,
+    payments: {
+      pixEnabled: settingsControl('pixEnabled').checked,
+      paymentOnDeliveryEnabled: settingsControl('paymentOnDeliveryEnabled').checked,
+      cashEnabled: settingsControl('cashEnabled').checked,
+      cardOnDeliveryEnabled: settingsControl('cardOnDeliveryEnabled').checked
+    }
+  };
+}
+
+async function submitSettings(event) {
+  event.preventDefault();
+  if (state.settingsSaving) return;
+  state.settingsSaving = true;
+  settingsSubmit.disabled = true;
+  settingsSubmit.textContent = 'Salvando…';
+  settingsStatus.textContent = '';
+  try {
+    const settings = await api('/v1/settings/store', {
+      method: 'PUT',
+      body: JSON.stringify(settingsPayload())
+    });
+    state.storeSettings = settings;
+    fillSettings(settings);
+    settingsStatus.textContent = 'Configurações salvas com sucesso.';
+    connection.textContent = 'Online';
+  } catch (error) {
+    settingsStatus.textContent = `Não foi possível salvar: ${error.message}`;
+    connection.textContent = `Erro: ${error.message}`;
+  } finally {
+    state.settingsSaving = false;
+    settingsSubmit.disabled = false;
+    settingsSubmit.textContent = 'Salvar configurações';
+  }
 }
 
 function render() {
@@ -515,12 +706,16 @@ document
 document
   .querySelectorAll('[data-open-view]')
   .forEach((button) => button.addEventListener('click', () => setView(button.dataset.openView)));
-refreshButton.addEventListener('click', () =>
-  state.view === 'catalog' ? loadMenus() : loadOrders({ incremental: false })
-);
+refreshButton.addEventListener('click', () => {
+  if (state.view === 'catalog') return loadMenus();
+  if (state.view === 'settings') return loadStoreSettings();
+  return loadOrders({ incremental: false });
+});
 catalogRefresh.addEventListener('click', loadMenus);
 newMenuButton.addEventListener('click', () => openMenuForm());
 catalogForm.addEventListener('submit', submitCatalogForm);
 catalogFormCancel.addEventListener('click', () => catalogDialog.close());
+settingsForm.addEventListener('submit', submitSettings);
+settingsControl('deliveryEnabled').addEventListener('change', syncDeliveryFields);
 loadOrders({ incremental: false });
 setInterval(() => loadOrders({ incremental: true }), 5000);

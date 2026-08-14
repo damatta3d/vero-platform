@@ -96,13 +96,185 @@
             </div>
           </section>
           <section id="settings-view" class="view" aria-labelledby="page-title">
-            <article class="empty-state panel">
-              <p class="eyebrow">ESTABELECIMENTO</p>
-              <h2>Configurações da operação</h2>
-              <p>
-                Horários, entrega, retirada, pagamentos e dados da loja serão centralizados aqui.
-              </p>
-            </article>
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">ESTABELECIMENTO</p>
+                <h2>Configurações da operação</h2>
+              </div>
+            </div>
+            <div id="settings-loading" class="panel settings-message" aria-live="polite">
+              Carregando configurações…
+            </div>
+            <div id="settings-error" class="panel settings-message error" role="alert" hidden></div>
+            <form id="settings-form" hidden>
+              <div class="settings-grid">
+                <section class="panel settings-section settings-identity">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">IDENTIDADE</p>
+                      <h2>Dados da loja</h2>
+                    </div>
+                  </div>
+                  <div class="form-grid">
+                    <label class="form-field settings-wide">
+                      <span>Nome de exibição</span>
+                      <input name="displayName" maxlength="160" required />
+                    </label>
+                    <label class="form-field">
+                      <span>Telefone</span>
+                      <input name="phone" inputmode="tel" maxlength="32" />
+                    </label>
+                    <label class="form-field">
+                      <span>WhatsApp</span>
+                      <input name="whatsapp" inputmode="tel" maxlength="32" />
+                    </label>
+                    <label class="form-field settings-wide">
+                      <span>Endereço</span>
+                      <input name="address" maxlength="240" />
+                    </label>
+                    <label class="form-field">
+                      <span>Complemento</span>
+                      <input name="addressComplement" maxlength="160" />
+                    </label>
+                    <label class="form-field">
+                      <span>Bairro</span>
+                      <input name="neighborhood" maxlength="120" />
+                    </label>
+                    <label class="form-field">
+                      <span>Cidade</span>
+                      <input name="city" maxlength="120" />
+                    </label>
+                    <label class="form-field">
+                      <span>UF</span>
+                      <input name="stateCode" maxlength="2" autocapitalize="characters" />
+                    </label>
+                    <label class="form-field">
+                      <span>CEP</span>
+                      <input name="postalCode" inputmode="numeric" maxlength="9" />
+                    </label>
+                  </div>
+                </section>
+                <section class="panel settings-section">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">ATENDIMENTO</p>
+                      <h2>Operação</h2>
+                    </div>
+                  </div>
+                  <div class="toggle-list">
+                    <label class="toggle-row">
+                      <span
+                        ><strong>Loja aberta</strong
+                        ><small>Disponível operacionalmente</small></span
+                      >
+                      <input name="operationallyOpen" type="checkbox" />
+                    </label>
+                    <label class="toggle-row">
+                      <span
+                        ><strong>Aceitar retirada</strong
+                        ><small>Cliente retira no local</small></span
+                      >
+                      <input name="pickupEnabled" type="checkbox" />
+                    </label>
+                    <label class="toggle-row">
+                      <span
+                        ><strong>Aceitar entrega</strong><small>Pedidos com entrega</small></span
+                      >
+                      <input name="deliveryEnabled" type="checkbox" />
+                    </label>
+                  </div>
+                  <div class="form-grid settings-fields">
+                    <label class="form-field">
+                      <span>Preparo mínimo (min)</span>
+                      <input
+                        name="preparationTimeMinMinutes"
+                        type="number"
+                        min="1"
+                        max="1440"
+                        required
+                      />
+                    </label>
+                    <label class="form-field">
+                      <span>Preparo máximo (min)</span>
+                      <input
+                        name="preparationTimeMaxMinutes"
+                        type="number"
+                        min="1"
+                        max="1440"
+                        required
+                      />
+                    </label>
+                    <label class="form-field settings-wide">
+                      <span>Pedido mínimo (R$)</span>
+                      <input name="minimumOrder" type="number" min="0" step="0.01" required />
+                    </label>
+                  </div>
+                </section>
+                <section class="panel settings-section">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">LOGÍSTICA</p>
+                      <h2>Entrega</h2>
+                    </div>
+                  </div>
+                  <div id="delivery-fields" class="form-grid">
+                    <label class="form-field">
+                      <span>Raio máximo (km)</span>
+                      <input name="maxRadiusKm" type="number" min="0" max="1000" step="0.1" />
+                    </label>
+                    <label class="form-field">
+                      <span>Taxa base (R$)</span>
+                      <input name="baseFee" type="number" min="0" step="0.01" required />
+                    </label>
+                    <label class="form-field settings-wide">
+                      <span>Frete grátis acima de (R$)</span>
+                      <input name="freeAbove" type="number" min="0" step="0.01" />
+                    </label>
+                  </div>
+                </section>
+                <section class="panel settings-section settings-schedule">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">SEMANA</p>
+                      <h2>Horários</h2>
+                    </div>
+                  </div>
+                  <div id="schedule-fields" class="schedule-list"></div>
+                </section>
+                <section class="panel settings-section">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">RECEBIMENTO</p>
+                      <h2>Pagamentos</h2>
+                    </div>
+                  </div>
+                  <div class="toggle-list">
+                    <label class="toggle-row"
+                      ><span><strong>PIX</strong></span
+                      ><input name="pixEnabled" type="checkbox"
+                    /></label>
+                    <label class="toggle-row"
+                      ><span><strong>Pagamento na entrega</strong></span
+                      ><input name="paymentOnDeliveryEnabled" type="checkbox"
+                    /></label>
+                    <label class="toggle-row"
+                      ><span><strong>Dinheiro</strong></span
+                      ><input name="cashEnabled" type="checkbox"
+                    /></label>
+                    <label class="toggle-row"
+                      ><span><strong>Cartão na entrega</strong></span
+                      ><input name="cardOnDeliveryEnabled" type="checkbox"
+                    /></label>
+                  </div>
+                </section>
+              </div>
+              <div class="settings-actions">
+                <p id="settings-status" class="muted" aria-live="polite"></p>
+                <button id="settings-submit" class="primary-button" type="submit">
+                  Salvar configurações
+                </button>
+              </div>
+            </form>
           </section>
         </main>
       </div>
