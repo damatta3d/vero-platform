@@ -10,8 +10,8 @@ O código foi endurecido e os gates independentes de infraestrutura passaram. A 
 
 1. HEAD inicial da `main`: `6b84972c9dd4bbf76d0d7d1caab65151f239e8c9`.
 2. Branch: `release/santo-parma-rc1`.
-3. PR Draft: registrar após publicação da branch.
-4. Commits: registrar após consolidação.
+3. PR Draft: `#58` — `fix(release): harden Santo Parma RC1`.
+4. Commits remotos: `537a423` (código) e `7fb273b` (relatório inicial).
 5. Ambiente: API compilada executada localmente; dependências externas ausentes; nenhuma publicação para clientes.
 
 ## Plataforma
