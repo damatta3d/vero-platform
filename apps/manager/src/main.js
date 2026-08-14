@@ -5,31 +5,40 @@ const statuses = [
   ['READY', 'Prontos'],
   ['DISPATCHED', 'Em entrega']
 ];
-
+const viewTitles = {
+  dashboard: 'Visão geral',
+  orders: 'Pedidos',
+  catalog: 'Cardápio',
+  settings: 'Configurações'
+};
 const state = {
   orders: new Map(),
-  cursor: null
+  cursor: null,
+  view: 'dashboard',
+  menus: [],
+  selectedMenuId: null,
+  menuDetail: null
 };
-
 const board = document.querySelector('#board');
 const refreshButton = document.querySelector('#refresh');
 const connection = document.querySelector('#connection');
 const dialog = document.querySelector('#order-dialog');
 const orderDetail = document.querySelector('#order-detail');
-
+const pageTitle = document.querySelector('#page-title');
+const metrics = document.querySelector('#metrics');
+const activeOrdersSummary = document.querySelector('#active-orders-summary');
+const stageSummary = document.querySelector('#stage-summary');
+const menuList = document.querySelector('#menu-list');
+const catalogDetail = document.querySelector('#catalog-detail');
+const catalogRefresh = document.querySelector('#catalog-refresh');
 const config = {
   apiBase: window.VERO_API_BASE || '',
   tenantId: window.VERO_TENANT_ID || localStorage.getItem('veroTenantId') || '',
   authorization: window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
 };
-
 function money(cents = 0) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(cents / 100);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 }
-
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -38,7 +47,6 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
-
 function requestHeaders() {
   return {
     'content-type': 'application/json',
@@ -46,7 +54,6 @@ function requestHeaders() {
     authorization: config.authorization
   };
 }
-
 async function api(path, options = {}) {
   const response = await fetch(`${config.apiBase}${path}`, {
     ...options,
@@ -56,30 +63,73 @@ async function api(path, options = {}) {
   if (!response.ok) throw new Error(payload.message || `HTTP_${response.status}`);
   return payload;
 }
-
+function setView(view) {
+  if (!viewTitles[view]) return;
+  state.view = view;
+  pageTitle.textContent = viewTitles[view];
+  document.querySelectorAll('.view').forEach((element) => element.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach((element) => element.classList.remove('active'));
+  document.querySelector(`#${view}-view`)?.classList.add('active');
+  document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+  if (view === 'catalog') loadMenus();
+}
 function render() {
+  renderBoard();
+  renderDashboard();
+}
+function renderDashboard() {
+  const orders = [...state.orders.values()];
+  const totalCents = orders.reduce((sum, order) => sum + (order.totalCents || 0), 0);
+  const preparing = orders.filter((order) => order.status === 'PREPARING').length;
+  const delivery = orders.filter((order) => order.fulfillment === 'DELIVERY').length;
+  metrics.innerHTML = [
+    ['Pedidos ativos', orders.length],
+    ['Em preparo', preparing],
+    ['Entregas', delivery],
+    ['Valor da fila', money(totalCents)]
+  ]
+    .map(
+      ([label, value]) =>
+        `<article class="metric-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`
+    )
+    .join('');
+  const recent = orders.slice(0, 5);
+  activeOrdersSummary.innerHTML = recent.length
+    ? recent
+        .map(
+          (order) =>
+            `<button class="summary-row" type="button" data-order-id="${escapeHtml(order.orderId)}"><span><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><small>${escapeHtml(order.customerName)}</small></span><span>${money(order.totalCents)}</span></button>`
+        )
+        .join('')
+    : '<p class="muted">Nenhum pedido ativo agora.</p>';
+  activeOrdersSummary
+    .querySelectorAll('[data-order-id]')
+    .forEach((button) =>
+      button.addEventListener('click', () => openDetail(button.dataset.orderId))
+    );
+  stageSummary.innerHTML = statuses
+    .map(
+      ([status, label]) =>
+        `<div class="stage-row"><span>${escapeHtml(label)}</span><strong>${orders.filter((order) => order.status === status).length}</strong></div>`
+    )
+    .join('');
+}
+function renderBoard() {
   board.innerHTML = '';
   for (const [status, label] of statuses) {
     const column = document.createElement('section');
     column.className = 'column';
     const orders = [...state.orders.values()].filter((order) => order.status === status);
-    column.innerHTML = `<header><h2>${label}</h2><span>${orders.length}</span></header><div class="cards"></div>`;
+    column.innerHTML = `<header><h3>${label}</h3><span>${orders.length}</span></header><div class="cards"></div>`;
     const cards = column.querySelector('.cards');
     for (const order of orders) cards.append(createCard(order));
     board.append(column);
   }
 }
-
 function createCard(order) {
   const article = document.createElement('article');
   article.className = 'order-card';
-  article.innerHTML = `
-    <button class="card-main" type="button">
-      <div class="order-meta"><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div>
-      <h3>${escapeHtml(order.customerName)}</h3>
-      <div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(order.paymentMethod)}</span></div>
-    </button>
-    <div class="actions"></div>`;
+  article.innerHTML = `<button class="card-main" type="button"><div class="order-meta"><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div><h3>${escapeHtml(order.customerName)}</h3><div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(order.paymentMethod)}</span></div></button><div class="actions"></div>`;
   article.querySelector('.card-main').addEventListener('click', () => openDetail(order.orderId));
   const actions = article.querySelector('.actions');
   for (const next of order.allowedTransitions || []) {
@@ -91,7 +141,6 @@ function createCard(order) {
   }
   return article;
 }
-
 function actionLabel(status) {
   return (
     {
@@ -104,7 +153,6 @@ function actionLabel(status) {
     }[status] || status
   );
 }
-
 async function loadOrders({ incremental = true } = {}) {
   try {
     connection.textContent = 'Atualizando…';
@@ -119,7 +167,6 @@ async function loadOrders({ incremental = true } = {}) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
-
 async function transition(orderId, status) {
   try {
     await api(`/v1/kitchen/orders/${orderId}/status`, {
@@ -133,7 +180,6 @@ async function transition(orderId, status) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
-
 async function openDetail(orderId) {
   try {
     const result = await api(`/v1/kitchen/orders/${orderId}`);
@@ -149,21 +195,106 @@ async function openDetail(orderId) {
         (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
       )
       .join('');
-    orderDetail.innerHTML = `
-      <h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2>
-      <p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p>
-      <p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p>
-      <ul>${itemRows}</ul>
-      <p><strong>Total: ${money(order.totalCents)}</strong></p>
-      <p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p>
-      <h3>Histórico</h3>
-      <ol>${historyRows}</ol>`;
+    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
-
-refreshButton.addEventListener('click', () => loadOrders({ incremental: false }));
+async function loadMenus() {
+  try {
+    menuList.innerHTML = '<p class="muted">Carregando…</p>';
+    state.menus = await api('/v1/commerce/menus');
+    if (state.selectedMenuId && !state.menus.some((menu) => menu.id === state.selectedMenuId))
+      state.selectedMenuId = null;
+    if (!state.selectedMenuId && state.menus[0]) state.selectedMenuId = state.menus[0].id;
+    renderMenus();
+    if (state.selectedMenuId) await loadSelectedMenu();
+    else catalogDetail.innerHTML = '<p class="muted">Nenhum menu cadastrado.</p>';
+  } catch (error) {
+    menuList.innerHTML = `<p class="muted">Não foi possível carregar: ${escapeHtml(error.message)}</p>`;
+  }
+}
+function renderMenus() {
+  menuList.innerHTML = state.menus.length
+    ? state.menus
+        .map(
+          (menu) =>
+            `<button class="menu-row${menu.id === state.selectedMenuId ? ' selected' : ''}" type="button" data-menu-id="${escapeHtml(menu.id)}"><span><strong>${escapeHtml(menu.name)}</strong><small>/${escapeHtml(menu.slug)}</small></span><span class="badge ${menu.published ? 'success' : ''}">${menu.published ? 'Publicado' : 'Rascunho'}</span></button>`
+        )
+        .join('')
+    : '<p class="muted">Nenhum menu cadastrado.</p>';
+  menuList.querySelectorAll('[data-menu-id]').forEach((button) =>
+    button.addEventListener('click', async () => {
+      state.selectedMenuId = button.dataset.menuId;
+      renderMenus();
+      await loadSelectedMenu();
+    })
+  );
+}
+async function loadSelectedMenu() {
+  if (!state.selectedMenuId) return;
+  try {
+    state.menuDetail = await api(`/v1/commerce/menus/${state.selectedMenuId}`);
+    renderCatalogDetail(state.menuDetail);
+  } catch (error) {
+    catalogDetail.innerHTML = `<p class="muted">Erro ao carregar detalhes: ${escapeHtml(error.message)}</p>`;
+  }
+}
+function renderCatalogDetail(detail) {
+  const menu = detail.menu;
+  const categories = detail.categories || [];
+  const items = detail.items || [];
+  catalogDetail.innerHTML = `<div class="catalog-title"><div><p class="eyebrow">MENU</p><h2>${escapeHtml(menu.name)}</h2><p class="muted">${escapeHtml(menu.description || 'Sem descrição')}</p></div><button id="toggle-publish" class="primary-button" type="button">${menu.published ? 'Despublicar' : 'Publicar'}</button></div><div class="catalog-categories">${
+    categories.length
+      ? categories
+          .map((category) => {
+            const categoryItems = items.filter((item) => item.categoryId === category.id);
+            return `<section class="catalog-category"><div class="category-heading"><div><h3>${escapeHtml(category.name)}</h3><small class="muted">${category.active ? 'Ativa' : 'Inativa'}</small></div><span>${categoryItems.length} itens</span></div>${categoryItems.length ? categoryItems.map((item) => `<article class="catalog-item"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || '')}</small></div><div class="catalog-item-actions"><strong>${money(item.priceCents)}</strong><span class="badge ${item.available && item.active ? 'success' : ''}">${item.active ? (item.available ? 'Disponível' : 'Pausado') : 'Inativo'}</span><button type="button" data-item-id="${escapeHtml(item.id)}" data-available="${item.available}">${item.available ? 'Pausar' : 'Ativar'}</button></div></article>`).join('') : '<p class="muted">Categoria sem itens.</p>'}</section>`;
+          })
+          .join('')
+      : '<div class="empty-catalog"><p class="muted">Nenhuma categoria cadastrada neste menu.</p></div>'
+  }</div>`;
+  document
+    .querySelector('#toggle-publish')
+    ?.addEventListener('click', () => updateMenu(menu.id, { published: !menu.published }));
+  catalogDetail.querySelectorAll('[data-item-id]').forEach((button) =>
+    button.addEventListener('click', () =>
+      updateItem(menu.id, button.dataset.itemId, {
+        available: button.dataset.available !== 'true'
+      })
+    )
+  );
+}
+async function updateMenu(menuId, patch) {
+  try {
+    await api(`/v1/commerce/menus/${menuId}`, { method: 'PATCH', body: JSON.stringify(patch) });
+    await loadMenus();
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+async function updateItem(menuId, itemId, patch) {
+  try {
+    await api(`/v1/commerce/menus/${menuId}/items/${itemId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch)
+    });
+    await loadSelectedMenu();
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+document
+  .querySelectorAll('[data-view]')
+  .forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
+document
+  .querySelectorAll('[data-open-view]')
+  .forEach((button) => button.addEventListener('click', () => setView(button.dataset.openView)));
+refreshButton.addEventListener('click', () => {
+  if (state.view === 'catalog') loadMenus();
+  else loadOrders({ incremental: false });
+});
+catalogRefresh.addEventListener('click', loadMenus);
 loadOrders({ incremental: false });
 setInterval(() => loadOrders({ incremental: true }), 5000);
