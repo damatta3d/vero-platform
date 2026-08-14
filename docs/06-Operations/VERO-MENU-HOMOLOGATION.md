@@ -15,7 +15,7 @@ Required flow:
 3. verify server-side pricing and persisted `RECEIVED` status;
 4. verify customer tracking with the opaque tracking token;
 5. verify the order is visible to the kitchen queue;
-6. transition `RECEIVED -> ACCEPTED -> PREPARING -> READY`;
+6. transition `RECEIVED -> CONFIRMED -> PREPARING -> READY`;
 7. verify the public tracking endpoint reflects the final state;
 8. verify the persisted status history contains every transition.
 
