@@ -28,6 +28,13 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm exec prisma validate
       - run: pnpm audit --audit-level high
+      - run: pnpm exec prettier --write apps/manager/src/main.js apps/manager/src/styles.css
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manager-prettier-output
+          path: |
+            apps/manager/src/main.js
+            apps/manager/src/styles.css
       - run: pnpm verify
 
   integration:
