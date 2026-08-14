@@ -1,0 +1,15 @@
+{
+  "name": "manager",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/manager/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node apps/manager/tools/build.mjs"
+      }
+    }
+  },
+  "tags": ["scope:manager", "type:app"]
+}
