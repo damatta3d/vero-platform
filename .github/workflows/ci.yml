@@ -28,6 +28,7 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm exec prisma validate
       - run: pnpm audit --audit-level high
+      - run: pnpm exec prettier apps/api/src/menu/menu-admin.controller.ts
       - run: pnpm verify
 
   integration:
