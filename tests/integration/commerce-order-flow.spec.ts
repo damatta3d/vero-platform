@@ -103,7 +103,7 @@ describe('VERO Commerce native order homologation flow', () => {
       expect.arrayContaining([expect.objectContaining({ orderId: created.orderId, status: 'RECEIVED' })])
     );
 
-    await kitchen.transition(`Bearer ${apiKey}`, tenantId, created.orderId, { status: 'ACCEPTED' });
+    await kitchen.transition(`Bearer ${apiKey}`, tenantId, created.orderId, { status: 'CONFIRMED' });
     await kitchen.transition(`Bearer ${apiKey}`, tenantId, created.orderId, { status: 'PREPARING' });
     await kitchen.transition(`Bearer ${apiKey}`, tenantId, created.orderId, { status: 'READY' });
 
@@ -116,7 +116,7 @@ describe('VERO Commerce native order homologation flow', () => {
     );
     expect(history.map((entry) => entry.toStatus)).toEqual([
       'RECEIVED',
-      'ACCEPTED',
+      'CONFIRMED',
       'PREPARING',
       'READY'
     ]);
