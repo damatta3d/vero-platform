@@ -20,8 +20,7 @@ const orderDetail = document.querySelector('#order-detail');
 const config = {
   apiBase: window.VERO_API_BASE || '',
   tenantId: window.VERO_TENANT_ID || localStorage.getItem('veroTenantId') || '',
-  authorization:
-    window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
+  authorization: window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
 };
 
 function money(cents = 0) {
@@ -81,9 +80,7 @@ function createCard(order) {
       <div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(order.paymentMethod)}</span></div>
     </button>
     <div class="actions"></div>`;
-  article
-    .querySelector('.card-main')
-    .addEventListener('click', () => openDetail(order.orderId));
+  article.querySelector('.card-main').addEventListener('click', () => openDetail(order.orderId));
   const actions = article.querySelector('.actions');
   for (const next of order.allowedTransitions || []) {
     const button = document.createElement('button');
@@ -112,9 +109,7 @@ async function loadOrders({ incremental = true } = {}) {
   try {
     connection.textContent = 'Atualizando…';
     const query =
-      incremental && state.cursor
-        ? `?updatedAfter=${encodeURIComponent(state.cursor)}`
-        : '';
+      incremental && state.cursor ? `?updatedAfter=${encodeURIComponent(state.cursor)}` : '';
     const result = await api(`/v1/kitchen/orders${query}`);
     for (const order of result.orders) state.orders.set(order.orderId, order);
     state.cursor = result.sync?.serverTime || new Date().toISOString();
@@ -151,8 +146,7 @@ async function openDetail(orderId) {
       .join('');
     const historyRows = history
       .map(
-        (entry) =>
-          `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
+        (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
       )
       .join('');
     orderDetail.innerHTML = `
