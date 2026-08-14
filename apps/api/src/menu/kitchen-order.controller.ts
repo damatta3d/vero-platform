@@ -31,7 +31,8 @@ export class KitchenOrderController {
     @Inject(MvpSecurityService) private readonly security: MvpSecurityService,
     @Inject(DATABASE_CLIENT) private readonly db: Db
   ) {}
-  @Get() async list(
+  @Get()
+  async list(
     @Headers('authorization') authorization?: string,
     @Headers('x-tenant-id') tenantId?: string,
     @Query('status') status?: NativeOrderStatus,
@@ -51,11 +52,15 @@ export class KitchenOrderController {
       updatedAfterDate?.toISOString() ?? null
     );
     return {
-      orders: orders.map((order) => ({ ...order, allowedTransitions: nextOrderStatuses(order.status) })),
+      orders: orders.map((order) => ({
+        ...order,
+        allowedTransitions: nextOrderStatuses(order.status)
+      })),
       sync: { serverTime: new Date().toISOString() }
     };
   }
-  @Get(':orderId') async detail(
+  @Get(':orderId')
+  async detail(
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-tenant-id') tenantId: string | undefined,
     @Param('orderId') orderId: string
@@ -77,9 +82,14 @@ export class KitchenOrderController {
       `SELECT from_status AS "fromStatus",to_status AS "toStatus",occurred_at AS "occurredAt" FROM commerce_native_order_status_history WHERE order_id=$1::uuid ORDER BY occurred_at`,
       orderId
     );
-    return { order: { ...order, allowedTransitions: nextOrderStatuses(order.status) }, items, history };
+    return {
+      order: { ...order, allowedTransitions: nextOrderStatuses(order.status) },
+      items,
+      history
+    };
   }
-  @Patch(':orderId/status') async transition(
+  @Patch(':orderId/status')
+  async transition(
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-tenant-id') tenantId: string | undefined,
     @Param('orderId') orderId: string,
