@@ -17,7 +17,8 @@ import {
   PrismaInventoryRepository,
   PrismaOperationalEntryRepository,
   PrismaProductionRepository,
-  PrismaSalesRepository
+  PrismaSalesRepository,
+  PrismaStoreSettingsRepository
 } from '@vero/infrastructure-database';
 import { APP_CONFIG } from '../app.tokens.js';
 import { FinanceController } from '../finance/finance.controller.js';
@@ -43,6 +44,9 @@ import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
 import { SalesController } from '../sales/sales.controller.js';
 import { SALES_REPOSITORY } from '../sales/sales.tokens.js';
+import { StoreSettingsController } from '../settings/store-settings.controller.js';
+import { StoreSettingsService } from '../settings/store-settings.service.js';
+import { STORE_SETTINGS_REPOSITORY } from '../settings/store-settings.tokens.js';
 import { CatalogController } from './catalog.controller.js';
 import { CATALOG_REPOSITORY, DATABASE_CLIENT } from './catalog.tokens.js';
 import { MvpSecurityService } from './mvp-security.service.js';
@@ -78,7 +82,8 @@ export class CatalogModule {
         NativeOrderController,
         KitchenOrderController,
         PublicOrderStatusController,
-        MenuAdminController
+        MenuAdminController,
+        StoreSettingsController
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -148,7 +153,13 @@ export class CatalogModule {
           inject: [DATABASE_CLIENT],
           useFactory: (client: DatabaseClient) => new PrismaOperationalEntryRepository(client)
         },
+        {
+          provide: STORE_SETTINGS_REPOSITORY,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaStoreSettingsRepository(client)
+        },
         OperationalEntryService,
+        StoreSettingsService,
         MvpSecurityService,
         DatabaseLifecycle
       ]

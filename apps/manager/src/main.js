@@ -5,20 +5,27 @@ const statuses = [
   ['READY', 'Prontos'],
   ['DISPATCHED', 'Em entrega']
 ];
+
 const viewTitles = {
   dashboard: 'Visão geral',
   orders: 'Pedidos',
   catalog: 'Cardápio',
   settings: 'Configurações'
 };
+
 const state = {
   orders: new Map(),
   cursor: null,
   view: 'dashboard',
   menus: [],
   selectedMenuId: null,
-  menuDetail: null
+  menuDetail: null,
+  products: [],
+  catalogForm: null,
+  storeSettings: null,
+  settingsSaving: false
 };
+
 const board = document.querySelector('#board');
 const refreshButton = document.querySelector('#refresh');
 const connection = document.querySelector('#connection');
@@ -31,14 +38,40 @@ const stageSummary = document.querySelector('#stage-summary');
 const menuList = document.querySelector('#menu-list');
 const catalogDetail = document.querySelector('#catalog-detail');
 const catalogRefresh = document.querySelector('#catalog-refresh');
+const newMenuButton = document.querySelector('#new-menu');
+const catalogDialog = document.querySelector('#catalog-dialog');
+const catalogForm = document.querySelector('#catalog-form');
+const catalogFormFields = document.querySelector('#catalog-form-fields');
+const catalogFormError = document.querySelector('#catalog-form-error');
+const catalogFormCancel = document.querySelector('#catalog-form-cancel');
+const settingsForm = document.querySelector('#settings-form');
+const settingsLoading = document.querySelector('#settings-loading');
+const settingsError = document.querySelector('#settings-error');
+const settingsStatus = document.querySelector('#settings-status');
+const settingsSubmit = document.querySelector('#settings-submit');
+const scheduleFields = document.querySelector('#schedule-fields');
+const deliveryFields = document.querySelector('#delivery-fields');
+
+const weekdays = [
+  ['MONDAY', 'Segunda-feira'],
+  ['TUESDAY', 'Terça-feira'],
+  ['WEDNESDAY', 'Quarta-feira'],
+  ['THURSDAY', 'Quinta-feira'],
+  ['FRIDAY', 'Sexta-feira'],
+  ['SATURDAY', 'Sábado'],
+  ['SUNDAY', 'Domingo']
+];
+
 const config = {
   apiBase: window.VERO_API_BASE || '',
   tenantId: window.VERO_TENANT_ID || localStorage.getItem('veroTenantId') || '',
   authorization: window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
 };
+
 function money(cents = 0) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 }
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -47,6 +80,7 @@ function escapeHtml(value) {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 }
+
 function requestHeaders() {
   return {
     'content-type': 'application/json',
@@ -54,15 +88,21 @@ function requestHeaders() {
     authorization: config.authorization
   };
 }
+
 async function api(path, options = {}) {
   const response = await fetch(`${config.apiBase}${path}`, {
     ...options,
     headers: { ...requestHeaders(), ...(options.headers || {}) }
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.message || `HTTP_${response.status}`);
+  if (!response.ok) {
+    const message = Array.isArray(payload.message) ? payload.message.join(', ') : payload.message;
+    const fields = Array.isArray(payload.fields) ? `: ${payload.fields.join(', ')}` : '';
+    throw new Error(`${message || payload.code || `HTTP_${response.status}`}${fields}`);
+  }
   return payload;
 }
+
 function setView(view) {
   if (!viewTitles[view]) return;
   state.view = view;
@@ -72,11 +112,184 @@ function setView(view) {
   document.querySelector(`#${view}-view`)?.classList.add('active');
   document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
   if (view === 'catalog') loadMenus();
+  if (view === 'settings') loadStoreSettings();
 }
+
+function settingsControl(name) {
+  return settingsForm.elements.namedItem(name);
+}
+
+function setSettingsValue(name, value) {
+  const control = settingsControl(name);
+  if (!control) return;
+  if (control.type === 'checkbox') control.checked = Boolean(value);
+  else control.value = value ?? '';
+}
+
+function decimalFromCents(cents) {
+  return (Number(cents || 0) / 100).toFixed(2);
+}
+
+function nullableInput(name) {
+  return optional(settingsControl(name)?.value) ?? null;
+}
+
+function nullableNumberInput(name) {
+  const value = String(settingsControl(name)?.value ?? '').trim();
+  if (!value) return null;
+  const number = Number(value.replace(',', '.'));
+  if (!Number.isFinite(number) || number < 0) throw new Error('Informe um valor numérico válido.');
+  return number;
+}
+
+function settingsCents(name) {
+  const value = String(settingsControl(name)?.value ?? '').trim();
+  if (!value) return null;
+  const amount = Number(value.replace(',', '.'));
+  if (!Number.isFinite(amount) || amount < 0) throw new Error('Informe um valor monetário válido.');
+  return Math.round(amount * 100);
+}
+
+function renderScheduleFields(schedule) {
+  const byWeekday = new Map((schedule || []).map((day) => [day.weekday, day]));
+  scheduleFields.innerHTML = weekdays
+    .map(([weekday, label]) => {
+      const day = byWeekday.get(weekday) || {
+        weekday,
+        enabled: false,
+        opensAt: '',
+        closesAt: ''
+      };
+      return `<div class="schedule-row" data-schedule-day="${weekday}"><label class="schedule-day"><input type="checkbox" name="scheduleEnabled-${weekday}" ${day.enabled ? 'checked' : ''} /><strong>${label}</strong></label><label class="form-field"><span>Abre</span><input type="time" name="opensAt-${weekday}" value="${escapeHtml(day.opensAt || '')}" /></label><label class="form-field"><span>Fecha</span><input type="time" name="closesAt-${weekday}" value="${escapeHtml(day.closesAt || '')}" /></label></div>`;
+    })
+    .join('');
+  scheduleFields.querySelectorAll('[data-schedule-day]').forEach((row) => {
+    const checkbox = row.querySelector('input[type="checkbox"]');
+    const timeInputs = row.querySelectorAll('input[type="time"]');
+    const sync = () => timeInputs.forEach((input) => (input.disabled = !checkbox.checked));
+    checkbox.addEventListener('change', sync);
+    sync();
+  });
+}
+
+function syncDeliveryFields() {
+  const enabled = settingsControl('deliveryEnabled').checked;
+  deliveryFields.querySelectorAll('input').forEach((input) => (input.disabled = !enabled));
+}
+
+function fillSettings(settings) {
+  const { identity, operation, delivery, payments } = settings;
+  Object.entries(identity).forEach(([name, value]) => setSettingsValue(name, value));
+  Object.entries(operation).forEach(([name, value]) => setSettingsValue(name, value));
+  setSettingsValue('maxRadiusKm', delivery.maxRadiusKm);
+  setSettingsValue('baseFee', decimalFromCents(delivery.baseFeeCents));
+  setSettingsValue(
+    'freeAbove',
+    delivery.freeAboveCents == null ? '' : decimalFromCents(delivery.freeAboveCents)
+  );
+  setSettingsValue('minimumOrder', decimalFromCents(operation.minimumOrderCents));
+  Object.entries(payments).forEach(([name, value]) => setSettingsValue(name, value));
+  renderScheduleFields(settings.schedule);
+  syncDeliveryFields();
+}
+
+async function loadStoreSettings() {
+  settingsLoading.hidden = false;
+  settingsError.hidden = true;
+  settingsForm.hidden = true;
+  settingsStatus.textContent = '';
+  try {
+    const settings = await api('/v1/settings/store');
+    state.storeSettings = settings;
+    fillSettings(settings);
+    settingsLoading.hidden = true;
+    settingsForm.hidden = false;
+    connection.textContent = 'Online';
+  } catch (error) {
+    settingsLoading.hidden = true;
+    settingsError.hidden = false;
+    settingsError.innerHTML = `<p>Não foi possível carregar as configurações: ${escapeHtml(error.message)}</p><button type="button" class="text-button">Tentar novamente</button>`;
+    settingsError.querySelector('button').addEventListener('click', loadStoreSettings);
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
+function settingsPayload() {
+  const schedule = weekdays.map(([weekday]) => {
+    const enabled = settingsControl(`scheduleEnabled-${weekday}`).checked;
+    return {
+      weekday,
+      enabled,
+      opensAt: enabled ? nullableInput(`opensAt-${weekday}`) : null,
+      closesAt: enabled ? nullableInput(`closesAt-${weekday}`) : null
+    };
+  });
+  return {
+    identity: {
+      displayName: settingsControl('displayName').value.trim(),
+      phone: nullableInput('phone'),
+      whatsapp: nullableInput('whatsapp'),
+      address: nullableInput('address'),
+      addressComplement: nullableInput('addressComplement'),
+      neighborhood: nullableInput('neighborhood'),
+      city: nullableInput('city'),
+      stateCode: nullableInput('stateCode')?.toUpperCase() || null,
+      postalCode: nullableInput('postalCode')
+    },
+    operation: {
+      operationallyOpen: settingsControl('operationallyOpen').checked,
+      pickupEnabled: settingsControl('pickupEnabled').checked,
+      deliveryEnabled: settingsControl('deliveryEnabled').checked,
+      preparationTimeMinMinutes: Number(settingsControl('preparationTimeMinMinutes').value),
+      preparationTimeMaxMinutes: Number(settingsControl('preparationTimeMaxMinutes').value),
+      minimumOrderCents: settingsCents('minimumOrder')
+    },
+    delivery: {
+      maxRadiusKm: nullableNumberInput('maxRadiusKm'),
+      baseFeeCents: settingsCents('baseFee'),
+      freeAboveCents: settingsCents('freeAbove')
+    },
+    schedule,
+    payments: {
+      pixEnabled: settingsControl('pixEnabled').checked,
+      paymentOnDeliveryEnabled: settingsControl('paymentOnDeliveryEnabled').checked,
+      cashEnabled: settingsControl('cashEnabled').checked,
+      cardOnDeliveryEnabled: settingsControl('cardOnDeliveryEnabled').checked
+    }
+  };
+}
+
+async function submitSettings(event) {
+  event.preventDefault();
+  if (state.settingsSaving) return;
+  state.settingsSaving = true;
+  settingsSubmit.disabled = true;
+  settingsSubmit.textContent = 'Salvando…';
+  settingsStatus.textContent = '';
+  try {
+    const settings = await api('/v1/settings/store', {
+      method: 'PUT',
+      body: JSON.stringify(settingsPayload())
+    });
+    state.storeSettings = settings;
+    fillSettings(settings);
+    settingsStatus.textContent = 'Configurações salvas com sucesso.';
+    connection.textContent = 'Online';
+  } catch (error) {
+    settingsStatus.textContent = `Não foi possível salvar: ${error.message}`;
+    connection.textContent = `Erro: ${error.message}`;
+  } finally {
+    state.settingsSaving = false;
+    settingsSubmit.disabled = false;
+    settingsSubmit.textContent = 'Salvar configurações';
+  }
+}
+
 function render() {
   renderBoard();
   renderDashboard();
 }
+
 function renderDashboard() {
   const orders = [...state.orders.values()];
   const totalCents = orders.reduce((sum, order) => sum + (order.totalCents || 0), 0);
@@ -93,6 +306,7 @@ function renderDashboard() {
         `<article class="metric-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></article>`
     )
     .join('');
+
   const recent = orders.slice(0, 5);
   activeOrdersSummary.innerHTML = recent.length
     ? recent
@@ -114,6 +328,7 @@ function renderDashboard() {
     )
     .join('');
 }
+
 function renderBoard() {
   board.innerHTML = '';
   for (const [status, label] of statuses) {
@@ -126,6 +341,7 @@ function renderBoard() {
     board.append(column);
   }
 }
+
 function createCard(order) {
   const article = document.createElement('article');
   article.className = 'order-card';
@@ -141,6 +357,7 @@ function createCard(order) {
   }
   return article;
 }
+
 function actionLabel(status) {
   return (
     {
@@ -153,6 +370,7 @@ function actionLabel(status) {
     }[status] || status
   );
 }
+
 async function loadOrders({ incremental = true } = {}) {
   try {
     connection.textContent = 'Atualizando…';
@@ -167,6 +385,7 @@ async function loadOrders({ incremental = true } = {}) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
+
 async function transition(orderId, status) {
   try {
     await api(`/v1/kitchen/orders/${orderId}/status`, {
@@ -180,6 +399,7 @@ async function transition(orderId, status) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
+
 async function openDetail(orderId) {
   try {
     const result = await api(`/v1/kitchen/orders/${orderId}`);
@@ -201,6 +421,7 @@ async function openDetail(orderId) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
+
 async function loadMenus() {
   try {
     menuList.innerHTML = '<p class="muted">Carregando…</p>';
@@ -215,6 +436,7 @@ async function loadMenus() {
     menuList.innerHTML = `<p class="muted">Não foi possível carregar: ${escapeHtml(error.message)}</p>`;
   }
 }
+
 function renderMenus() {
   menuList.innerHTML = state.menus.length
     ? state.menus
@@ -232,6 +454,7 @@ function renderMenus() {
     })
   );
 }
+
 async function loadSelectedMenu() {
   if (!state.selectedMenuId) return;
   try {
@@ -241,23 +464,46 @@ async function loadSelectedMenu() {
     catalogDetail.innerHTML = `<p class="muted">Erro ao carregar detalhes: ${escapeHtml(error.message)}</p>`;
   }
 }
+
 function renderCatalogDetail(detail) {
   const menu = detail.menu;
   const categories = detail.categories || [];
   const items = detail.items || [];
-  catalogDetail.innerHTML = `<div class="catalog-title"><div><p class="eyebrow">MENU</p><h2>${escapeHtml(menu.name)}</h2><p class="muted">${escapeHtml(menu.description || 'Sem descrição')}</p></div><button id="toggle-publish" class="primary-button" type="button">${menu.published ? 'Despublicar' : 'Publicar'}</button></div><div class="catalog-categories">${
+  catalogDetail.innerHTML = `<div class="catalog-title"><div><p class="eyebrow">MENU</p><h2>${escapeHtml(menu.name)}</h2><p class="muted">${escapeHtml(menu.description || 'Sem descrição')}</p></div><div><button id="edit-menu" class="text-button" type="button">Editar</button><button id="new-category" class="text-button" type="button">Nova categoria</button><button id="toggle-publish" class="primary-button" type="button">${menu.published ? 'Despublicar' : 'Publicar'}</button></div></div><div class="catalog-categories">${
     categories.length
       ? categories
           .map((category) => {
             const categoryItems = items.filter((item) => item.categoryId === category.id);
-            return `<section class="catalog-category"><div class="category-heading"><div><h3>${escapeHtml(category.name)}</h3><small class="muted">${category.active ? 'Ativa' : 'Inativa'}</small></div><span>${categoryItems.length} itens</span></div>${categoryItems.length ? categoryItems.map((item) => `<article class="catalog-item"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || '')}</small></div><div class="catalog-item-actions"><strong>${money(item.priceCents)}</strong><span class="badge ${item.available && item.active ? 'success' : ''}">${item.active ? (item.available ? 'Disponível' : 'Pausado') : 'Inativo'}</span><button type="button" data-item-id="${escapeHtml(item.id)}" data-available="${item.available}">${item.available ? 'Pausar' : 'Ativar'}</button></div></article>`).join('') : '<p class="muted">Categoria sem itens.</p>'}</section>`;
+            return `<section class="catalog-category"><div class="category-heading"><div><h3>${escapeHtml(category.name)}</h3><small class="muted">${category.active ? 'Ativa' : 'Inativa'}</small></div><div><button type="button" data-edit-category="${escapeHtml(category.id)}">Editar</button><button type="button" data-new-item="${escapeHtml(category.id)}">Adicionar item</button></div></div>${categoryItems.length ? categoryItems.map((item) => `<article class="catalog-item"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description || '')}</small></div><div class="catalog-item-actions"><strong>${money(item.priceCents)}</strong><span class="badge ${item.available && item.active ? 'success' : ''}">${item.active ? (item.available ? 'Disponível' : 'Pausado') : 'Inativo'}</span><button type="button" data-edit-item="${escapeHtml(item.id)}">Editar</button><button type="button" data-item-id="${escapeHtml(item.id)}" data-available="${item.available}">${item.available ? 'Pausar' : 'Ativar'}</button></div></article>`).join('') : '<p class="muted">Categoria sem itens.</p>'}</section>`;
           })
           .join('')
       : '<div class="empty-catalog"><p class="muted">Nenhuma categoria cadastrada neste menu.</p></div>'
   }</div>`;
+
+  document.querySelector('#edit-menu')?.addEventListener('click', () => openMenuForm(menu));
+  document.querySelector('#new-category')?.addEventListener('click', () => openCategoryForm());
   document
     .querySelector('#toggle-publish')
     ?.addEventListener('click', () => updateMenu(menu.id, { published: !menu.published }));
+  catalogDetail
+    .querySelectorAll('[data-edit-category]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        openCategoryForm(categories.find((category) => category.id === button.dataset.editCategory))
+      )
+    );
+  catalogDetail
+    .querySelectorAll('[data-new-item]')
+    .forEach((button) =>
+      button.addEventListener('click', () => openItemForm({ categoryId: button.dataset.newItem }))
+    );
+  catalogDetail
+    .querySelectorAll('[data-edit-item]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        openItemForm(items.find((item) => item.id === button.dataset.editItem))
+      )
+    );
   catalogDetail.querySelectorAll('[data-item-id]').forEach((button) =>
     button.addEventListener('click', () =>
       updateItem(menu.id, button.dataset.itemId, {
@@ -266,6 +512,173 @@ function renderCatalogDetail(detail) {
     )
   );
 }
+
+function field(name, label, type = 'text', value = '', options = '') {
+  if (type === 'textarea')
+    return `<label class="form-field"><span>${label}</span><textarea name="${name}">${escapeHtml(value)}</textarea></label>`;
+  if (type === 'select')
+    return `<label class="form-field"><span>${label}</span><select name="${name}">${options}</select></label>`;
+  return `<label class="form-field"><span>${label}</span><input name="${name}" type="${type}" value="${escapeHtml(value)}" /></label>`;
+}
+
+function openCatalogForm(definition) {
+  state.catalogForm = definition;
+  catalogFormError.textContent = '';
+  catalogFormFields.innerHTML = definition.html;
+  catalogDialog.showModal();
+}
+
+function openMenuForm(menu = null) {
+  openCatalogForm({
+    kind: 'menu',
+    entity: menu,
+    html: `<div><p class="eyebrow">CARDÁPIO</p><h2>${menu ? 'Editar menu' : 'Novo menu'}</h2></div>${field('name', 'Nome', 'text', menu?.name || '')}${field('slug', 'Slug', 'text', menu?.slug || '')}${field('description', 'Descrição', 'textarea', menu?.description || '')}<div class="form-grid">${field('logoUrl', 'URL do logo', 'url', menu?.logoUrl || '')}${field('coverUrl', 'URL da capa', 'url', menu?.coverUrl || '')}</div>`
+  });
+}
+
+function openCategoryForm(category = null) {
+  openCatalogForm({
+    kind: 'category',
+    entity: category,
+    html: `<div><p class="eyebrow">CATEGORIA</p><h2>${category ? 'Editar categoria' : 'Nova categoria'}</h2></div>${field('name', 'Nome', 'text', category?.name || '')}${field('description', 'Descrição', 'textarea', category?.description || '')}<div class="form-grid">${field('sortOrder', 'Ordem', 'number', category?.sortOrder ?? 0)}${category ? field('active', 'Status', 'select', '', `<option value="true" ${category.active ? 'selected' : ''}>Ativa</option><option value="false" ${!category.active ? 'selected' : ''}>Inativa</option>`) : ''}</div>`
+  });
+}
+
+async function ensureProducts() {
+  if (state.products.length) return state.products;
+  const result = await api('/v1/catalog/products');
+  state.products = Array.isArray(result) ? result : result.items || result.products || [];
+  return state.products;
+}
+
+async function openItemForm(item = null) {
+  try {
+    const products = await ensureProducts();
+    if (!products.length)
+      throw new Error('Cadastre ao menos um produto no catálogo antes de adicioná-lo ao menu.');
+    const categories = state.menuDetail?.categories || [];
+    const productOptions = products
+      .map(
+        (product) =>
+          `<option value="${escapeHtml(product.id)}" ${item?.catalogProductId === product.id ? 'selected' : ''}>${escapeHtml(product.name)} · ${money(product.salePriceCents || 0)}</option>`
+      )
+      .join('');
+    const categoryOptions = categories
+      .map(
+        (category) =>
+          `<option value="${escapeHtml(category.id)}" ${(item?.categoryId || item?.categoryId) === category.id ? 'selected' : ''}>${escapeHtml(category.name)}</option>`
+      )
+      .join('');
+    openCatalogForm({
+      kind: 'item',
+      entity: item,
+      html: `<div><p class="eyebrow">ITEM DO MENU</p><h2>${item?.id ? 'Editar item' : 'Adicionar item'}</h2></div>${field('categoryId', 'Categoria', 'select', '', categoryOptions)}${item?.id ? '' : field('catalogProductId', 'Produto do catálogo', 'select', '', productOptions)}${field('displayName', 'Nome exibido', 'text', item?.displayName || '')}${field('description', 'Descrição', 'textarea', item?.description || '')}<div class="form-grid">${field('salePrice', 'Preço no menu (R$)', 'number', item?.salePriceCents != null ? (item.salePriceCents / 100).toFixed(2) : '')}${field('sortOrder', 'Ordem', 'number', item?.sortOrder ?? 0)}</div>${field('imageUrl', 'URL da imagem', 'url', item?.imageUrl || '')}${field('featured', 'Destaque', 'select', '', `<option value="false" ${!item?.featured ? 'selected' : ''}>Não</option><option value="true" ${item?.featured ? 'selected' : ''}>Sim</option>`)}${item?.id ? field('active', 'Status', 'select', '', `<option value="true" ${item.active ? 'selected' : ''}>Ativo</option><option value="false" ${!item.active ? 'selected' : ''}>Inativo</option>`) : ''}`
+    });
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
+function formDataObject(form) {
+  return Object.fromEntries(new FormData(form).entries());
+}
+
+function optional(value) {
+  const trimmed = String(value ?? '').trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function centsFromInput(value) {
+  const normalized = String(value ?? '')
+    .replace(',', '.')
+    .trim();
+  if (!normalized) return undefined;
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount) || amount < 0) throw new Error('Preço inválido.');
+  return Math.round(amount * 100);
+}
+
+async function submitCatalogForm(event) {
+  event.preventDefault();
+  if (!state.catalogForm) return;
+  const values = formDataObject(catalogForm);
+  catalogFormError.textContent = '';
+  try {
+    const { kind, entity } = state.catalogForm;
+    if (kind === 'menu') {
+      const payload = {
+        name: values.name.trim(),
+        slug: values.slug.trim(),
+        description: optional(values.description),
+        logoUrl: optional(values.logoUrl),
+        coverUrl: optional(values.coverUrl)
+      };
+      if (entity?.id)
+        await api(`/v1/commerce/menus/${entity.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+      else {
+        const created = await api('/v1/commerce/menus', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        state.selectedMenuId = created.id;
+      }
+      await loadMenus();
+    }
+    if (kind === 'category') {
+      const payload = {
+        name: values.name.trim(),
+        description: optional(values.description),
+        sortOrder: Number(values.sortOrder || 0)
+      };
+      if (entity?.id) {
+        payload.active = values.active === 'true';
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/categories/${entity.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+      } else
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/categories`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+      await loadSelectedMenu();
+    }
+    if (kind === 'item') {
+      const payload = {
+        categoryId: values.categoryId,
+        displayName: optional(values.displayName),
+        description: optional(values.description),
+        imageUrl: optional(values.imageUrl),
+        salePriceCents: centsFromInput(values.salePrice),
+        sortOrder: Number(values.sortOrder || 0),
+        featured: values.featured === 'true'
+      };
+      if (entity?.id) {
+        payload.active = values.active === 'true';
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/items/${entity.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        });
+      } else {
+        payload.catalogProductId = values.catalogProductId;
+        await api(`/v1/commerce/menus/${state.selectedMenuId}/items`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+      }
+      await loadSelectedMenu();
+    }
+    catalogDialog.close();
+    state.catalogForm = null;
+    connection.textContent = 'Online';
+  } catch (error) {
+    catalogFormError.textContent = error.message;
+  }
+}
+
 async function updateMenu(menuId, patch) {
   try {
     await api(`/v1/commerce/menus/${menuId}`, { method: 'PATCH', body: JSON.stringify(patch) });
@@ -274,6 +687,7 @@ async function updateMenu(menuId, patch) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
+
 async function updateItem(menuId, itemId, patch) {
   try {
     await api(`/v1/commerce/menus/${menuId}/items/${itemId}`, {
@@ -285,6 +699,7 @@ async function updateItem(menuId, itemId, patch) {
     connection.textContent = `Erro: ${error.message}`;
   }
 }
+
 document
   .querySelectorAll('[data-view]')
   .forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
@@ -292,9 +707,15 @@ document
   .querySelectorAll('[data-open-view]')
   .forEach((button) => button.addEventListener('click', () => setView(button.dataset.openView)));
 refreshButton.addEventListener('click', () => {
-  if (state.view === 'catalog') loadMenus();
-  else loadOrders({ incremental: false });
+  if (state.view === 'catalog') return loadMenus();
+  if (state.view === 'settings') return loadStoreSettings();
+  return loadOrders({ incremental: false });
 });
 catalogRefresh.addEventListener('click', loadMenus);
+newMenuButton.addEventListener('click', () => openMenuForm());
+catalogForm.addEventListener('submit', submitCatalogForm);
+catalogFormCancel.addEventListener('click', () => catalogDialog.close());
+settingsForm.addEventListener('submit', submitSettings);
+settingsControl('deliveryEnabled').addEventListener('change', syncDeliveryFields);
 loadOrders({ incremental: false });
 setInterval(() => loadOrders({ incremental: true }), 5000);

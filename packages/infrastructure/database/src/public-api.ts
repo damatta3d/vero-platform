@@ -14,3 +14,10 @@ export {
   type OperationalEntryType,
   type OperationalSummary
 } from './prisma-operational-entry.repository.js';
+export {
+  PrismaStoreSettingsRepository,
+  storeWeekdays,
+  type StoreSettings,
+  type StoreSettingsInput,
+  type StoreWeekday
+} from './prisma-store-settings.repository.js';
