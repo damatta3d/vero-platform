@@ -31,10 +31,33 @@ export class KitchenOrderController {
     if (!tenantId) throw new BadRequestException('Tenant is required.');
     return {
       orders: await this.db.$queryRawUnsafe<unknown[]>(
-        `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",fulfillment,total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt" FROM commerce_native_orders WHERE tenant_id=$1 AND status NOT IN ('COMPLETED','CANCELLED') AND (payment_method='PAY_ON_DELIVERY' OR payment_status='PAID') ORDER BY created_at`,
+        `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",fulfillment,total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE tenant_id=$1 AND status NOT IN ('COMPLETED','CANCELLED') AND (payment_method='PAY_ON_DELIVERY' OR payment_status='PAID') ORDER BY created_at`,
         tenantId
       )
     };
+  }
+  @Get(':orderId') async detail(
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantId: string | undefined,
+    @Param('orderId') orderId: string
+  ) {
+    await this.security.authorize(authorization, tenantId, 'orders.kitchen.list');
+    if (!tenantId) throw new BadRequestException('Tenant is required.');
+    const orders = await this.db.$queryRawUnsafe<unknown[]>(
+      `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",items_total_cents AS "itemsTotalCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
+      orderId,
+      tenantId
+    );
+    if (!orders[0]) throw new BadRequestException('ORDER_NOT_FOUND');
+    const items = await this.db.$queryRawUnsafe<unknown[]>(
+      `SELECT id,menu_item_id AS "menuItemId",name,quantity,unit_price_cents AS "unitPriceCents",total_cents AS "totalCents",note FROM commerce_native_order_items WHERE order_id=$1::uuid ORDER BY id`,
+      orderId
+    );
+    const history = await this.db.$queryRawUnsafe<unknown[]>(
+      `SELECT from_status AS "fromStatus",to_status AS "toStatus",occurred_at AS "occurredAt" FROM commerce_native_order_status_history WHERE order_id=$1::uuid ORDER BY occurred_at`,
+      orderId
+    );
+    return { order: orders[0], items, history };
   }
   @Patch(':orderId/status') async transition(
     @Headers('authorization') authorization: string | undefined,
