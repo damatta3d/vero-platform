@@ -17,96 +17,43 @@
           <button class="nav-item" data-view="catalog" type="button">Cardápio</button>
           <button class="nav-item" data-view="settings" type="button">Configurações</button>
         </nav>
-        <div class="sidebar-footer">
-          <span class="status-dot"></span><span id="connection">Conectando…</span>
-        </div>
+        <div class="sidebar-footer"><span class="status-dot"></span><span id="connection">Conectando…</span></div>
       </aside>
       <div class="workspace">
         <header class="topbar">
-          <div>
-            <p class="eyebrow">VERO MANAGER</p>
-            <h1 id="page-title">Visão geral</h1>
-          </div>
+          <div><p class="eyebrow">VERO MANAGER</p><h1 id="page-title">Visão geral</h1></div>
           <button id="refresh" class="primary-button" type="button">Atualizar dados</button>
         </header>
         <main>
           <section id="dashboard-view" class="view active" aria-labelledby="page-title">
             <div id="metrics" class="metrics"></div>
             <div class="dashboard-grid">
-              <article class="panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">OPERAÇÃO</p>
-                    <h2>Pedidos em andamento</h2>
-                  </div>
-                  <button class="text-button" data-open-view="orders" type="button">
-                    Ver pedidos
-                  </button>
-                </div>
-                <div id="active-orders-summary" class="summary-list"></div>
-              </article>
-              <article class="panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">ATENÇÃO</p>
-                    <h2>Fila operacional</h2>
-                  </div>
-                </div>
-                <div id="stage-summary" class="stage-summary"></div>
-              </article>
+              <article class="panel"><div class="panel-heading"><div><p class="eyebrow">OPERAÇÃO</p><h2>Pedidos em andamento</h2></div><button class="text-button" data-open-view="orders" type="button">Ver pedidos</button></div><div id="active-orders-summary" class="summary-list"></div></article>
+              <article class="panel"><div class="panel-heading"><div><p class="eyebrow">ATENÇÃO</p><h2>Fila operacional</h2></div></div><div id="stage-summary" class="stage-summary"></div></article>
             </div>
           </section>
-          <section id="orders-view" class="view" aria-labelledby="page-title">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">OPERAÇÃO EM TEMPO REAL</p>
-                <h2>Board de pedidos</h2>
-              </div>
-            </div>
-            <section id="board" class="board" aria-live="polite"></section>
-          </section>
+          <section id="orders-view" class="view" aria-labelledby="page-title"><div class="section-heading"><div><p class="eyebrow">OPERAÇÃO EM TEMPO REAL</p><h2>Board de pedidos</h2></div></div><section id="board" class="board" aria-live="polite"></section></section>
           <section id="catalog-view" class="view" aria-labelledby="page-title">
             <div class="section-heading">
-              <div>
-                <p class="eyebrow">VENDA DIRETA</p>
-                <h2>Gestão do cardápio</h2>
-              </div>
-              <button id="catalog-refresh" class="primary-button" type="button">
-                Atualizar cardápio
-              </button>
+              <div><p class="eyebrow">VENDA DIRETA</p><h2>Gestão do cardápio</h2></div>
+              <div><button id="new-menu" class="text-button" type="button">Novo menu</button><button id="catalog-refresh" class="primary-button" type="button">Atualizar cardápio</button></div>
             </div>
             <div class="catalog-layout">
-              <article class="panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">CARDÁPIOS</p>
-                    <h2>Menus</h2>
-                  </div>
-                </div>
-                <div id="menu-list" class="summary-list"><p class="muted">Carregando…</p></div>
-              </article>
-              <article class="panel catalog-detail">
-                <div id="catalog-detail">
-                  <p class="muted">Selecione um menu para administrar categorias e itens.</p>
-                </div>
-              </article>
+              <article class="panel"><div class="panel-heading"><div><p class="eyebrow">CARDÁPIOS</p><h2>Menus</h2></div></div><div id="menu-list" class="summary-list"><p class="muted">Carregando…</p></div></article>
+              <article class="panel catalog-detail"><div id="catalog-detail"><p class="muted">Selecione um menu para administrar categorias e itens.</p></div></article>
             </div>
           </section>
-          <section id="settings-view" class="view" aria-labelledby="page-title">
-            <article class="empty-state panel">
-              <p class="eyebrow">ESTABELECIMENTO</p>
-              <h2>Configurações da operação</h2>
-              <p>
-                Horários, entrega, retirada, pagamentos e dados da loja serão centralizados aqui.
-              </p>
-            </article>
-          </section>
+          <section id="settings-view" class="view" aria-labelledby="page-title"><article class="empty-state panel"><p class="eyebrow">ESTABELECIMENTO</p><h2>Configurações da operação</h2><p>Horários, entrega, retirada, pagamentos e dados da loja serão centralizados aqui.</p></article></section>
         </main>
       </div>
     </div>
-    <dialog id="order-dialog">
-      <div id="order-detail"></div>
-      <form method="dialog"><button class="primary-button">Fechar</button></form>
+    <dialog id="order-dialog"><div id="order-detail"></div><form method="dialog"><button class="primary-button">Fechar</button></form></dialog>
+    <dialog id="catalog-dialog">
+      <form id="catalog-form">
+        <div id="catalog-form-fields"></div>
+        <p id="catalog-form-error" class="muted" role="alert"></p>
+        <div class="actions"><button type="button" id="catalog-form-cancel">Cancelar</button><button class="primary-button" type="submit">Salvar</button></div>
+      </form>
     </dialog>
     <script type="module" src="./main.js"></script>
   </body>
