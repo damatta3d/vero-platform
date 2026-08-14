@@ -63,7 +63,9 @@ function render() {
   for (const [status, label] of statuses) {
     const column = document.createElement('section');
     column.className = 'column';
-    const orders = [...state.orders.values()].filter((order) => order.status === status);
+    const orders = [...state.orders.values()].filter(
+      (order) => order.status === status
+    );
     column.innerHTML = `<header><h2>${label}</h2><span>${orders.length}</span></header><div class="cards"></div>`;
     const cards = column.querySelector('.cards');
     for (const order of orders) cards.append(createCard(order));
@@ -81,7 +83,9 @@ function createCard(order) {
       <div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(order.paymentMethod)}</span></div>
     </button>
     <div class="actions"></div>`;
-  article.querySelector('.card-main').addEventListener('click', () => openDetail(order.orderId));
+  article
+    .querySelector('.card-main')
+    .addEventListener('click', () => openDetail(order.orderId));
   const actions = article.querySelector('.actions');
   for (const next of order.allowedTransitions || []) {
     const button = document.createElement('button');
@@ -110,7 +114,9 @@ async function loadOrders({ incremental = true } = {}) {
   try {
     connection.textContent = 'Atualizando…';
     const query =
-      incremental && state.cursor ? `?updatedAfter=${encodeURIComponent(state.cursor)}` : '';
+      incremental && state.cursor
+        ? `?updatedAfter=${encodeURIComponent(state.cursor)}`
+        : '';
     const result = await api(`/v1/kitchen/orders${query}`);
     for (const order of result.orders) state.orders.set(order.orderId, order);
     state.cursor = result.sync?.serverTime || new Date().toISOString();
