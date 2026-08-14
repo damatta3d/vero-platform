@@ -50,6 +50,17 @@ describe(MvpSecurityService.name, () => {
     expect(trusted.request.resource.value).toBe('production.management');
   });
 
+  it('creates store settings access only on the settings resource', async () => {
+    const context = await service.authorize(
+      `Bearer ${apiKey}`,
+      'santo-parma',
+      'settings.store.write'
+    );
+    const trusted = consumeAuthorizedAccess(context);
+    expect(trusted.request.resource.value).toBe('settings.management');
+    expect(trusted.request.action.value).toBe('settings.store.write');
+  });
+
   it.each([
     ['Bearer wrong-key-that-is-long-enough', 'santo-parma'],
     [`Bearer ${apiKey}`, 'another-tenant'],

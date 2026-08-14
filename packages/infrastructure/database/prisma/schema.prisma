@@ -81,15 +81,15 @@ model InventoryStockMovement {
 }
 
 model CatalogProduct {
-  id             String             @db.Uuid
-  tenantId       String             @db.VarChar(128)
-  name           String             @db.VarChar(160)
-  salePriceCents Int
-  createdAt      DateTime           @db.Timestamptz(3)
-  updatedAt      DateTime           @db.Timestamptz(3)
-  recipes        CatalogRecipe[]
-  sales          SalesRecord[]
-  productions    ProductionRecord[]
+  id                   String                @db.Uuid
+  tenantId             String                @db.VarChar(128)
+  name                 String                @db.VarChar(160)
+  salePriceCents       Int
+  createdAt            DateTime              @db.Timestamptz(3)
+  updatedAt            DateTime              @db.Timestamptz(3)
+  recipes              CatalogRecipe[]
+  sales                SalesRecord[]
+  productions          ProductionRecord[]
   externalCatalogLinks ExternalCatalogLink[]
 
   @@id([tenantId, id])
@@ -215,18 +215,63 @@ model ProductionCostLine {
 }
 
 model ExternalCatalogLink {
-  tenantId               String         @db.VarChar(128)
-  provider               String         @db.VarChar(64)
-  establishmentExternalId String        @db.VarChar(256)
-  kind                   String         @db.VarChar(16)
-  providerItemId         String         @db.VarChar(256)
-  catalogProductId       String         @db.Uuid
-  authoredBy             String         @db.VarChar(256)
-  createdAt              DateTime       @db.Timestamptz(3)
-  updatedAt              DateTime       @db.Timestamptz(3)
-  catalogProduct         CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
+  tenantId                String         @db.VarChar(128)
+  provider                String         @db.VarChar(64)
+  establishmentExternalId String         @db.VarChar(256)
+  kind                    String         @db.VarChar(16)
+  providerItemId          String         @db.VarChar(256)
+  catalogProductId        String         @db.Uuid
+  authoredBy              String         @db.VarChar(256)
+  createdAt               DateTime       @db.Timestamptz(3)
+  updatedAt               DateTime       @db.Timestamptz(3)
+  catalogProduct          CatalogProduct @relation(fields: [tenantId, catalogProductId], references: [tenantId, id], onDelete: Restrict)
 
   @@id([tenantId, provider, establishmentExternalId, kind, providerItemId])
   @@index([tenantId, catalogProductId])
   @@map("external_catalog_links")
+}
+
+model StoreSettings {
+  tenantId                  String                @id @map("tenant_id") @db.VarChar(128)
+  displayName               String                @map("display_name") @db.VarChar(160)
+  phone                     String?               @db.VarChar(32)
+  whatsapp                  String?               @db.VarChar(32)
+  address                   String?               @db.VarChar(240)
+  addressComplement         String?               @map("address_complement") @db.VarChar(160)
+  neighborhood              String?               @db.VarChar(120)
+  city                      String?               @db.VarChar(120)
+  stateCode                 String?               @map("state_code") @db.Char(2)
+  postalCode                String?               @map("postal_code") @db.VarChar(9)
+  operationallyOpen         Boolean               @default(false) @map("operationally_open")
+  pickupEnabled             Boolean               @default(true) @map("pickup_enabled")
+  deliveryEnabled           Boolean               @default(false) @map("delivery_enabled")
+  preparationTimeMinMinutes Int                   @default(30) @map("preparation_time_min_minutes")
+  preparationTimeMaxMinutes Int                   @default(60) @map("preparation_time_max_minutes")
+  minimumOrderCents         Int                   @default(0) @map("minimum_order_cents")
+  deliveryRadiusKm          Float?                @map("delivery_radius_km")
+  deliveryBaseFeeCents      Int                   @default(0) @map("delivery_base_fee_cents")
+  freeDeliveryAboveCents    Int?                  @map("free_delivery_above_cents")
+  pixEnabled                Boolean               @default(true) @map("pix_enabled")
+  paymentOnDeliveryEnabled  Boolean               @default(false) @map("payment_on_delivery_enabled")
+  cashOnDeliveryEnabled     Boolean               @default(false) @map("cash_on_delivery_enabled")
+  cardOnDeliveryEnabled     Boolean               @default(false) @map("card_on_delivery_enabled")
+  createdAt                 DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                 DateTime              @default(now()) @map("updated_at") @db.Timestamptz(3)
+  scheduleWindows           StoreScheduleWindow[]
+
+  @@map("store_settings")
+}
+
+model StoreScheduleWindow {
+  tenantId String        @map("tenant_id") @db.VarChar(128)
+  weekday  Int           @db.SmallInt
+  sequence Int           @default(0) @db.SmallInt
+  enabled  Boolean       @default(false)
+  opensAt  DateTime?     @map("opens_at") @db.Time(0)
+  closesAt DateTime?     @map("closes_at") @db.Time(0)
+  settings StoreSettings @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+
+  @@id([tenantId, weekday, sequence])
+  @@index([tenantId, weekday])
+  @@map("store_schedule_windows")
 }
