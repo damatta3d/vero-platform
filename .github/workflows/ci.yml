@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   quality:
@@ -16,8 +16,6 @@ jobs:
       VERO_DATABASE_URL: postgresql://vero:vero-ci@localhost:5432/vero
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: feat/vero-manager-v2
       - uses: pnpm/action-setup@v4
         with:
           version: 11.7.0
@@ -30,17 +28,6 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm exec prisma validate
       - run: pnpm audit --audit-level high
-      - name: Normalize Manager v2 formatting
-        run: |
-          pnpm exec prettier --write apps/api/src/menu/menu-admin.controller.ts apps/manager/src/main.js
-          pnpm exec prettier --write apps/api/src/menu/menu-admin.controller.ts apps/manager/src/main.js
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/api/src/menu/menu-admin.controller.ts apps/manager/src/main.js
-          if ! git diff --cached --quiet; then
-            git commit -m "style(manager): normalize formatting"
-            git push origin HEAD:feat/vero-manager-v2
-          fi
       - run: pnpm verify
 
   integration:
