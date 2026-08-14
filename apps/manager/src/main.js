@@ -27,6 +27,15 @@ function money(cents = 0) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 function requestHeaders() {
   return {
     'content-type': 'application/json',
@@ -63,9 +72,9 @@ function createCard(order) {
   article.className = 'order-card';
   article.innerHTML = `
     <button class="card-main" type="button">
-      <div class="order-meta"><strong>#${order.orderId.slice(0, 8)}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div>
-      <h3>${order.customerName}</h3>
-      <div class="order-meta"><span>${money(order.totalCents)}</span><span>${order.paymentMethod}</span></div>
+      <div class="order-meta"><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div>
+      <h3>${escapeHtml(order.customerName)}</h3>
+      <div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(order.paymentMethod)}</span></div>
     </button>
     <div class="actions"></div>`;
   article.querySelector('.card-main').addEventListener('click', () => openDetail(order.orderId));
@@ -94,7 +103,8 @@ function actionLabel(status) {
 async function loadOrders({ incremental = true } = {}) {
   try {
     connection.textContent = 'Atualizando…';
-    const query = incremental && state.cursor ? `?updatedAfter=${encodeURIComponent(state.cursor)}` : '';
+    const query =
+      incremental && state.cursor ? `?updatedAfter=${encodeURIComponent(state.cursor)}` : '';
     const result = await api(`/v1/kitchen/orders${query}`);
     for (const order of result.orders) state.orders.set(order.orderId, order);
     state.cursor = result.sync?.serverTime || new Date().toISOString();
@@ -123,15 +133,27 @@ async function openDetail(orderId) {
   try {
     const result = await api(`/v1/kitchen/orders/${orderId}`);
     const { order, items, history } = result;
+    const itemRows = items
+      .map(
+        (item) =>
+          `<li>${escapeHtml(item.quantity)}× ${escapeHtml(item.name)}${item.note ? ` — ${escapeHtml(item.note)}` : ''}</li>`
+      )
+      .join('');
+    const historyRows = history
+      .map(
+        (entry) =>
+          `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
+      )
+      .join('');
     orderDetail.innerHTML = `
-      <h2>Pedido #${order.orderId.slice(0, 8)}</h2>
-      <p><strong>${order.customerName}</strong> · ${order.customerPhone}</p>
-      <p>${order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local'}</p>
-      <ul>${items.map((item) => `<li>${item.quantity}× ${item.name}${item.note ? ` — ${item.note}` : ''}</li>`).join('')}</ul>
+      <h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2>
+      <p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p>
+      <p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p>
+      <ul>${itemRows}</ul>
       <p><strong>Total: ${money(order.totalCents)}</strong></p>
-      <p>Pagamento: ${order.paymentMethod} · ${order.paymentStatus}</p>
+      <p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p>
       <h3>Histórico</h3>
-      <ol>${history.map((entry) => `<li>${entry.fromStatus || '—'} → ${entry.toStatus}</li>`).join('')}</ol>`;
+      <ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;
