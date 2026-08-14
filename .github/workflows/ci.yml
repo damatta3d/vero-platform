@@ -28,6 +28,17 @@ jobs:
       - run: pnpm prisma:generate
       - run: pnpm exec prisma validate
       - run: pnpm audit --audit-level high
+      - name: Capture stabilized formatting
+        run: |
+          pnpm exec prettier --write apps/api/src/menu/menu-admin.controller.ts apps/manager/src/main.js
+          pnpm exec prettier --write apps/api/src/menu/menu-admin.controller.ts apps/manager/src/main.js
+          mkdir -p /tmp/manager-v2-prettier/apps/api/src/menu /tmp/manager-v2-prettier/apps/manager/src
+          cp apps/api/src/menu/menu-admin.controller.ts /tmp/manager-v2-prettier/apps/api/src/menu/
+          cp apps/manager/src/main.js /tmp/manager-v2-prettier/apps/manager/src/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manager-v2-prettier-stable
+          path: /tmp/manager-v2-prettier
       - run: pnpm verify
 
   integration:
