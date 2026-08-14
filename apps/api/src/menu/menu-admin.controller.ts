@@ -130,7 +130,8 @@ export class MenuAdminController {
     @Headers('authorization') authorization: string | undefined,
     @Headers('x-tenant-id') tenantHeader: string | undefined,
     @Param('categoryId') categoryId: string,
-    @Body() body: { name?: string; description?: string | null; sortOrder?: number; active?: boolean }
+    @Body()
+    body: { name?: string; description?: string | null; sortOrder?: number; active?: boolean }
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     await this.database.$executeRawUnsafe(
