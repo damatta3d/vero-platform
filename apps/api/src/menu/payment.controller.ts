@@ -49,8 +49,9 @@ export class PaymentController {
     );
     if (amountCents <= 0) throw new BadRequestException('Invalid payment amount.');
 
+    const checkoutId = request.checkoutId?.trim();
     const trusted = {
-      checkoutId: request.checkoutId?.trim(),
+      ...(checkoutId ? { checkoutId } : {}),
       menuSlug: request.menuSlug,
       method: request.method,
       amountCents,
