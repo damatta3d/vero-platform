@@ -20,11 +20,15 @@ const orderDetail = document.querySelector('#order-detail');
 const config = {
   apiBase: window.VERO_API_BASE || '',
   tenantId: window.VERO_TENANT_ID || localStorage.getItem('veroTenantId') || '',
-  authorization: window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
+  authorization:
+    window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
 };
 
 function money(cents = 0) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(cents / 100);
 }
 
 function escapeHtml(value) {
@@ -90,14 +94,16 @@ function createCard(order) {
 }
 
 function actionLabel(status) {
-  return {
-    CONFIRMED: 'Confirmar',
-    PREPARING: 'Preparar',
-    READY: 'Pronto',
-    DISPATCHED: 'Despachar',
-    COMPLETED: 'Concluir',
-    CANCELLED: 'Cancelar'
-  }[status] || status;
+  return (
+    {
+      CONFIRMED: 'Confirmar',
+      PREPARING: 'Preparar',
+      READY: 'Pronto',
+      DISPATCHED: 'Despachar',
+      COMPLETED: 'Concluir',
+      CANCELLED: 'Cancelar'
+    }[status] || status
+  );
 }
 
 async function loadOrders({ incremental = true } = {}) {
