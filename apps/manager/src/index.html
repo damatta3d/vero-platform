@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#111827" />
     <title>VERO Manager</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="/manager/styles.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -27,7 +27,10 @@
             <p class="eyebrow">VERO MANAGER</p>
             <h1 id="page-title">Visão geral</h1>
           </div>
-          <button id="refresh" class="primary-button" type="button">Atualizar dados</button>
+          <div class="topbar-actions">
+            <button id="change-access" class="text-button" type="button">Acesso</button>
+            <button id="refresh" class="primary-button" type="button">Atualizar dados</button>
+          </div>
         </header>
         <main>
           <section id="dashboard-view" class="view active" aria-labelledby="page-title">
@@ -293,6 +296,28 @@
         </div>
       </form>
     </dialog>
-    <script type="module" src="./main.js"></script>
+    <dialog id="access-dialog">
+      <form id="access-form">
+        <div>
+          <p class="eyebrow">ACESSO OPERACIONAL</p>
+          <h2>Conectar ao Santo Parma</h2>
+          <p class="muted">A chave fica armazenada somente neste navegador.</p>
+        </div>
+        <label class="form-field">
+          <span>Chave de acesso</span>
+          <input id="access-token" type="password" autocomplete="current-password" required />
+        </label>
+        <label class="form-field">
+          <span>Empresa</span>
+          <input id="access-tenant" value="santo-parma" required />
+        </label>
+        <p id="access-error" class="access-error" role="alert"></p>
+        <div class="access-actions">
+          <button id="access-cancel" class="text-button" type="button">Cancelar</button>
+          <button class="primary-button" type="submit">Salvar e conectar</button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="/manager/main.js"></script>
   </body>
 </html>

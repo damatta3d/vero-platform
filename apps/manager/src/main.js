@@ -1,3 +1,5 @@
+/* global document, fetch, FormData, localStorage, setInterval, window */
+
 const statuses = [
   ['RECEIVED', 'Recebidos'],
   ['CONFIRMED', 'Confirmados'],
@@ -51,6 +53,13 @@ const settingsStatus = document.querySelector('#settings-status');
 const settingsSubmit = document.querySelector('#settings-submit');
 const scheduleFields = document.querySelector('#schedule-fields');
 const deliveryFields = document.querySelector('#delivery-fields');
+const changeAccessButton = document.querySelector('#change-access');
+const accessDialog = document.querySelector('#access-dialog');
+const accessForm = document.querySelector('#access-form');
+const accessToken = document.querySelector('#access-token');
+const accessTenant = document.querySelector('#access-tenant');
+const accessError = document.querySelector('#access-error');
+const accessCancel = document.querySelector('#access-cancel');
 
 const weekdays = [
   ['MONDAY', 'Segunda-feira'],
@@ -62,14 +71,59 @@ const weekdays = [
   ['SUNDAY', 'Domingo']
 ];
 
+const storedToken = localStorage.getItem('vero_token') || '';
+const storedTenant = localStorage.getItem('vero_tenant') || '';
 const config = {
   apiBase: window.VERO_API_BASE || '',
-  tenantId: window.VERO_TENANT_ID || localStorage.getItem('veroTenantId') || '',
-  authorization: window.VERO_AUTHORIZATION || localStorage.getItem('veroAuthorization') || ''
+  tenantId:
+    window.VERO_TENANT_ID || storedTenant || localStorage.getItem('veroTenantId') || 'santo-parma',
+  authorization:
+    window.VERO_AUTHORIZATION ||
+    (storedToken ? `Bearer ${storedToken}` : localStorage.getItem('veroAuthorization') || '')
 };
+
+function hasAccess() {
+  return config.authorization.startsWith('Bearer ') && config.tenantId.trim().length > 0;
+}
+
+function openAccess() {
+  accessToken.value = config.authorization.replace(/^Bearer\s+/i, '');
+  accessTenant.value = config.tenantId || 'santo-parma';
+  accessError.textContent = '';
+  accessDialog.showModal();
+  accessToken.focus();
+}
+
+async function saveAccess(event) {
+  event.preventDefault();
+  const token = accessToken.value.trim();
+  const tenant = accessTenant.value.trim();
+  if (!token || !tenant) {
+    accessError.textContent = 'Informe a chave e a empresa.';
+    return;
+  }
+  config.authorization = `Bearer ${token}`;
+  config.tenantId = tenant;
+  localStorage.setItem('vero_token', token);
+  localStorage.setItem('vero_tenant', tenant);
+  localStorage.removeItem('veroAuthorization');
+  localStorage.removeItem('veroTenantId');
+  state.orders.clear();
+  state.cursor = null;
+  accessDialog.close();
+  await loadOrders({ incremental: false });
+}
 
 function money(cents = 0) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
+}
+
+function dateTime(value) {
+  if (!value) return 'Horário não informado';
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short'
+  }).format(new Date(value));
 }
 
 function escapeHtml(value) {
@@ -415,7 +469,7 @@ async function openDetail(orderId) {
         (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
       )
       .join('');
-    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
+    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;
@@ -717,5 +771,15 @@ catalogForm.addEventListener('submit', submitCatalogForm);
 catalogFormCancel.addEventListener('click', () => catalogDialog.close());
 settingsForm.addEventListener('submit', submitSettings);
 settingsControl('deliveryEnabled').addEventListener('change', syncDeliveryFields);
-loadOrders({ incremental: false });
-setInterval(() => loadOrders({ incremental: true }), 5000);
+changeAccessButton.addEventListener('click', openAccess);
+accessForm.addEventListener('submit', saveAccess);
+accessCancel.addEventListener('click', () => accessDialog.close());
+if (hasAccess()) loadOrders({ incremental: false });
+else {
+  connection.textContent = 'Aguardando acesso';
+  render();
+  openAccess();
+}
+setInterval(() => {
+  if (hasAccess()) loadOrders({ incremental: true });
+}, 5000);

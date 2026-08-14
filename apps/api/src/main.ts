@@ -12,34 +12,9 @@ import {
   shutdownTelemetry
 } from '@vero/platform-observability';
 import { AppModule } from './app.module.js';
+import { contentSecurityPolicyForPath } from './security/content-security-policy.js';
 
 const externalIdPattern = /^[A-Za-z0-9._:-]{1,128}$/;
-const mvpWebPaths = new Set(['/', '/inicio', '/mvp', '/operacao', '/financeiro']);
-const defaultContentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "font-src 'self' https: data:",
-  "form-action 'self'",
-  "frame-ancestors 'self'",
-  "img-src 'self' data:",
-  "object-src 'none'",
-  "script-src 'self'",
-  "script-src-attr 'none'",
-  "style-src 'self' https: 'unsafe-inline'",
-  'upgrade-insecure-requests'
-].join(';');
-const mvpWebContentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "font-src 'self' https: data:",
-  "form-action 'self'",
-  "frame-ancestors 'self'",
-  "img-src 'self' data:",
-  "object-src 'none'",
-  "script-src 'self' 'unsafe-inline'",
-  "script-src-attr 'unsafe-inline'",
-  "style-src 'self' https: 'unsafe-inline'"
-].join(';');
 
 async function bootstrap(): Promise<void> {
   const config = loadConfiguration();
@@ -76,10 +51,7 @@ async function bootstrap(): Promise<void> {
       const correlationId = executionContextStore.get()?.correlationId;
       if (correlationId) reply.header('x-correlation-id', correlationId);
       const path = request.url.split('?')[0] ?? '';
-      reply.header(
-        'content-security-policy',
-        mvpWebPaths.has(path) ? mvpWebContentSecurityPolicy : defaultContentSecurityPolicy
-      );
+      reply.header('content-security-policy', contentSecurityPolicyForPath(path));
       done();
     });
 
