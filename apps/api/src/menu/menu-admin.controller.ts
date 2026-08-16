@@ -207,7 +207,7 @@ export class MenuAdminController {
     const body = parse(createCategorySchema, rawBody);
     const id = randomUUID();
     const changed = await this.database.$executeRawUnsafe(
-      `INSERT INTO commerce_menu_categories (id,tenant_id,menu_id,name,description,sort_order,active,created_at,updated_at) SELECT $1::uuid,$2,$3::uuid,$4,$5,$6,true,NOW(),NOW() FROM commerce_menus WHERE tenant_id=$2 AND id=$3::uuid`,
+      `INSERT INTO commerce_menu_categories (id,tenant_id,menu_id,name,description,sort_order,active,created_at,updated_at) SELECT $1::uuid,$2::varchar(128),$3::uuid,$4::varchar(160),$5::varchar(500),$6::integer,true,NOW(),NOW() FROM commerce_menus WHERE tenant_id=$2::varchar(128) AND id=$3::uuid`,
       id,
       tenant,
       menuId,
