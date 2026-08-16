@@ -9,13 +9,13 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Post,
-} from "@nestjs/common";
-import { randomUUID } from "node:crypto";
-import { z } from "zod";
+  Post
+} from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 
-import { DATABASE_CLIENT } from "../catalog/catalog.tokens.js";
-import { MvpSecurityService } from "../catalog/mvp-security.service.js";
+import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
+import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 
 type MenuDatabase = {
   $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T>;
@@ -33,22 +33,22 @@ const createMenuSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   description: z.string().trim().max(1000).optional(),
   logoUrl: z.string().url().max(2048).optional(),
-  coverUrl: z.string().url().max(2048).optional(),
+  coverUrl: z.string().url().max(2048).optional()
 });
 const updateMenuSchema = createMenuSchema.partial().extend({
   description: z.string().trim().max(1000).nullable().optional(),
   logoUrl: z.string().url().max(2048).nullable().optional(),
   coverUrl: z.string().url().max(2048).nullable().optional(),
-  published: z.boolean().optional(),
+  published: z.boolean().optional()
 });
 const createCategorySchema = z.object({
   name: z.string().trim().min(1).max(160),
   description: z.string().trim().max(1000).optional(),
-  sortOrder: z.number().int().min(0).max(100000).optional(),
+  sortOrder: z.number().int().min(0).max(100000).optional()
 });
 const updateCategorySchema = createCategorySchema.partial().extend({
   description: z.string().trim().max(1000).nullable().optional(),
-  active: z.boolean().optional(),
+  active: z.boolean().optional()
 });
 const createItemSchema = z.object({
   categoryId: idSchema,
@@ -58,7 +58,7 @@ const createItemSchema = z.object({
   imageUrl: z.string().url().max(2048).optional(),
   salePriceCents: z.number().int().nonnegative().optional(),
   sortOrder: z.number().int().min(0).max(100000).optional(),
-  featured: z.boolean().optional(),
+  featured: z.boolean().optional()
 });
 const updateItemSchema = z.object({
   categoryId: idSchema.optional(),
@@ -69,97 +69,87 @@ const updateItemSchema = z.object({
   sortOrder: z.number().int().min(0).max(100000).optional(),
   active: z.boolean().optional(),
   available: z.boolean().optional(),
-  featured: z.boolean().optional(),
+  featured: z.boolean().optional()
 });
 
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
   if (!result.success) {
     throw new BadRequestException({
-      code: "INVALID_REQUEST",
-      fields: result.error.issues.map((issue) => issue.path.join(".")),
+      code: 'INVALID_REQUEST',
+      fields: result.error.issues.map((issue) => issue.path.join('.'))
     });
   }
   return result.data;
 }
 function tenantId(value: string | undefined): string {
   const tenant = value?.trim();
-  if (!tenant) throw new BadRequestException({ code: "TENANT_REQUIRED" });
+  if (!tenant) throw new BadRequestException({ code: 'TENANT_REQUIRED' });
   return tenant;
 }
 function uuid(value: string): string {
   return parse(idSchema, value);
 }
 function ensureChanged(count: number, resource: string): void {
-  if (count === 0) throw new NotFoundException({ code: "NOT_FOUND", resource });
+  if (count === 0) throw new NotFoundException({ code: 'NOT_FOUND', resource });
 }
 
-@Controller("v1/commerce/menus")
+@Controller('v1/commerce/menus')
 export class MenuAdminController {
   constructor(
     @Inject(DATABASE_CLIENT) private readonly database: MenuDatabase,
-    @Inject(MvpSecurityService) private readonly security: MvpSecurityService,
+    @Inject(MvpSecurityService) private readonly security: MvpSecurityService
   ) {}
-  private async authorize(
-    authorization: string | undefined,
-    tenantHeader: string | undefined,
-  ) {
+  private async authorize(authorization: string | undefined, tenantHeader: string | undefined) {
     const tenant = tenantId(tenantHeader);
-    await this.security.authorize(authorization, tenant, "catalog.menu.manage");
+    await this.security.authorize(authorization, tenant, 'catalog.menu.manage');
     return tenant;
   }
 
   @Get()
   async list(
-    @Headers("authorization") authorization?: string,
-    @Headers("x-tenant-id") tenantHeader?: string,
+    @Headers('authorization') authorization?: string,
+    @Headers('x-tenant-id') tenantHeader?: string
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     return this.database.$queryRawUnsafe(
       `SELECT id, name, slug, description, logo_url AS "logoUrl", cover_url AS "coverUrl", published, created_at AS "createdAt", updated_at AS "updatedAt" FROM commerce_menus WHERE tenant_id = $1 ORDER BY name`,
-      tenant,
+      tenant
     );
   }
 
-  @Get(":menuId")
+  @Get(':menuId')
   async detail(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
-    const menus = await this.database.$queryRawUnsafe<
-      Array<Record<string, unknown>>
-    >(
+    const menus = await this.database.$queryRawUnsafe<Array<Record<string, unknown>>>(
       `SELECT id, name, slug, description, logo_url AS "logoUrl", cover_url AS "coverUrl", published, created_at AS "createdAt", updated_at AS "updatedAt" FROM commerce_menus WHERE tenant_id=$1 AND id=$2::uuid`,
       tenant,
-      menuId,
+      menuId
     );
-    if (!menus.length)
-      throw new NotFoundException({ code: "NOT_FOUND", resource: "menu" });
-    const categories = await this.database.$queryRawUnsafe<
-      Array<Record<string, unknown>>
-    >(
+    if (!menus.length) throw new NotFoundException({ code: 'NOT_FOUND', resource: 'menu' });
+    const categories = await this.database.$queryRawUnsafe<Array<Record<string, unknown>>>(
       `SELECT id, name, description, sort_order AS "sortOrder", active FROM commerce_menu_categories WHERE tenant_id=$1 AND menu_id=$2::uuid ORDER BY sort_order, name`,
       tenant,
-      menuId,
+      menuId
     );
-    const items = await this.database.$queryRawUnsafe<
-      Array<Record<string, unknown>>
-    >(
+    const items = await this.database.$queryRawUnsafe<Array<Record<string, unknown>>>(
       `SELECT mi.id, mi.category_id AS "categoryId", mi.catalog_product_id AS "catalogProductId", COALESCE(mi.display_name,p.name) AS name, mi.display_name AS "displayName", mi.description, mi.image_url AS "imageUrl", COALESCE(mi.sale_price_cents,p."salePriceCents") AS "priceCents", mi.sale_price_cents AS "salePriceCents", mi.sort_order AS "sortOrder", mi.active, mi.available, mi.featured FROM commerce_menu_items mi JOIN catalog_products p ON p.id=mi.catalog_product_id AND p."tenantId"=mi.tenant_id WHERE mi.tenant_id=$1 AND mi.menu_id=$2::uuid ORDER BY mi.sort_order, name`,
       tenant,
-      menuId,
+      menuId
     );
     return { menu: menus[0], categories, items };
   }
 
   @Post()
   async create(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Body() rawBody: unknown,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Body() rawBody: unknown
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const body = parse(createMenuSchema, rawBody);
@@ -172,17 +162,17 @@ export class MenuAdminController {
       body.slug,
       body.description ?? null,
       body.logoUrl ?? null,
-      body.coverUrl ?? null,
+      body.coverUrl ?? null
     );
     return { id, tenantId: tenant, ...body, published: false };
   }
 
-  @Patch(":menuId")
+  @Patch(':menuId')
   async update(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
-    @Body() rawBody: unknown,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string,
+    @Body() rawBody: unknown
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
@@ -197,20 +187,20 @@ export class MenuAdminController {
       body.logoUrl ?? null,
       body.coverUrl ?? null,
       body.published ?? null,
-      Object.hasOwn(body, "description"),
-      Object.hasOwn(body, "logoUrl"),
-      Object.hasOwn(body, "coverUrl"),
+      Object.hasOwn(body, 'description'),
+      Object.hasOwn(body, 'logoUrl'),
+      Object.hasOwn(body, 'coverUrl')
     );
-    ensureChanged(changed, "menu");
+    ensureChanged(changed, 'menu');
     return { id: menuId, updated: true };
   }
 
-  @Post(":menuId/categories")
+  @Post(':menuId/categories')
   async createCategory(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
-    @Body() rawBody: unknown,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string,
+    @Body() rawBody: unknown
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
@@ -223,19 +213,19 @@ export class MenuAdminController {
       menuId,
       body.name,
       body.description ?? null,
-      body.sortOrder ?? 0,
+      body.sortOrder ?? 0
     );
-    ensureChanged(changed, "menu");
+    ensureChanged(changed, 'menu');
     return { id, menuId, ...body, active: true };
   }
 
-  @Patch(":menuId/categories/:categoryId")
+  @Patch(':menuId/categories/:categoryId')
   async updateCategory(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
-    @Param("categoryId") categoryIdRaw: string,
-    @Body() rawBody: unknown,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string,
+    @Param('categoryId') categoryIdRaw: string,
+    @Body() rawBody: unknown
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
@@ -250,18 +240,18 @@ export class MenuAdminController {
       body.description ?? null,
       body.sortOrder ?? null,
       body.active ?? null,
-      Object.hasOwn(body, "description"),
+      Object.hasOwn(body, 'description')
     );
-    ensureChanged(changed, "category");
+    ensureChanged(changed, 'category');
     return { id: categoryId, updated: true };
   }
 
-  @Post(":menuId/items")
+  @Post(':menuId/items')
   async addItem(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
-    @Body() rawBody: unknown,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string,
+    @Body() rawBody: unknown
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
@@ -279,38 +269,33 @@ export class MenuAdminController {
       body.imageUrl ?? null,
       body.salePriceCents ?? null,
       body.sortOrder ?? 0,
-      body.featured ?? false,
+      body.featured ?? false
     );
-    ensureChanged(changed, "category_or_product");
+    ensureChanged(changed, 'category_or_product');
     return { id, menuId, ...body, active: true, available: true };
   }
 
-  @Patch(":menuId/items/:itemId")
+  @Patch(':menuId/items/:itemId')
   async updateItem(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
-    @Param("itemId") itemIdRaw: string,
-    @Body() rawBody: unknown,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string,
+    @Param('itemId') itemIdRaw: string,
+    @Body() rawBody: unknown
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
     const itemId = uuid(itemIdRaw);
     const body = parse(updateItemSchema, rawBody);
     if (body.categoryId) {
-      const categories = await this.database.$queryRawUnsafe<
-        Array<{ id: string }>
-      >(
+      const categories = await this.database.$queryRawUnsafe<Array<{ id: string }>>(
         `SELECT id FROM commerce_menu_categories WHERE tenant_id=$1 AND menu_id=$2::uuid AND id=$3::uuid`,
         tenant,
         menuId,
-        body.categoryId,
+        body.categoryId
       );
       if (!categories.length)
-        throw new NotFoundException({
-          code: "NOT_FOUND",
-          resource: "category",
-        });
+        throw new NotFoundException({ code: 'NOT_FOUND', resource: 'category' });
     }
     const changed = await this.database.$executeRawUnsafe(
       `UPDATE commerce_menu_items SET category_id=COALESCE($4::uuid,category_id), display_name=CASE WHEN $12 THEN $5 ELSE display_name END, description=CASE WHEN $13 THEN $6 ELSE description END, image_url=CASE WHEN $14 THEN $7 ELSE image_url END, sale_price_cents=CASE WHEN $15 THEN $8 ELSE sale_price_cents END, sort_order=COALESCE($9,sort_order), active=COALESCE($10,active), available=COALESCE($11,available), featured=COALESCE($16,featured), updated_at=NOW() WHERE tenant_id=$1 AND menu_id=$2::uuid AND id=$3::uuid`,
@@ -325,22 +310,22 @@ export class MenuAdminController {
       body.sortOrder ?? null,
       body.active ?? null,
       body.available ?? null,
-      Object.hasOwn(body, "displayName"),
-      Object.hasOwn(body, "description"),
-      Object.hasOwn(body, "imageUrl"),
-      Object.hasOwn(body, "salePriceCents"),
-      body.featured ?? null,
+      Object.hasOwn(body, 'displayName'),
+      Object.hasOwn(body, 'description'),
+      Object.hasOwn(body, 'imageUrl'),
+      Object.hasOwn(body, 'salePriceCents'),
+      body.featured ?? null
     );
-    ensureChanged(changed, "item");
+    ensureChanged(changed, 'item');
     return { id: itemId, updated: true };
   }
 
-  @Delete(":menuId/items/:itemId")
+  @Delete(':menuId/items/:itemId')
   async removeItem(
-    @Headers("authorization") authorization: string | undefined,
-    @Headers("x-tenant-id") tenantHeader: string | undefined,
-    @Param("menuId") menuIdRaw: string,
-    @Param("itemId") itemIdRaw: string,
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantHeader: string | undefined,
+    @Param('menuId') menuIdRaw: string,
+    @Param('itemId') itemIdRaw: string
   ) {
     const tenant = await this.authorize(authorization, tenantHeader);
     const menuId = uuid(menuIdRaw);
@@ -349,9 +334,9 @@ export class MenuAdminController {
       `DELETE FROM commerce_menu_items WHERE tenant_id=$1 AND menu_id=$2::uuid AND id=$3::uuid`,
       tenant,
       menuId,
-      itemId,
+      itemId
     );
-    ensureChanged(changed, "item");
+    ensureChanged(changed, 'item');
     return { id: itemId, deleted: true };
   }
 }
