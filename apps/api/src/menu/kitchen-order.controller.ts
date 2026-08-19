@@ -45,7 +45,9 @@ export class KitchenOrderController {
     const updatedAfterDate = updatedAfter ? new Date(updatedAfter) : null;
     if (updatedAfterDate && Number.isNaN(updatedAfterDate.getTime()))
       throw new BadRequestException('INVALID_UPDATED_AFTER');
-    const orders = await this.db.$queryRawUnsafe<Array<{ status: NativeOrderStatus }>>(
+    const orders = await this.db.$queryRawUnsafe<
+      Array<{ status: NativeOrderStatus; fulfillment: 'DELIVERY' | 'PICKUP' }>
+    >(
       `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",fulfillment,total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE tenant_id=$1 AND status NOT IN ('COMPLETED','CANCELLED') AND (payment_method='PAY_ON_DELIVERY' OR payment_status='PAID') AND ($2::text IS NULL OR status=$2) AND ($3::timestamptz IS NULL OR updated_at>$3) ORDER BY created_at`,
       tenantId,
       status ?? null,
@@ -54,7 +56,7 @@ export class KitchenOrderController {
     return {
       orders: orders.map((order) => ({
         ...order,
-        allowedTransitions: nextOrderStatuses(order.status)
+        allowedTransitions: nextOrderStatuses(order.status, order.fulfillment)
       })),
       sync: { serverTime: new Date().toISOString() }
     };
@@ -67,7 +69,9 @@ export class KitchenOrderController {
   ) {
     await this.security.authorize(authorization, tenantId, 'orders.kitchen.list');
     if (!tenantId) throw new BadRequestException('Tenant is required.');
-    const orders = await this.db.$queryRawUnsafe<Array<{ status: NativeOrderStatus }>>(
+    const orders = await this.db.$queryRawUnsafe<
+      Array<{ status: NativeOrderStatus; fulfillment: 'DELIVERY' | 'PICKUP' }>
+    >(
       `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,NULL::text AS "deliveryAddress",items_total_cents AS "itemsTotalCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
       tenantId
@@ -83,7 +87,10 @@ export class KitchenOrderController {
       orderId
     );
     return {
-      order: { ...order, allowedTransitions: nextOrderStatuses(order.status) },
+      order: {
+        ...order,
+        allowedTransitions: nextOrderStatuses(order.status, order.fulfillment)
+      },
       items,
       history
     };
@@ -99,9 +106,14 @@ export class KitchenOrderController {
     if (!tenantId || !body.status)
       throw new BadRequestException('Tenant and order status are required.');
     const rows = await this.db.$queryRawUnsafe<
-      Array<{ status: NativeOrderStatus; paymentMethod: string; paymentStatus: string }>
+      Array<{
+        status: NativeOrderStatus;
+        paymentMethod: string;
+        paymentStatus: string;
+        fulfillment: 'DELIVERY' | 'PICKUP';
+      }>
     >(
-      `SELECT status,payment_method AS "paymentMethod",payment_status AS "paymentStatus" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
+      `SELECT status,fulfillment,payment_method AS "paymentMethod",payment_status AS "paymentStatus" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
       tenantId
     );
@@ -110,7 +122,7 @@ export class KitchenOrderController {
     if (order.paymentMethod === 'PIX' && order.paymentStatus !== 'PAID')
       throw new BadRequestException('PAYMENT_NOT_CONFIRMED');
     try {
-      assertOrderTransition(order.status, body.status);
+      assertOrderTransition(order.status, body.status, order.fulfillment);
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Invalid order transition.'
@@ -134,7 +146,7 @@ export class KitchenOrderController {
     return {
       orderId,
       status: body.status,
-      allowedTransitions: nextOrderStatuses(body.status)
+      allowedTransitions: nextOrderStatuses(body.status, order.fulfillment)
     };
   }
 }

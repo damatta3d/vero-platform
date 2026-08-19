@@ -126,6 +126,17 @@ function dateTime(value) {
   }).format(new Date(value));
 }
 
+function paymentMethodLabel(order) {
+  if (order.paymentMethod !== 'PAY_ON_DELIVERY') return order.paymentMethod;
+  return order.fulfillment === 'DELIVERY' ? 'Pagamento na entrega' : 'Pagamento na retirada';
+}
+
+function transitionsForOrder(order) {
+  return (order.allowedTransitions || []).filter(
+    (next) => next !== 'DISPATCHED' || order.fulfillment === 'DELIVERY'
+  );
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -399,10 +410,10 @@ function renderBoard() {
 function createCard(order) {
   const article = document.createElement('article');
   article.className = 'order-card';
-  article.innerHTML = `<button class="card-main" type="button"><div class="order-meta"><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div><h3>${escapeHtml(order.customerName)}</h3><div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(order.paymentMethod)}</span></div></button><div class="actions"></div>`;
+  article.innerHTML = `<button class="card-main" type="button"><div class="order-meta"><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div><h3>${escapeHtml(order.customerName)}</h3><div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(paymentMethodLabel(order))}</span></div></button><div class="actions"></div>`;
   article.querySelector('.card-main').addEventListener('click', () => openDetail(order.orderId));
   const actions = article.querySelector('.actions');
-  for (const next of order.allowedTransitions || []) {
+  for (const next of transitionsForOrder(order)) {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = actionLabel(next);
@@ -469,7 +480,7 @@ async function openDetail(orderId) {
         (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
       )
       .join('');
-    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(order.paymentMethod)} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
+    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;

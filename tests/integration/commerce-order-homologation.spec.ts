@@ -295,7 +295,11 @@ describe('Santo Parma VERO Menu application homologation', () => {
 
     const ticket = await kitchen.detail(authorization, tenantId, created.orderId);
     expect(ticket).toMatchObject({
-      order: { orderId: created.orderId, status: 'READY' },
+      order: {
+        orderId: created.orderId,
+        status: 'READY',
+        allowedTransitions: ['COMPLETED', 'CANCELLED']
+      },
       items: [
         expect.objectContaining({
           menuItemId,
@@ -315,6 +319,9 @@ describe('Santo Parma VERO Menu application homologation', () => {
       { fromStatus: 'CONFIRMED', toStatus: 'PREPARING' },
       { fromStatus: 'PREPARING', toStatus: 'READY' }
     ]);
+    await expect(
+      kitchen.transition(authorization, tenantId, created.orderId, { status: 'DISPATCHED' })
+    ).rejects.toThrow('INVALID_ORDER_TRANSITION:READY->DISPATCHED');
     expect(authorize).toHaveBeenCalledWith(authorization, tenantId, 'orders.kitchen.list');
     expect(authorize).toHaveBeenCalledWith(authorization, tenantId, 'orders.kitchen.transition');
   });
