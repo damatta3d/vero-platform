@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Headers, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Headers, Inject, Put } from '@nestjs/common';
 import { z } from 'zod';
 
 import { storeWeekdays, type StoreSettingsInput } from '@vero/infrastructure-database';
@@ -165,8 +165,8 @@ function parse(body: unknown): StoreSettingsInput {
 @Controller('v1/settings/store')
 export class StoreSettingsController {
   constructor(
-    private readonly settings: StoreSettingsService,
-    private readonly security: MvpSecurityService
+    @Inject(StoreSettingsService) private readonly settings: StoreSettingsService,
+    @Inject(MvpSecurityService) private readonly security: MvpSecurityService
   ) {}
 
   @Get()

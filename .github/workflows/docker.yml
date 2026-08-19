@@ -24,3 +24,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build production image
         run: docker build --tag vero-api:pr .
+      - name: Smoke-test bundled Store Settings API
+        run: bash tools/validation/api-container-smoke.sh vero-api:pr
