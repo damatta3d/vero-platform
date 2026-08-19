@@ -99,18 +99,25 @@ export class PrismaStoreSettingsRepository {
   getOrCreate(tenantId: string): Promise<StoreSettings> {
     return this.client.$transaction(async (transaction) => {
       await transaction.$executeRaw(Prisma.sql`
-        INSERT INTO "store_settings" ("tenant_id", "display_name")
-        VALUES (${tenantId}, ${tenantId})
+        INSERT INTO "store_settings" (
+          "tenant_id", "display_name", "operationally_open", "pickup_enabled",
+          "delivery_enabled", "preparation_time_min_minutes",
+          "preparation_time_max_minutes", "minimum_order_cents", "order_receipt_mode",
+          "delivery_base_fee_cents", "pix_enabled", "payment_on_delivery_enabled",
+          "cash_on_delivery_enabled", "card_on_delivery_enabled"
+        ) VALUES (
+          ${tenantId}, ${tenantId}, false, true, false, 30, 60, 0, 'MANUAL',
+          0, true, false, false, false
+        )
         ON CONFLICT ("tenant_id") DO NOTHING
       `);
 
-      for (let weekday = 0; weekday < storeWeekdays.length; weekday += 1) {
-        await transaction.$executeRaw(Prisma.sql`
-          INSERT INTO "store_schedule_windows" ("tenant_id", "weekday", "sequence")
-          VALUES (${tenantId}, ${weekday}, 0)
-          ON CONFLICT ("tenant_id", "weekday", "sequence") DO NOTHING
-        `);
-      }
+      await transaction.$executeRaw(Prisma.sql`
+        INSERT INTO "store_schedule_windows" ("tenant_id", "weekday", "sequence")
+        SELECT ${tenantId}, "weekday", 0
+        FROM generate_series(0, ${storeWeekdays.length - 1}) AS "weekdays"("weekday")
+        ON CONFLICT ("tenant_id", "weekday", "sequence") DO NOTHING
+      `);
 
       return this.read(transaction, tenantId);
     });

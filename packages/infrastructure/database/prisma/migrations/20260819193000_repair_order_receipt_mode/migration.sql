@@ -1,3 +1,5 @@
+-- Forward-only repair for databases where the receipt-mode migration was applied outside
+-- Prisma or stopped after only part of the schema change.
 ALTER TABLE "store_settings"
   ADD COLUMN IF NOT EXISTS "order_receipt_mode" VARCHAR(16);
 
