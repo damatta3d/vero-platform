@@ -45,18 +45,24 @@ async function executeCheckout(crypto: { getRandomValues?: (values: Uint8Array) 
     [
       'back',
       'cart-items',
+      'cart-discount',
+      'cart-discount-row',
+      'cart-subtotal',
       'cart-total',
       'catalog',
       'checkout',
       'checkout-message',
       'continue',
+      'coupon-code',
+      'coupon-message',
       'customer-name',
       'customer-phone',
       'finish',
       'logo',
       'menu-description',
       'menu-name',
-      'success'
+      'success',
+      'apply-coupon'
     ].map((id) => [id, testElement()])
   ) as Record<string, TestElement>;
   elements['customer-name']!.value = 'Cliente Homologação';
@@ -92,6 +98,15 @@ async function executeCheckout(crypto: { getRandomValues?: (values: Uint8Array) 
     }
     if (url === '/v1/checkout/validate') {
       return Promise.resolve(successResponse({ valid: true }));
+    }
+    if (url === '/v1/checkout/price') {
+      return Promise.resolve(
+        successResponse({
+          coupon: { code: 'SANTO10' },
+          discountCents: 490,
+          itemsTotalCents: 4900
+        })
+      );
     }
     if (url === '/v1/payments') {
       return Promise.resolve(
@@ -139,11 +154,30 @@ describe('publicMenuPage', () => {
     expect(page).toContain('data-decrease');
     expect(page).toContain('data-remove');
     expect(page).toContain('data-note');
+    expect(page).toContain('id="coupon-code"');
+    expect(page).toContain("fetch('/v1/checkout/price'");
     expect(page).toContain("method:'PAY_ON_DELIVERY'");
     expect(page).not.toContain('<option value="PIX">');
     expect(page).not.toContain('<option value="DELIVERY">');
     expect(page).toContain("customer,fulfillment:'PICKUP',address:null");
     expect(page).toContain('href="/pedido/');
+  });
+
+  it('applies a coupon through trusted server pricing', async () => {
+    const { elements, fetchMock } = await executeCheckout({
+      getRandomValues: (values) => values
+    });
+    elements['coupon-code']!.value = 'santo10';
+    await elements['apply-coupon']!.listeners.get('click')?.();
+    await new Promise((resolve) => setImmediate(resolve));
+
+    const request = fetchMock.mock.calls.find(([url]) => url === '/v1/checkout/price');
+    expect(JSON.parse(request?.[1]?.body ?? '')).toMatchObject({
+      couponCode: 'santo10',
+      menuSlug: 'santo-parma-homolog'
+    });
+    expect(elements['coupon-message']!.textContent).toBe('Cupom SANTO10 aplicado.');
+    expect(elements['cart-total']!.textContent).toBe('R$ 44,10');
   });
 
   it('generates syntactically valid JavaScript and escapes the slug', () => {

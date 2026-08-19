@@ -44,6 +44,13 @@ describe('Manager order presentation', () => {
     expect(managerSource).toContain("? 'AUTOMATIC' : 'MANUAL'");
   });
 
+  it('exposes tenant coupon management inside settings', () => {
+    expect(managerHtml).toContain('<h2>Cupons</h2>');
+    expect(managerHtml).toContain('id="coupon-dialog"');
+    expect(managerSource).toContain("api('/v1/coupons')");
+    expect(managerSource).toContain('discountType');
+  });
+
   it('hides dispatch for pickup and preserves it for delivery', () => {
     const order = `{allowedTransitions:['DISPATCHED','COMPLETED','CANCELLED']`;
     expect(evaluate(`transitionsForOrder(${order},fulfillment:'PICKUP'})`)).toEqual([

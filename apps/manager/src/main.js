@@ -25,7 +25,9 @@ const state = {
   products: [],
   catalogForm: null,
   storeSettings: null,
-  settingsSaving: false
+  settingsSaving: false,
+  coupons: [],
+  editingCoupon: null
 };
 
 const board = document.querySelector('#board');
@@ -60,6 +62,13 @@ const accessToken = document.querySelector('#access-token');
 const accessTenant = document.querySelector('#access-tenant');
 const accessError = document.querySelector('#access-error');
 const accessCancel = document.querySelector('#access-cancel');
+const couponList = document.querySelector('#coupon-list');
+const newCouponButton = document.querySelector('#new-coupon');
+const couponDialog = document.querySelector('#coupon-dialog');
+const couponForm = document.querySelector('#coupon-form');
+const couponFormTitle = document.querySelector('#coupon-form-title');
+const couponFormError = document.querySelector('#coupon-form-error');
+const couponFormCancel = document.querySelector('#coupon-form-cancel');
 
 const weekdays = [
   ['MONDAY', 'Segunda-feira'],
@@ -270,6 +279,7 @@ async function loadStoreSettings() {
     fillSettings(settings);
     settingsLoading.hidden = true;
     settingsForm.hidden = false;
+    await loadCoupons();
     connection.textContent = 'Online';
   } catch (error) {
     settingsLoading.hidden = true;
@@ -349,6 +359,145 @@ async function submitSettings(event) {
     state.settingsSaving = false;
     settingsSubmit.disabled = false;
     settingsSubmit.textContent = 'Salvar configurações';
+  }
+}
+
+function couponControl(name) {
+  return couponForm.elements.namedItem(name);
+}
+
+function couponDateInput(value) {
+  return value ? new Date(value).toISOString().slice(0, 16) : '';
+}
+
+function couponDiscountLabel(coupon) {
+  return coupon.discountType === 'PERCENTAGE'
+    ? `${coupon.discountValue}%`
+    : money(coupon.discountValue);
+}
+
+function renderCoupons() {
+  couponList.innerHTML = state.coupons.length
+    ? state.coupons
+        .map(
+          (coupon) =>
+            `<article class="coupon-row"><div class="coupon-row-main"><strong>${escapeHtml(coupon.code)}</strong><span>${escapeHtml(coupon.name)}</span><span class="badge ${coupon.active ? 'success' : ''}">${coupon.active ? 'Ativo' : 'Inativo'}</span><small>${escapeHtml(couponDiscountLabel(coupon))} de desconto · ${escapeHtml(coupon.usesCount)} uso(s)${coupon.maxUses ? ` de ${escapeHtml(coupon.maxUses)}` : ''}</small></div><div class="coupon-row-actions"><button class="text-button" type="button" data-edit-coupon="${escapeHtml(coupon.id)}">Editar</button><button class="text-button" type="button" data-toggle-coupon="${escapeHtml(coupon.id)}">${coupon.active ? 'Desativar' : 'Ativar'}</button></div></article>`
+        )
+        .join('')
+    : '<p class="muted">Nenhum cupom cadastrado.</p>';
+  couponList
+    .querySelectorAll('[data-edit-coupon]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        openCouponForm(state.coupons.find((coupon) => coupon.id === button.dataset.editCoupon))
+      )
+    );
+  couponList.querySelectorAll('[data-toggle-coupon]').forEach((button) =>
+    button.addEventListener('click', async () => {
+      const coupon = state.coupons.find((entry) => entry.id === button.dataset.toggleCoupon);
+      if (!coupon) return;
+      try {
+        await api(`/v1/coupons/${coupon.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ active: !coupon.active })
+        });
+        await loadCoupons();
+      } catch (error) {
+        connection.textContent = `Erro: ${error.message}`;
+      }
+    })
+  );
+}
+
+async function loadCoupons() {
+  couponList.innerHTML = '<p class="muted">Carregando cupons…</p>';
+  try {
+    state.coupons = await api('/v1/coupons');
+    renderCoupons();
+  } catch (error) {
+    couponList.innerHTML = `<p class="settings-message error">Não foi possível carregar os cupons: ${escapeHtml(error.message)}</p>`;
+  }
+}
+
+function openCouponForm(coupon = null) {
+  state.editingCoupon = coupon;
+  couponForm.reset();
+  couponFormTitle.textContent = coupon ? 'Editar cupom' : 'Novo cupom';
+  couponFormError.textContent = '';
+  couponControl('active').checked = coupon?.active ?? true;
+  if (coupon) {
+    couponControl('code').value = coupon.code;
+    couponControl('name').value = coupon.name;
+    couponControl('description').value = coupon.description || '';
+    couponControl('source').value = coupon.source || '';
+    couponControl('discountType').value = coupon.discountType;
+    couponControl('discountValue').value =
+      coupon.discountType === 'PERCENTAGE'
+        ? coupon.discountValue
+        : decimalFromCents(coupon.discountValue);
+    couponControl('minimumOrder').value = decimalFromCents(coupon.minimumOrderCents);
+    couponControl('startsAt').value = couponDateInput(coupon.startsAt);
+    couponControl('expiresAt').value = couponDateInput(coupon.expiresAt);
+    couponControl('maxUses').value = coupon.maxUses ?? '';
+  }
+  syncCouponDiscountInput();
+  couponDialog.showModal();
+}
+
+function couponPayload() {
+  const discountType = couponControl('discountType').value;
+  const rawDiscount = Number(couponControl('discountValue').value);
+  const discountValue =
+    discountType === 'PERCENTAGE'
+      ? rawDiscount
+      : centsFromInput(couponControl('discountValue').value);
+  const dateValue = (name) => {
+    const value = couponControl(name).value;
+    return value ? new Date(value).toISOString() : null;
+  };
+  return {
+    code: couponControl('code').value.trim().toUpperCase(),
+    name: couponControl('name').value.trim(),
+    description: optional(couponControl('description').value) ?? null,
+    source: optional(couponControl('source').value) ?? null,
+    discountType,
+    discountValue,
+    active: couponControl('active').checked,
+    startsAt: dateValue('startsAt'),
+    expiresAt: dateValue('expiresAt'),
+    minimumOrderCents: centsFromInput(couponControl('minimumOrder').value) ?? 0,
+    maxUses: couponControl('maxUses').value ? Number(couponControl('maxUses').value) : null
+  };
+}
+
+function syncCouponDiscountInput() {
+  const input = couponControl('discountValue');
+  const percentage = couponControl('discountType').value === 'PERCENTAGE';
+  input.step = percentage ? '1' : '0.01';
+  input.min = percentage ? '1' : '0.01';
+  if (percentage) input.max = '100';
+  else input.removeAttribute('max');
+}
+
+async function submitCoupon(event) {
+  event.preventDefault();
+  couponFormError.textContent = '';
+  const submit = couponForm.querySelector('[type="submit"]');
+  submit.disabled = true;
+  try {
+    const coupon = state.editingCoupon;
+    await api(coupon ? `/v1/coupons/${coupon.id}` : '/v1/coupons', {
+      method: coupon ? 'PATCH' : 'POST',
+      body: JSON.stringify(couponPayload())
+    });
+    couponDialog.close();
+    state.editingCoupon = null;
+    await loadCoupons();
+    connection.textContent = 'Online';
+  } catch (error) {
+    couponFormError.textContent = error.message;
+  } finally {
+    submit.disabled = false;
   }
 }
 
@@ -482,7 +631,10 @@ async function openDetail(orderId) {
         (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
       )
       .join('');
-    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
+    const discount = order.discountCents
+      ? `<p>Subtotal: ${money(order.itemsTotalCents)}<br>Desconto${order.couponCode ? ` (${escapeHtml(order.couponCode)})` : ''}: − ${money(order.discountCents)}</p>`
+      : '';
+    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul>${discount}<p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;
@@ -778,6 +930,10 @@ refreshButton.addEventListener('click', () => {
   if (state.view === 'settings') return loadStoreSettings();
   return loadOrders({ incremental: false });
 });
+newCouponButton.addEventListener('click', () => openCouponForm());
+couponForm.addEventListener('submit', submitCoupon);
+couponFormCancel.addEventListener('click', () => couponDialog.close());
+couponControl('discountType').addEventListener('change', syncCouponDiscountInput);
 catalogRefresh.addEventListener('click', loadMenus);
 newMenuButton.addEventListener('click', () => openMenuForm());
 catalogForm.addEventListener('submit', submitCatalogForm);

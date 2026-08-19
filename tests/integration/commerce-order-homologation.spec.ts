@@ -99,6 +99,11 @@ describe('Santo Parma VERO Menu application homologation', () => {
       otherTenantId
     );
     await database.$executeRawUnsafe(
+      'DELETE FROM commerce_coupons WHERE tenant_id IN ($1, $2)',
+      tenantId,
+      otherTenantId
+    );
+    await database.$executeRawUnsafe(
       'DELETE FROM commerce_menu_items WHERE tenant_id IN ($1, $2)',
       tenantId,
       otherTenantId
@@ -503,6 +508,110 @@ describe('Santo Parma VERO Menu application homologation', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     await expect(
       kitchen.transition(authorization, tenantId, nonexistentOrderId, { status: 'CONFIRMED' })
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('applies a tenant coupon atomically and preserves its order snapshot', async () => {
+    const couponId = randomUUID();
+    const otherCouponId = randomUUID();
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons (
+         id,tenant_id,code,name,source,discount_type,discount_value,active,max_uses
+       ) VALUES
+         ($1::uuid,$2,'SANTO10','Santo 10','RC1','PERCENTAGE',10,true,1),
+         ($3::uuid,$4,'SANTO10','Outro tenant','ISOLATION','PERCENTAGE',50,true,NULL)`,
+      couponId,
+      tenantId,
+      otherCouponId,
+      otherTenantId
+    );
+
+    const priced = await checkout.price({
+      menuSlug,
+      couponCode: 'santo10',
+      items: [{ menuItemId, quantity: 1 }]
+    });
+    expect(priced).toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 459,
+      amountDueCents: 4131,
+      coupon: { code: 'SANTO10', discountValue: 10 }
+    });
+
+    const idempotencyKey = randomUUID();
+    const payment = await payments.create({
+      checkoutId: idempotencyKey,
+      menuSlug,
+      couponCode: 'SANTO10',
+      method: 'PAY_ON_DELIVERY',
+      customerName: 'Cliente Cupom',
+      customerPhone: '67999999994',
+      items: [{ menuItemId, quantity: 1 }]
+    });
+    expect(payment.amountCents).toBe(4131);
+    const request = {
+      idempotencyKey,
+      menuSlug,
+      couponCode: 'SANTO10',
+      customer: { name: 'Cliente Cupom', phone: '67999999994' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: {
+        method: payment.method,
+        status: payment.status,
+        paymentId: payment.paymentId
+      }
+    };
+    const created = await nativeOrders.create(request);
+    expect(created).toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 459,
+      totalCents: 4131,
+      coupon: { code: 'SANTO10', name: 'Santo 10', source: 'RC1' }
+    });
+    await expect(nativeOrders.create(request)).resolves.toMatchObject({
+      orderId: created.orderId,
+      discountCents: 459,
+      totalCents: 4131,
+      coupon: { code: 'SANTO10' }
+    });
+
+    const snapshots = await database.$queryRawUnsafe<
+      Array<{
+        discountCents: number;
+        code: string | null;
+        source: string | null;
+        usesCount: number;
+      }>
+    >(
+      `SELECT o.discount_cents AS "discountCents",o.coupon_code AS code,
+              o.coupon_source AS source,c.uses_count AS "usesCount"
+         FROM commerce_native_orders o
+         JOIN commerce_coupons c ON c.id=o.coupon_id
+        WHERE o.id=$1::uuid`,
+      created.orderId
+    );
+    expect(snapshots[0]).toEqual({
+      discountCents: 459,
+      code: 'SANTO10',
+      source: 'RC1',
+      usesCount: 1
+    });
+    const tenantUsage = await database.$queryRawUnsafe<
+      Array<{ tenantId: string; usesCount: number }>
+    >(
+      `SELECT tenant_id AS "tenantId",uses_count AS "usesCount"
+         FROM commerce_coupons WHERE code='SANTO10' ORDER BY tenant_id`
+    );
+    expect(tenantUsage).toEqual(
+      expect.arrayContaining([
+        { tenantId, usesCount: 1 },
+        { tenantId: otherTenantId, usesCount: 0 }
+      ])
+    );
+
+    await expect(
+      nativeOrders.create({ ...request, idempotencyKey: randomUUID() })
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

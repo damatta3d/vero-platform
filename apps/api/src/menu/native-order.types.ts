@@ -27,8 +27,17 @@ export type NativeOrder = {
   fulfillment: 'DELIVERY' | 'PICKUP';
   items: NativeOrderItem[];
   itemsTotalCents: number;
+  discountCents: number;
   deliveryFeeCents: number;
   totalCents: number;
+  coupon: {
+    id: string;
+    code: string;
+    name: string;
+    source: string | null;
+    discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+    discountValue: number;
+  } | null;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
   providerPaymentId: string | null;

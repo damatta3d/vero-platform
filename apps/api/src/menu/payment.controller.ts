@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, Inject, Post } from '@nestjs/common';
 import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
 import { MercadoPagoPaymentGateway } from './mercado-pago-payment.gateway.js';
+import { priceCheckout } from './checkout-pricing.js';
 import { PaymentService } from './payment.service.js';
 import type { PaymentMethod } from './payment.types.js';
 
@@ -11,9 +12,9 @@ type PaymentInput = {
   method: PaymentMethod;
   customerName: string;
   customerPhone: string;
+  couponCode?: string;
   items: Array<{ menuItemId: string; quantity: number }>;
 };
-type Row = { menuItemId: string; priceCents: number; available: boolean };
 
 @Controller('v1/payments')
 export class PaymentController {
@@ -28,25 +29,11 @@ export class PaymentController {
       !request.items?.length
     )
       throw new BadRequestException('Missing payment data.');
-    if (request.items.some((item) => !Number.isInteger(item.quantity) || item.quantity <= 0))
-      throw new BadRequestException('Invalid payment items.');
     if (request.checkoutId && request.checkoutId.trim().length < 32)
       throw new BadRequestException('Invalid checkout id.');
 
-    const ids = request.items.map((item) => item.menuItemId);
-    const rows = await this.db.$queryRawUnsafe<Row[]>(
-      `SELECT i.id AS "menuItemId",COALESCE(i.sale_price_cents,p."salePriceCents") AS "priceCents",i.available FROM commerce_menu_items i JOIN commerce_menus m ON m.tenant_id=i.tenant_id AND m.id=i.menu_id JOIN catalog_products p ON p."tenantId"=i.tenant_id AND p.id=i.catalog_product_id WHERE m.slug=$1 AND m.published=true AND i.active=true AND i.id=ANY($2::uuid[])`,
-      request.menuSlug,
-      ids
-    );
-    if (rows.length !== ids.length || rows.some((row) => !row.available))
-      throw new BadRequestException('One or more items are unavailable.');
-
-    const prices = new Map(rows.map((row) => [row.menuItemId, row.priceCents]));
-    const amountCents = request.items.reduce(
-      (sum, item) => sum + (prices.get(item.menuItemId) ?? 0) * item.quantity,
-      0
-    );
+    const pricing = await priceCheckout(this.db, request);
+    const amountCents = pricing.totalCents;
     if (amountCents <= 0) throw new BadRequestException('Invalid payment amount.');
 
     const checkoutId = request.checkoutId?.trim();
