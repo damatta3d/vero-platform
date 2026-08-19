@@ -63,6 +63,35 @@ backup_database() {
   if compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' | gzip -9 >"${backup_file}"; then chmod 600 "${backup_file}"; log "Backup salvo em ${backup_file}."; else rm -f "${backup_file}"; fail "Não foi possível gerar o backup pré-deploy."; fi
 }
 
+wait_for_postgres() {
+  local attempts=30 i
+  for ((i = 1; i <= attempts; i++)); do
+    if compose exec -T postgres sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"' >/dev/null 2>&1; then
+      log "PostgreSQL pronto para migrations."
+      return
+    fi
+    sleep 2
+  done
+  compose ps || true
+  fail "PostgreSQL não ficou pronto para migrations."
+}
+
+resolve_interrupted_receipt_migration() {
+  local migration_name='20260819173000_order_receipt_mode' migration_table failed
+  migration_table="$(compose exec -T postgres sh -c \
+    'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT to_regclass('"'"'public._prisma_migrations'"'"')"' \
+    | tr -d '[:space:]')"
+  [[ "${migration_table}" == '_prisma_migrations' ]] || return
+
+  failed="$(compose exec -T postgres sh -c \
+    'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT EXISTS (SELECT 1 FROM public._prisma_migrations WHERE migration_name='"'"'20260819173000_order_receipt_mode'"'"' AND finished_at IS NULL AND rolled_back_at IS NULL)::int"' \
+    | tr -d '[:space:]')"
+  [[ "${failed}" == '1' ]] || return
+
+  log "Marcando a tentativa interrompida de ${migration_name} para reaplicação segura."
+  compose run --rm --no-deps api pnpm exec prisma migrate resolve --rolled-back "${migration_name}"
+}
+
 wait_for_endpoint() {
   local path="$1" attempts=30 i
   for ((i = 1; i <= attempts; i++)); do
@@ -83,7 +112,12 @@ main() {
   update_repository; create_environment; validate_environment
   log "Validando configuração Docker Compose."; compose config --quiet
   backup_database
-  log "Construindo e publicando VERO."; compose up -d --build --remove-orphans
+  log "Iniciando PostgreSQL."; compose up -d postgres; wait_for_postgres
+  log "Construindo a imagem da API."; compose build api
+  resolve_interrupted_receipt_migration
+  log "Aplicando migrations antes de iniciar a nova API."
+  compose run --rm --no-deps api pnpm exec prisma migrate deploy
+  log "Publicando VERO."; compose up -d --remove-orphans
   log "Aguardando banco e API."; wait_for_endpoint /health/live; wait_for_endpoint /health/ready; wait_for_endpoint /
 
   log "Executando varredura completa do MVP."
