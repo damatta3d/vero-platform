@@ -40,7 +40,10 @@ function successResponse(payload: unknown) {
   return { ok: true, json: () => Promise.resolve(payload) };
 }
 
-async function executeCheckout(crypto: { getRandomValues?: (values: Uint8Array) => Uint8Array }) {
+async function executeCheckout(
+  crypto: { getRandomValues?: (values: Uint8Array) => Uint8Array },
+  options: { finish?: boolean } = {}
+) {
   const elements = Object.fromEntries(
     [
       'back',
@@ -139,9 +142,11 @@ async function executeCheckout(crypto: { getRandomValues?: (values: Uint8Array) 
   });
   await new Promise((resolve) => setImmediate(resolve));
 
-  const finish = elements['finish']!.listeners.get('click');
-  expect(finish).toBeDefined();
-  await finish?.();
+  if (options.finish !== false) {
+    const finish = elements['finish']!.listeners.get('click');
+    expect(finish).toBeDefined();
+    await finish?.();
+  }
 
   return { elements, fetchMock };
 }
@@ -164,9 +169,10 @@ describe('publicMenuPage', () => {
   });
 
   it('applies a coupon through trusted server pricing', async () => {
-    const { elements, fetchMock } = await executeCheckout({
-      getRandomValues: (values) => values
-    });
+    const { elements, fetchMock } = await executeCheckout(
+      { getRandomValues: (values) => values },
+      { finish: false }
+    );
     elements['coupon-code']!.value = 'santo10';
     await elements['apply-coupon']!.listeners.get('click')?.();
     await new Promise((resolve) => setImmediate(resolve));
