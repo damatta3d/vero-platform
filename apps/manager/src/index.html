@@ -28,7 +28,6 @@
             <h1 id="page-title">Visão geral</h1>
           </div>
           <div class="topbar-actions">
-            <button id="change-access" class="text-button" type="button">Acesso</button>
             <button id="refresh" class="primary-button" type="button">Atualizar dados</button>
           </div>
         </header>
@@ -216,6 +215,28 @@
                 <section class="panel settings-section">
                   <div class="panel-heading">
                     <div>
+                      <p class="eyebrow">PEDIDOS</p>
+                      <h2>Recebimento</h2>
+                    </div>
+                  </div>
+                  <div class="toggle-list">
+                    <label class="toggle-row">
+                      <span
+                        ><strong>Recebimento automático de pedidos</strong
+                        ><small
+                          >Novos pedidos válidos serão confirmados automaticamente.</small
+                        ></span
+                      >
+                      <input name="automaticOrderReceipt" type="checkbox" />
+                    </label>
+                  </div>
+                  <p class="muted">
+                    Desativado, os novos pedidos permanecem em Recebidos até a confirmação manual.
+                  </p>
+                </section>
+                <section class="panel settings-section">
+                  <div class="panel-heading">
+                    <div>
                       <p class="eyebrow">LOGÍSTICA</p>
                       <h2>Entrega</h2>
                     </div>
@@ -269,6 +290,20 @@
                       ><input name="cardOnDeliveryEnabled" type="checkbox"
                     /></label>
                   </div>
+                </section>
+                <section class="panel settings-section">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">SEGURANÇA</p>
+                      <h2>Acesso</h2>
+                    </div>
+                  </div>
+                  <p class="muted">
+                    Atualize a chave e a empresa usadas por este navegador para acessar o Manager.
+                  </p>
+                  <button id="change-access" class="text-button" type="button">
+                    Administrar acesso
+                  </button>
                 </section>
               </div>
               <div class="settings-actions">

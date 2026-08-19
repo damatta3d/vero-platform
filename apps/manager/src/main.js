@@ -246,6 +246,7 @@ function fillSettings(settings) {
   const { identity, operation, delivery, payments } = settings;
   Object.entries(identity).forEach(([name, value]) => setSettingsValue(name, value));
   Object.entries(operation).forEach(([name, value]) => setSettingsValue(name, value));
+  setSettingsValue('automaticOrderReceipt', operation.orderReceiptMode === 'AUTOMATIC');
   setSettingsValue('maxRadiusKm', delivery.maxRadiusKm);
   setSettingsValue('baseFee', decimalFromCents(delivery.baseFeeCents));
   setSettingsValue(
@@ -307,7 +308,8 @@ function settingsPayload() {
       deliveryEnabled: settingsControl('deliveryEnabled').checked,
       preparationTimeMinMinutes: Number(settingsControl('preparationTimeMinMinutes').value),
       preparationTimeMaxMinutes: Number(settingsControl('preparationTimeMaxMinutes').value),
-      minimumOrderCents: settingsCents('minimumOrder')
+      minimumOrderCents: settingsCents('minimumOrder'),
+      orderReceiptMode: settingsControl('automaticOrderReceipt').checked ? 'AUTOMATIC' : 'MANUAL'
     },
     delivery: {
       maxRadiusKm: nullableNumberInput('maxRadiusKm'),
