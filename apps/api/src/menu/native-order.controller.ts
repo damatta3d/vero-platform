@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, Inject, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Inject, Logger, Post } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
 import type { PaymentMethod, PaymentStatus } from './payment.types.js';
+import { transitionPersistedOrder } from './order-workflow.js';
 
 type Db = {
   $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T>;
@@ -36,6 +37,8 @@ type Request = {
 
 @Controller('v1/orders/native')
 export class NativeOrderController {
+  private readonly logger = new Logger(NativeOrderController.name);
+
   constructor(@Inject(DATABASE_CLIENT) private readonly db: Db) {}
   @Post()
   async create(@Body() request: Request) {
@@ -89,6 +92,11 @@ export class NativeOrderController {
     const createdAt = new Date().toISOString();
     const trackingToken = idempotencyKey;
     const trackingTokenHash = idempotencyHash;
+    const modes = await this.db.$queryRawUnsafe<Array<{ mode: 'MANUAL' | 'AUTOMATIC' }>>(
+      `SELECT order_receipt_mode AS mode FROM store_settings WHERE tenant_id=$1`,
+      tenantId
+    );
+    const receiptMode = modes[0]?.mode ?? 'MANUAL';
 
     try {
       await this.db.$transaction(async (tx) => {
@@ -133,6 +141,20 @@ export class NativeOrderController {
       throw new BadRequestException('Could not persist native order.');
     }
 
+    let status = 'RECEIVED';
+    if (receiptMode === 'AUTOMATIC') {
+      try {
+        await this.confirmAutomatically(tenantId, orderId);
+        status = 'CONFIRMED';
+      } catch (error) {
+        this.logger.warn(
+          `Automatic confirmation failed for order ${orderId}; order remains RECEIVED: ${
+            error instanceof Error ? error.message : 'unknown error'
+          }`
+        );
+      }
+    }
+
     return {
       orderId,
       trackingToken,
@@ -145,9 +167,13 @@ export class NativeOrderController {
       totalCents: itemsTotalCents,
       paymentMethod: request.payment.method,
       paymentStatus: request.payment.status,
-      status: 'RECEIVED',
+      status,
       createdAt
     };
+  }
+
+  protected confirmAutomatically(tenantId: string, orderId: string) {
+    return transitionPersistedOrder(this.db, tenantId, orderId, 'CONFIRMED', 'AUTO');
   }
 
   private async findExisting(tenantId: string, idempotencyHash: string) {

@@ -69,6 +69,7 @@ export class PublicMenuController {
         AND i.category_id = c.id
         AND i.menu_id = c.menu_id
         AND i.active = true
+        AND i.available = true
        LEFT JOIN catalog_products p
          ON p."tenantId" = i.tenant_id
         AND p.id = i.catalog_product_id
@@ -121,6 +122,6 @@ export class PublicMenuController {
       return result;
     }, []);
 
-    return { ...menu, categories };
+    return { ...menu, categories: categories.filter((category) => category.items.length > 0) };
   }
 }

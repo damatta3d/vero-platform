@@ -34,6 +34,7 @@ export interface StoreSettingsInput {
     readonly preparationTimeMinMinutes: number;
     readonly preparationTimeMaxMinutes: number;
     readonly minimumOrderCents: number;
+    readonly orderReceiptMode: 'MANUAL' | 'AUTOMATIC';
   };
   readonly delivery: {
     readonly maxRadiusKm: number | null;
@@ -74,6 +75,7 @@ interface SettingsRow {
   readonly preparationTimeMinMinutes: number;
   readonly preparationTimeMaxMinutes: number;
   readonly minimumOrderCents: number;
+  readonly orderReceiptMode: 'MANUAL' | 'AUTOMATIC';
   readonly maxRadiusKm: number | null;
   readonly baseFeeCents: number;
   readonly freeAboveCents: number | null;
@@ -122,7 +124,7 @@ export class PrismaStoreSettingsRepository {
           "address_complement", "neighborhood", "city", "state_code", "postal_code",
           "operationally_open", "pickup_enabled", "delivery_enabled",
           "preparation_time_min_minutes", "preparation_time_max_minutes",
-          "minimum_order_cents", "delivery_radius_km", "delivery_base_fee_cents",
+          "minimum_order_cents", "order_receipt_mode", "delivery_radius_km", "delivery_base_fee_cents",
           "free_delivery_above_cents", "pix_enabled", "payment_on_delivery_enabled",
           "cash_on_delivery_enabled", "card_on_delivery_enabled", "updated_at"
         ) VALUES (
@@ -133,6 +135,7 @@ export class PrismaStoreSettingsRepository {
           ${input.operation.operationallyOpen}, ${input.operation.pickupEnabled},
           ${input.operation.deliveryEnabled}, ${input.operation.preparationTimeMinMinutes},
           ${input.operation.preparationTimeMaxMinutes}, ${input.operation.minimumOrderCents},
+          ${input.operation.orderReceiptMode},
           ${input.delivery.maxRadiusKm}, ${input.delivery.baseFeeCents},
           ${input.delivery.freeAboveCents}, ${input.payments.pixEnabled},
           ${input.payments.paymentOnDeliveryEnabled}, ${input.payments.cashEnabled},
@@ -154,6 +157,7 @@ export class PrismaStoreSettingsRepository {
           "preparation_time_min_minutes" = EXCLUDED."preparation_time_min_minutes",
           "preparation_time_max_minutes" = EXCLUDED."preparation_time_max_minutes",
           "minimum_order_cents" = EXCLUDED."minimum_order_cents",
+          "order_receipt_mode" = EXCLUDED."order_receipt_mode",
           "delivery_radius_km" = EXCLUDED."delivery_radius_km",
           "delivery_base_fee_cents" = EXCLUDED."delivery_base_fee_cents",
           "free_delivery_above_cents" = EXCLUDED."free_delivery_above_cents",
@@ -202,6 +206,7 @@ export class PrismaStoreSettingsRepository {
         "preparation_time_min_minutes" AS "preparationTimeMinMinutes",
         "preparation_time_max_minutes" AS "preparationTimeMaxMinutes",
         "minimum_order_cents" AS "minimumOrderCents",
+        "order_receipt_mode" AS "orderReceiptMode",
         "delivery_radius_km" AS "maxRadiusKm",
         "delivery_base_fee_cents" AS "baseFeeCents",
         "free_delivery_above_cents" AS "freeAboveCents",
@@ -244,7 +249,8 @@ export class PrismaStoreSettingsRepository {
         deliveryEnabled: row.deliveryEnabled,
         preparationTimeMinMinutes: row.preparationTimeMinMinutes,
         preparationTimeMaxMinutes: row.preparationTimeMaxMinutes,
-        minimumOrderCents: row.minimumOrderCents
+        minimumOrderCents: row.minimumOrderCents,
+        orderReceiptMode: row.orderReceiptMode
       },
       delivery: {
         maxRadiusKm: row.maxRadiusKm,

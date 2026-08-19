@@ -98,7 +98,8 @@ const storeSettingsSchema = z
         deliveryEnabled: z.boolean(),
         preparationTimeMinMinutes: z.number().int().min(1).max(1440),
         preparationTimeMaxMinutes: z.number().int().min(1).max(1440),
-        minimumOrderCents: z.number().int().nonnegative().max(100_000_000)
+        minimumOrderCents: z.number().int().nonnegative().max(100_000_000),
+        orderReceiptMode: z.enum(['MANUAL', 'AUTOMATIC'])
       })
       .strict(),
     delivery: z

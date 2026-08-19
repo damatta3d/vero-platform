@@ -33,7 +33,8 @@ describe('store settings persistence', () => {
         operationallyOpen: false,
         pickupEnabled: true,
         deliveryEnabled: false,
-        minimumOrderCents: 0
+        minimumOrderCents: 0,
+        orderReceiptMode: 'MANUAL'
       })
     );
     expect(first.schedule).toHaveLength(7);
@@ -61,7 +62,8 @@ describe('store settings persistence', () => {
         deliveryEnabled: true,
         preparationTimeMinMinutes: 25,
         preparationTimeMaxMinutes: 45,
-        minimumOrderCents: 3500
+        minimumOrderCents: 3500,
+        orderReceiptMode: 'AUTOMATIC'
       },
       delivery: { maxRadiusKm: 9.5, baseFeeCents: 800, freeAboveCents: 12_000 },
       schedule: storeWeekdays.map((weekday, index) => ({
@@ -89,6 +91,7 @@ describe('store settings persistence', () => {
     expect(otherTenant.identity.displayName).toBe(tenantB);
     expect(otherTenant.operation.operationallyOpen).toBe(false);
     expect(otherTenant.operation.minimumOrderCents).toBe(0);
+    expect(otherTenant.operation.orderReceiptMode).toBe('MANUAL');
   });
 });
 

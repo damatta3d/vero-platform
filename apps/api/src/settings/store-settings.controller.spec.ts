@@ -48,7 +48,8 @@ function validInput(): MutableStoreSettings {
       deliveryEnabled: false,
       preparationTimeMinMinutes: 30,
       preparationTimeMaxMinutes: 60,
-      minimumOrderCents: 0
+      minimumOrderCents: 0,
+      orderReceiptMode: 'MANUAL'
     },
     delivery: { maxRadiusKm: null, baseFeeCents: 0, freeAboveCents: null },
     schedule: weekdays.map((weekday) => ({
@@ -154,6 +155,7 @@ describe(StoreSettingsController.name, () => {
 
   it('validates and persists a complete update', async () => {
     const value = validInput();
+    value.operation.orderReceiptMode = 'AUTOMATIC';
     const stored = { ...value, updatedAt: new Date('2026-08-14T18:00:00.000Z') };
     repository.update.mockResolvedValue(stored);
 

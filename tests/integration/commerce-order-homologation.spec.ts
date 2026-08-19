@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { createDatabaseClient } from '@vero/infrastructure-database';
 import { KitchenOrderController } from '../../apps/api/src/menu/kitchen-order.controller';
+import { MenuAdminController } from '../../apps/api/src/menu/menu-admin.controller';
 import { NativeOrderController } from '../../apps/api/src/menu/native-order.controller';
 import { PaymentController } from '../../apps/api/src/menu/payment.controller';
 import { PublicCheckoutController } from '../../apps/api/src/menu/public-checkout.controller';
@@ -34,6 +35,7 @@ describe('Santo Parma VERO Menu application homologation', () => {
   const nativeOrders = new NativeOrderController(database);
   const tracking = new PublicOrderStatusController(database);
   const kitchen = new KitchenOrderController({ authorize } as never, database);
+  const menuAdmin = new MenuAdminController(database, { authorize } as never);
 
   beforeAll(async () => {
     await database.$executeRawUnsafe(
@@ -81,6 +83,13 @@ describe('Santo Parma VERO Menu application homologation', () => {
       'Item exclusivo do gate de homologacao.',
       4590
     );
+    await database.$executeRawUnsafe(
+      `INSERT INTO store_settings (tenant_id, display_name, order_receipt_mode)
+       VALUES ($1, $2, 'MANUAL')
+       ON CONFLICT (tenant_id) DO UPDATE SET order_receipt_mode='MANUAL'`,
+      tenantId,
+      'Santo Parma Homologacao'
+    );
   });
 
   afterAll(async () => {
@@ -106,6 +115,11 @@ describe('Santo Parma VERO Menu application homologation', () => {
     );
     await database.$executeRawUnsafe(
       'DELETE FROM catalog_products WHERE "tenantId" IN ($1, $2)',
+      tenantId,
+      otherTenantId
+    );
+    await database.$executeRawUnsafe(
+      'DELETE FROM store_settings WHERE tenant_id IN ($1, $2)',
       tenantId,
       otherTenantId
     );
@@ -319,6 +333,14 @@ describe('Santo Parma VERO Menu application homologation', () => {
       { fromStatus: 'CONFIRMED', toStatus: 'PREPARING' },
       { fromStatus: 'PREPARING', toStatus: 'READY' }
     ]);
+    const confirmationAudit = await database.$queryRawUnsafe<
+      Array<{ source: string | null; confirmedAt: Date | null }>
+    >(
+      `SELECT confirmed_source AS source, confirmed_at AS "confirmedAt"
+       FROM commerce_native_orders WHERE id=$1::uuid`,
+      created.orderId
+    );
+    expect(confirmationAudit[0]).toEqual({ source: 'MANUAL', confirmedAt: expect.any(Date) });
     await expect(
       kitchen.transition(authorization, tenantId, created.orderId, { status: 'DISPATCHED' })
     ).rejects.toThrow('INVALID_ORDER_TRANSITION:READY->DISPATCHED');
@@ -328,11 +350,21 @@ describe('Santo Parma VERO Menu application homologation', () => {
 
   it('rejects unavailable items in checkout and native order creation', async () => {
     await database.$executeRawUnsafe(
+      `UPDATE store_settings SET order_receipt_mode='AUTOMATIC' WHERE tenant_id=$1`,
+      tenantId
+    );
+    await database.$executeRawUnsafe(
       'UPDATE commerce_menu_items SET available = false WHERE tenant_id = $1 AND id = $2::uuid',
       tenantId,
       menuItemId
     );
     try {
+      const publicPaused = await publicMenu.getPublishedMenu(menuSlug);
+      expect(publicPaused.categories).toEqual([]);
+      const managerMenu = await menuAdmin.detail(authorization, tenantId, menuId);
+      expect(managerMenu.items).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: menuItemId, available: false })])
+      );
       const unavailableDraft = {
         menuSlug,
         fulfillment: 'PICKUP' as const,
@@ -351,13 +383,114 @@ describe('Santo Parma VERO Menu application homologation', () => {
           payment: { method: 'PAY_ON_DELIVERY', status: 'PENDING' }
         })
       ).rejects.toBeInstanceOf(BadRequestException);
+      const rejectedOrders = await database.$queryRawUnsafe<Array<{ count: bigint }>>(
+        `SELECT COUNT(*) AS count FROM commerce_native_orders
+         WHERE tenant_id=$1 AND customer_phone='67999999998'`,
+        tenantId
+      );
+      expect(rejectedOrders[0]?.count).toBe(0n);
     } finally {
       await database.$executeRawUnsafe(
         'UPDATE commerce_menu_items SET available = true WHERE tenant_id = $1 AND id = $2::uuid',
         tenantId,
         menuItemId
       );
+      await database.$executeRawUnsafe(
+        `UPDATE store_settings SET order_receipt_mode='MANUAL' WHERE tenant_id=$1`,
+        tenantId
+      );
     }
+    const publicReactivated = await publicMenu.getPublishedMenu(menuSlug);
+    expect(publicReactivated.categories).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: categoryId,
+          items: expect.arrayContaining([expect.objectContaining({ id: menuItemId })])
+        })
+      ])
+    );
+  });
+
+  it('confirms only new orders automatically and keeps retries idempotent', async () => {
+    const manualKey = randomUUID();
+    const manualRequest = {
+      idempotencyKey: manualKey,
+      menuSlug,
+      customer: { name: 'Cliente Manual', phone: '67999999991' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: { method: 'PAY_ON_DELIVERY' as const, status: 'PENDING' as const }
+    };
+    const manual = await nativeOrders.create(manualRequest);
+    expect(manual.status).toBe('RECEIVED');
+
+    await database.$executeRawUnsafe(
+      `UPDATE store_settings SET order_receipt_mode='AUTOMATIC' WHERE tenant_id=$1`,
+      tenantId
+    );
+    const unchanged = await database.$queryRawUnsafe<Array<{ status: string }>>(
+      'SELECT status FROM commerce_native_orders WHERE id=$1::uuid',
+      manual.orderId
+    );
+    expect(unchanged[0]?.status).toBe('RECEIVED');
+
+    const automaticRequest = {
+      ...manualRequest,
+      idempotencyKey: randomUUID(),
+      customer: { name: 'Cliente Automatico', phone: '67999999992' }
+    };
+    const automatic = await nativeOrders.create(automaticRequest);
+    expect(automatic.status).toBe('CONFIRMED');
+    const retry = await nativeOrders.create(automaticRequest);
+    expect(retry).toMatchObject({ orderId: automatic.orderId, status: 'CONFIRMED' });
+
+    const persisted = await database.$queryRawUnsafe<
+      Array<{ status: string; source: string | null; confirmedAt: Date | null }>
+    >(
+      `SELECT status, confirmed_source AS source, confirmed_at AS "confirmedAt"
+       FROM commerce_native_orders WHERE id=$1::uuid`,
+      automatic.orderId
+    );
+    expect(persisted[0]).toEqual({
+      status: 'CONFIRMED',
+      source: 'AUTO',
+      confirmedAt: expect.any(Date)
+    });
+    const automaticHistory = await database.$queryRawUnsafe<Array<{ toStatus: string }>>(
+      `SELECT to_status AS "toStatus" FROM commerce_native_order_status_history
+       WHERE order_id=$1::uuid ORDER BY occurred_at`,
+      automatic.orderId
+    );
+    expect(automaticHistory).toEqual([{ toStatus: 'RECEIVED' }, { toStatus: 'CONFIRMED' }]);
+  });
+
+  it('keeps a persisted order RECEIVED when automatic confirmation fails', async () => {
+    class FailingAutomaticOrderController extends NativeOrderController {
+      protected override confirmAutomatically(_tenantId: string, _orderId: string) {
+        return Promise.reject(new Error('simulated automatic confirmation failure'));
+      }
+    }
+    const controller = new FailingAutomaticOrderController(database);
+    const request = {
+      idempotencyKey: randomUUID(),
+      menuSlug,
+      customer: { name: 'Cliente Fallback', phone: '67999999993' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: { method: 'PAY_ON_DELIVERY' as const, status: 'PENDING' as const }
+    };
+    const created = await controller.create(request);
+    expect(created.status).toBe('RECEIVED');
+    await expect(controller.create(request)).resolves.toMatchObject({
+      orderId: created.orderId,
+      status: 'RECEIVED'
+    });
+    const queue = await kitchen.list(authorization, tenantId);
+    expect(queue.orders).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ orderId: created.orderId, status: 'RECEIVED' })
+      ])
+    );
   });
 
   it('returns coherent errors for nonexistent orders', async () => {
