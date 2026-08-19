@@ -78,11 +78,17 @@ export async function transitionPersistedOrder(
     if (to === 'CONFIRMED' && !source) throw new Error('CONFIRMATION_SOURCE_REQUIRED');
     const changed = await client.$executeRawUnsafe(
       `UPDATE commerce_native_orders
-          SET status=$1,
-              confirmed_source=CASE WHEN $1='CONFIRMED' THEN $5 ELSE confirmed_source END,
-              confirmed_at=CASE WHEN $1='CONFIRMED' THEN NOW() ELSE confirmed_at END,
+          SET status=$1::varchar(32),
+              confirmed_source=CASE
+                WHEN $1::varchar(32)='CONFIRMED' THEN $5::varchar(16)
+                ELSE confirmed_source
+              END,
+              confirmed_at=CASE
+                WHEN $1::varchar(32)='CONFIRMED' THEN NOW()
+                ELSE confirmed_at
+              END,
               updated_at=NOW()
-        WHERE id=$2::uuid AND tenant_id=$3 AND status=$4`,
+        WHERE id=$2::uuid AND tenant_id=$3 AND status=$4::varchar(32)`,
       to,
       orderId,
       tenantId,
