@@ -126,7 +126,8 @@ describe('store settings persistence', () => {
         preparationTimeMinMinutes: 25,
         preparationTimeMaxMinutes: 45,
         minimumOrderCents: 3500,
-        orderReceiptMode: 'AUTOMATIC'
+        orderReceiptMode: 'AUTOMATIC',
+        timezone: 'America/Campo_Grande'
       },
       delivery: { maxRadiusKm: 9.5, baseFeeCents: 800, freeAboveCents: 12_000 },
       schedule: storeWeekdays.map((weekday, index) => ({

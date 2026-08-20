@@ -8,6 +8,7 @@ import { createDatabaseClient, PrismaStoreSettingsRepository } from '@vero/infra
 const migrationsRoot = resolve('packages/infrastructure/database/prisma/migrations');
 const receiptMigration = '20260819173000_order_receipt_mode';
 const repairMigration = '20260819193000_repair_order_receipt_mode';
+const homologationFixMigration = '20260820200000_manager_homologation_fixes';
 
 describe('order receipt mode migration recovery', () => {
   jest.setTimeout(60_000);
@@ -38,6 +39,9 @@ describe('order receipt mode migration recovery', () => {
         `INSERT INTO "store_settings" ("tenant_id", "display_name", "order_receipt_mode")
          VALUES ('existing-partial-tenant', 'Existing partial tenant', 'AUTOMATIC')`
       );
+      await target.query(await migrationSql(receiptMigration));
+      await target.query(await migrationSql(repairMigration));
+      await target.query(await migrationSql(homologationFixMigration));
       await target.end();
       target = undefined;
 
@@ -58,8 +62,6 @@ describe('order receipt mode migration recovery', () => {
 
       target = new Client({ connectionString: targetUrl.toString() });
       await target.connect();
-      await target.query(await migrationSql(receiptMigration));
-      await target.query(await migrationSql(repairMigration));
 
       const columns = await target.query<{
         character_maximum_length: number | null;
@@ -72,7 +74,7 @@ describe('order receipt mode migration recovery', () => {
          FROM information_schema.columns
          WHERE table_schema='public'
            AND table_name IN ('store_settings', 'commerce_native_orders')
-           AND column_name IN ('order_receipt_mode', 'confirmed_source', 'confirmed_at')
+           AND column_name IN ('order_receipt_mode', 'confirmed_source', 'confirmed_at', 'timezone')
          ORDER BY column_name`
       );
       const constraints = await target.query<{ conname: string }>(
@@ -100,6 +102,13 @@ describe('order receipt mode migration recovery', () => {
           character_maximum_length: 16,
           column_name: 'order_receipt_mode',
           column_default: "'MANUAL'::character varying",
+          data_type: 'character varying',
+          is_nullable: 'NO'
+        }),
+        expect.objectContaining({
+          character_maximum_length: 64,
+          column_name: 'timezone',
+          column_default: "'America/Campo_Grande'::character varying",
           data_type: 'character varying',
           is_nullable: 'NO'
         })

@@ -1,5 +1,12 @@
-export function orderNumber(orderId: string): string {
-  const hex = orderId.replaceAll('-', '').slice(0, 8);
-  const value = Number.parseInt(hex, 16);
-  return String(Number.isFinite(value) ? value % 100_000 : 0).padStart(5, '0');
+export function formatOperationalOrderNumber(value: number | null | undefined): string | null {
+  if (
+    value === undefined ||
+    value === null ||
+    !Number.isInteger(value) ||
+    value < 1 ||
+    value > 99_999
+  ) {
+    return null;
+  }
+  return String(value).padStart(5, '0');
 }

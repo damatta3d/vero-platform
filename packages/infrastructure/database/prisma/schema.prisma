@@ -249,6 +249,7 @@ model StoreSettings {
   preparationTimeMaxMinutes Int                   @default(60) @map("preparation_time_max_minutes")
   minimumOrderCents         Int                   @default(0) @map("minimum_order_cents")
   orderReceiptMode          String                @default("MANUAL") @map("order_receipt_mode") @db.VarChar(16)
+  timezone                  String                @default("America/Campo_Grande") @db.VarChar(64)
   deliveryRadiusKm          Float?                @map("delivery_radius_km")
   deliveryBaseFeeCents      Int                   @default(0) @map("delivery_base_fee_cents")
   freeDeliveryAboveCents    Int?                  @map("free_delivery_above_cents")
