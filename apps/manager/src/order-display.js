@@ -1,4 +1,4 @@
-/* global document, MutationObserver */
+/* global document, MutationObserver, Node, NodeFilter */
 
 const statusLabels = {
   RECEIVED: 'Recebido',
