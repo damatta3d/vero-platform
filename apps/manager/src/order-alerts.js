@@ -1,4 +1,4 @@
-/* global document, localStorage, MutationObserver, FileReader, window, setInterval, clearInterval */
+/* global document, localStorage, MutationObserver, FileReader, window, setInterval, clearInterval, Audio */
 
 const ALERT_VERSION = 1;
 const DEFAULT_ALERTS = {
@@ -84,20 +84,30 @@ function synth(kind) {
   tone(880, now + 0.18, 0.28, 0.12, 'sine');
 }
 
-function playDataUrl(dataUrl) {
+async function playDataUrl(dataUrl) {
   if (!dataUrl) return false;
-  const audio = new Audio(dataUrl);
+  const audio = new Audio();
+  audio.preload = 'auto';
   audio.volume = 0.8;
-  audio.play().catch(() => {});
-  return true;
+  audio.src = dataUrl;
+  try {
+    await audio.play();
+    return true;
+  } catch (error) {
+    throw new Error(`Não foi possível reproduzir o MP3: ${error?.message || 'formato não suportado'}`);
+  }
 }
 
-function playAlert(mode, config = loadConfig()) {
+async function playAlert(mode, config = loadConfig()) {
   if (!config.enabled) return;
   const custom = mode === 'manual' ? config.manualCustom : config.automaticCustom;
   const selected = mode === 'manual' ? config.manualSound : config.automaticSound;
-  if (selected === 'CUSTOM' && playDataUrl(custom)) return;
-  synth(selected === 'CUSTOM' ? (mode === 'manual' ? 'PHONE' : 'CHIME') : selected);
+  if (selected === 'CUSTOM') {
+    if (!custom) throw new Error('Nenhum áudio personalizado foi salvo.');
+    await playDataUrl(custom);
+    return;
+  }
+  synth(selected);
 }
 
 function columnCards(label) {
@@ -113,6 +123,10 @@ function cardSignature(card) {
   );
 }
 
+function safePlayAlert(mode, config) {
+  playAlert(mode, config).catch((error) => console.error('[VERO order alert]', error));
+}
+
 function syncAlerts() {
   const config = loadConfig();
   const received = columnCards('Recebidos');
@@ -125,7 +139,7 @@ function syncAlerts() {
 
   if (config.enabled && received.length) {
     if (!manualTimer) {
-      playAlert('manual', config);
+      safePlayAlert('manual', config);
       manualTimer = setInterval(() => {
         const current = loadConfig();
         if (!current.enabled || columnCards('Recebidos').length === 0) {
@@ -133,7 +147,7 @@ function syncAlerts() {
           manualTimer = null;
           return;
         }
-        playAlert('manual', current);
+        safePlayAlert('manual', current);
       }, 6500);
     }
   } else if (manualTimer) {
@@ -150,7 +164,7 @@ function syncAlerts() {
   ) {
     const previous = new Set(lastAutomaticSignature.split('|').filter(Boolean));
     if (confirmed.some((card) => !previous.has(cardSignature(card)))) {
-      playAlert('automatic', config);
+      safePlayAlert('automatic', config);
     }
   }
   lastAutomaticSignature = automaticSignature;
@@ -200,22 +214,38 @@ function injectSettings() {
   const enabled = section.querySelector('#alert-enabled');
   const manual = section.querySelector('#manual-sound');
   const automatic = section.querySelector('#automatic-sound');
+  const manualFileInput = section.querySelector('#manual-file');
+  const automaticFileInput = section.querySelector('#automatic-file');
   const status = section.querySelector('#alert-status');
   enabled.checked = current.enabled;
   manual.value = current.manualSound;
   automatic.value = current.automaticSound;
 
-  section.querySelector('#test-manual').addEventListener('click', () => {
-    playAlert('manual', { ...loadConfig(), enabled: true, manualSound: manual.value });
-  });
-  section.querySelector('#test-automatic').addEventListener('click', () => {
-    playAlert('automatic', { ...loadConfig(), enabled: true, automaticSound: automatic.value });
-  });
+  async function testSound(mode) {
+    try {
+      status.textContent = '';
+      const select = mode === 'manual' ? manual : automatic;
+      const fileInput = mode === 'manual' ? manualFileInput : automaticFileInput;
+      const previous = loadConfig();
+      const selectedFile = fileInput.files[0];
+      const customKey = mode === 'manual' ? 'manualCustom' : 'automaticCustom';
+      const soundKey = mode === 'manual' ? 'manualSound' : 'automaticSound';
+      const previewCustom = selectedFile ? await readAudioFile(selectedFile) : previous[customKey];
+      const preview = { ...previous, enabled: true, [soundKey]: select.value, [customKey]: previewCustom };
+      await playAlert(mode, preview);
+      status.textContent = 'Som reproduzido com sucesso.';
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  }
+
+  section.querySelector('#test-manual').addEventListener('click', () => testSound('manual'));
+  section.querySelector('#test-automatic').addEventListener('click', () => testSound('automatic'));
   section.querySelector('#save-alerts').addEventListener('click', async () => {
     try {
       const previous = loadConfig();
-      const manualFile = section.querySelector('#manual-file').files[0];
-      const automaticFile = section.querySelector('#automatic-file').files[0];
+      const manualFile = manualFileInput.files[0];
+      const automaticFile = automaticFileInput.files[0];
       const next = {
         ...previous,
         enabled: enabled.checked,
