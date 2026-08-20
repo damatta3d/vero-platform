@@ -4,6 +4,7 @@ import { Script } from 'node:vm';
 
 const managerSource = readFileSync(resolve('apps/manager/src/main.js'), 'utf8');
 const managerHtml = readFileSync(resolve('apps/manager/src/index.html'), 'utf8');
+const orderAlertsSource = readFileSync(resolve('apps/manager/src/order-alerts.js'), 'utf8');
 
 function extractHelper(name: string): string {
   const helper = managerSource.match(
@@ -42,6 +43,17 @@ describe('Manager order presentation', () => {
     expect(managerHtml).toContain('name="automaticOrderReceipt"');
     expect(managerSource).toContain("operation.orderReceiptMode === 'AUTOMATIC'");
     expect(managerSource).toContain("? 'AUTOMATIC' : 'MANUAL'");
+  });
+
+  it('provides tenant-scoped configurable order sound alerts', () => {
+    expect(() => new Script(`(() => {${orderAlertsSource}})();`)).not.toThrow();
+    expect(orderAlertsSource).toContain('vero_order_alerts:${tenantId()}');
+    expect(orderAlertsSource).toContain("columnCards('Recebidos')");
+    expect(orderAlertsSource).toContain("columnCards('Confirmados')");
+    expect(orderAlertsSource).toContain("manualSound: 'PHONE'");
+    expect(orderAlertsSource).toContain("automaticSound: 'CHIME'");
+    expect(orderAlertsSource).toContain('setInterval(() =>');
+    expect(orderAlertsSource).toContain('900 * 1024');
   });
 
   it('hides dispatch for pickup and preserves it for delivery', () => {
