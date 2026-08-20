@@ -20,11 +20,14 @@ export type NativeOrderItem = {
 
 export type NativeOrder = {
   orderId: string;
+  orderNumber: string | null;
   provider: 'VERO_NATIVE';
   menuSlug: string;
   customerName: string;
   customerPhone: string;
   fulfillment: 'DELIVERY' | 'PICKUP';
+  deliveryAddress: Record<string, string> | null;
+  orderNote: string | null;
   items: NativeOrderItem[];
   itemsTotalCents: number;
   deliveryFeeCents: number;

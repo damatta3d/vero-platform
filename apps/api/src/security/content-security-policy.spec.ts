@@ -15,6 +15,7 @@ describe('contentSecurityPolicyForPath', () => {
       "script-src 'self' 'unsafe-inline'"
     );
     expect(contentSecurityPolicyForPath('/manager')).not.toContain('upgrade-insecure-requests');
+    expect(contentSecurityPolicyForPath('/manager')).toContain("media-src 'self' blob: data:");
     expect(contentSecurityPolicyForPath('/v1/menu/santo-parma')).not.toContain(
       "script-src 'self' 'unsafe-inline'"
     );

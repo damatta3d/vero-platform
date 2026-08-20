@@ -86,7 +86,8 @@ describe('compiled API store settings', () => {
         preparationTimeMinMinutes: 25,
         preparationTimeMaxMinutes: 45,
         minimumOrderCents: 2_500,
-        orderReceiptMode: 'AUTOMATIC'
+        orderReceiptMode: 'AUTOMATIC',
+        timezone: 'America/Campo_Grande'
       },
       delivery: { maxRadiusKm: null, baseFeeCents: 0, freeAboveCents: null },
       schedule: storeWeekdays.map((weekday) => ({

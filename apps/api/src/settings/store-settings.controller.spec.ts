@@ -53,7 +53,8 @@ function validInput(): MutableStoreSettings {
       preparationTimeMinMinutes: 30,
       preparationTimeMaxMinutes: 60,
       minimumOrderCents: 0,
-      orderReceiptMode: 'MANUAL'
+      orderReceiptMode: 'MANUAL',
+      timezone: 'America/Campo_Grande'
     },
     delivery: { maxRadiusKm: null, baseFeeCents: 0, freeAboveCents: null },
     schedule: weekdays.map((weekday) => ({
@@ -130,6 +131,12 @@ describe(StoreSettingsController.name, () => {
         value.operation.operationallyOpen = true;
         value.operation.pickupEnabled = false;
         value.operation.deliveryEnabled = false;
+      }
+    ],
+    [
+      'invalid timezone',
+      (value: MutableStoreSettings) => {
+        value.operation.timezone = 'Campo Grande';
       }
     ]
   ])('rejects %s', async (_label, mutate) => {

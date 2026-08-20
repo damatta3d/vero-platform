@@ -118,42 +118,30 @@
                     </div>
                   </div>
                   <div class="form-grid">
-                    <label class="form-field settings-wide">
-                      <span>Nome de exibição</span>
-                      <input name="displayName" maxlength="160" required />
-                    </label>
-                    <label class="form-field">
-                      <span>Telefone</span>
-                      <input name="phone" inputmode="tel" maxlength="32" />
-                    </label>
-                    <label class="form-field">
-                      <span>WhatsApp</span>
-                      <input name="whatsapp" inputmode="tel" maxlength="32" />
-                    </label>
-                    <label class="form-field settings-wide">
-                      <span>Endereço</span>
-                      <input name="address" maxlength="240" />
-                    </label>
-                    <label class="form-field">
-                      <span>Complemento</span>
-                      <input name="addressComplement" maxlength="160" />
-                    </label>
-                    <label class="form-field">
-                      <span>Bairro</span>
-                      <input name="neighborhood" maxlength="120" />
-                    </label>
-                    <label class="form-field">
-                      <span>Cidade</span>
-                      <input name="city" maxlength="120" />
-                    </label>
-                    <label class="form-field">
-                      <span>UF</span>
-                      <input name="stateCode" maxlength="2" autocapitalize="characters" />
-                    </label>
-                    <label class="form-field">
-                      <span>CEP</span>
-                      <input name="postalCode" inputmode="numeric" maxlength="9" />
-                    </label>
+                    <label class="form-field settings-wide"
+                      ><span>Nome de exibição</span
+                      ><input name="displayName" maxlength="160" required /></label
+                    ><label class="form-field"
+                      ><span>Telefone</span
+                      ><input name="phone" inputmode="tel" maxlength="32" /></label
+                    ><label class="form-field"
+                      ><span>WhatsApp</span
+                      ><input name="whatsapp" inputmode="tel" maxlength="32" /></label
+                    ><label class="form-field settings-wide"
+                      ><span>Endereço</span><input name="address" maxlength="240" /></label
+                    ><label class="form-field"
+                      ><span>Complemento</span
+                      ><input name="addressComplement" maxlength="160" /></label
+                    ><label class="form-field"
+                      ><span>Bairro</span><input name="neighborhood" maxlength="120" /></label
+                    ><label class="form-field"
+                      ><span>Cidade</span><input name="city" maxlength="120" /></label
+                    ><label class="form-field"
+                      ><span>UF</span
+                      ><input name="stateCode" maxlength="2" autocapitalize="characters" /></label
+                    ><label class="form-field"
+                      ><span>CEP</span><input name="postalCode" inputmode="numeric" maxlength="9"
+                    /></label>
                   </div>
                 </section>
                 <section class="panel settings-section">
@@ -164,52 +152,57 @@
                     </div>
                   </div>
                   <div class="toggle-list">
-                    <label class="toggle-row">
-                      <span
+                    <label class="toggle-row"
+                      ><span
                         ><strong>Loja aberta</strong
                         ><small>Disponível operacionalmente</small></span
-                      >
-                      <input name="operationallyOpen" type="checkbox" />
-                    </label>
-                    <label class="toggle-row">
-                      <span
+                      ><input name="operationallyOpen" type="checkbox" /></label
+                    ><label class="toggle-row"
+                      ><span
                         ><strong>Aceitar retirada</strong
                         ><small>Cliente retira no local</small></span
-                      >
-                      <input name="pickupEnabled" type="checkbox" />
-                    </label>
-                    <label class="toggle-row">
-                      <span
+                      ><input name="pickupEnabled" type="checkbox" /></label
+                    ><label class="toggle-row"
+                      ><span
                         ><strong>Aceitar entrega</strong><small>Pedidos com entrega</small></span
-                      >
-                      <input name="deliveryEnabled" type="checkbox" />
-                    </label>
+                      ><input name="deliveryEnabled" type="checkbox"
+                    /></label>
                   </div>
                   <div class="form-grid settings-fields">
-                    <label class="form-field">
-                      <span>Preparo mínimo (min)</span>
-                      <input
+                    <label class="form-field"
+                      ><span>Preparo mínimo (min)</span
+                      ><input
                         name="preparationTimeMinMinutes"
                         type="number"
                         min="1"
                         max="1440"
-                        required
-                      />
-                    </label>
-                    <label class="form-field">
-                      <span>Preparo máximo (min)</span>
-                      <input
+                        required /></label
+                    ><label class="form-field"
+                      ><span>Preparo máximo (min)</span
+                      ><input
                         name="preparationTimeMaxMinutes"
                         type="number"
                         min="1"
                         max="1440"
-                        required
-                      />
-                    </label>
-                    <label class="form-field settings-wide">
-                      <span>Pedido mínimo (R$)</span>
-                      <input name="minimumOrder" type="number" min="0" step="0.01" required />
-                    </label>
+                        required /></label
+                    ><label class="form-field settings-wide"
+                      ><span>Pedido mínimo (R$)</span
+                      ><input
+                        name="minimumOrder"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required /></label
+                    ><label class="form-field settings-wide"
+                      ><span>Fuso horário</span
+                      ><select name="timezone" required>
+                        <option value="America/Campo_Grande">Campo Grande (MS)</option>
+                        <option value="America/Cuiaba">Cuiabá (MT)</option>
+                        <option value="America/Sao_Paulo">Brasília / São Paulo</option>
+                        <option value="America/Manaus">Manaus (AM)</option>
+                        <option value="America/Belem">Belém (PA)</option>
+                      </select></label
+                    >
                   </div>
                 </section>
                 <section class="panel settings-section">
@@ -220,15 +213,14 @@
                     </div>
                   </div>
                   <div class="toggle-list">
-                    <label class="toggle-row">
-                      <span
+                    <label class="toggle-row"
+                      ><span
                         ><strong>Recebimento automático de pedidos</strong
                         ><small
                           >Novos pedidos válidos serão confirmados automaticamente.</small
                         ></span
-                      >
-                      <input name="automaticOrderReceipt" type="checkbox" />
-                    </label>
+                      ><input name="automaticOrderReceipt" type="checkbox"
+                    /></label>
                   </div>
                   <p class="muted">
                     Desativado, os novos pedidos permanecem em Recebidos até a confirmação manual.
@@ -242,18 +234,21 @@
                     </div>
                   </div>
                   <div id="delivery-fields" class="form-grid">
-                    <label class="form-field">
-                      <span>Raio máximo (km)</span>
-                      <input name="maxRadiusKm" type="number" min="0" max="1000" step="0.1" />
-                    </label>
-                    <label class="form-field">
-                      <span>Taxa base (R$)</span>
-                      <input name="baseFee" type="number" min="0" step="0.01" required />
-                    </label>
-                    <label class="form-field settings-wide">
-                      <span>Frete grátis acima de (R$)</span>
-                      <input name="freeAbove" type="number" min="0" step="0.01" />
-                    </label>
+                    <label class="form-field"
+                      ><span>Raio máximo (km)</span
+                      ><input
+                        name="maxRadiusKm"
+                        type="number"
+                        min="0"
+                        max="1000"
+                        step="0.1" /></label
+                    ><label class="form-field"
+                      ><span>Taxa base (R$)</span
+                      ><input name="baseFee" type="number" min="0" step="0.01" required /></label
+                    ><label class="form-field settings-wide"
+                      ><span>Frete grátis acima de (R$)</span
+                      ><input name="freeAbove" type="number" min="0" step="0.01"
+                    /></label>
                   </div>
                 </section>
                 <section class="panel settings-section settings-schedule">
@@ -275,17 +270,14 @@
                   <div class="toggle-list">
                     <label class="toggle-row"
                       ><span><strong>PIX</strong></span
-                      ><input name="pixEnabled" type="checkbox"
-                    /></label>
-                    <label class="toggle-row"
+                      ><input name="pixEnabled" type="checkbox" /></label
+                    ><label class="toggle-row"
                       ><span><strong>Pagamento na entrega</strong></span
-                      ><input name="paymentOnDeliveryEnabled" type="checkbox"
-                    /></label>
-                    <label class="toggle-row"
+                      ><input name="paymentOnDeliveryEnabled" type="checkbox" /></label
+                    ><label class="toggle-row"
                       ><span><strong>Dinheiro</strong></span
-                      ><input name="cashEnabled" type="checkbox"
-                    /></label>
-                    <label class="toggle-row"
+                      ><input name="cashEnabled" type="checkbox" /></label
+                    ><label class="toggle-row"
                       ><span><strong>Cartão na entrega</strong></span
                       ><input name="cardOnDeliveryEnabled" type="checkbox"
                     /></label>
@@ -338,18 +330,20 @@
           <h2>Conectar ao Santo Parma</h2>
           <p class="muted">A chave fica armazenada somente neste navegador.</p>
         </div>
-        <label class="form-field">
-          <span>Chave de acesso</span>
-          <input id="access-token" type="password" autocomplete="current-password" required />
-        </label>
-        <label class="form-field">
-          <span>Empresa</span>
-          <input id="access-tenant" value="santo-parma" required />
-        </label>
+        <label class="form-field"
+          ><span>Chave de acesso</span
+          ><input
+            id="access-token"
+            type="password"
+            autocomplete="current-password"
+            required /></label
+        ><label class="form-field"
+          ><span>Empresa</span><input id="access-tenant" value="santo-parma" required
+        /></label>
         <p id="access-error" class="access-error" role="alert"></p>
         <div class="access-actions">
-          <button id="access-cancel" class="text-button" type="button">Cancelar</button>
-          <button class="primary-button" type="submit">Salvar e conectar</button>
+          <button id="access-cancel" class="text-button" type="button">Cancelar</button
+          ><button class="primary-button" type="submit">Salvar e conectar</button>
         </div>
       </form>
     </dialog>

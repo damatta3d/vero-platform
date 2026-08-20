@@ -434,6 +434,23 @@ dialog ul,
 dialog ol {
   padding-left: 20px;
 }
+.order-items {
+  display: grid;
+  gap: 12px;
+}
+.order-item-note,
+.order-note-section {
+  margin-top: 7px;
+  padding: 9px 11px;
+  color: #713f12;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 5px;
+}
+.order-item-note p,
+.order-note-section p {
+  margin: 4px 0 0;
+}
 #catalog-form {
   display: grid;
   gap: 18px;
