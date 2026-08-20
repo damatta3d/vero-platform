@@ -187,8 +187,22 @@
                         required /></label
                     ><label class="form-field settings-wide"
                       ><span>Pedido mínimo (R$)</span
-                      ><input name="minimumOrder" type="number" min="0" step="0.01" required
-                    /></label>
+                      ><input
+                        name="minimumOrder"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required /></label
+                    ><label class="form-field settings-wide"
+                      ><span>Fuso horário</span
+                      ><select name="timezone" required>
+                        <option value="America/Campo_Grande">Campo Grande (MS)</option>
+                        <option value="America/Cuiaba">Cuiabá (MT)</option>
+                        <option value="America/Sao_Paulo">Brasília / São Paulo</option>
+                        <option value="America/Manaus">Manaus (AM)</option>
+                        <option value="America/Belem">Belém (PA)</option>
+                      </select></label
+                    >
                   </div>
                 </section>
                 <section class="panel settings-section">
@@ -334,6 +348,5 @@
       </form>
     </dialog>
     <script type="module" src="/manager/main.js"></script>
-    <script type="module" src="/manager/order-display.js"></script>
   </body>
 </html>

@@ -127,8 +127,77 @@ function dateTime(value) {
 }
 
 function paymentMethodLabel(order) {
-  if (order.paymentMethod !== 'PAY_ON_DELIVERY') return order.paymentMethod;
+  if (order.paymentMethod === 'PIX') return 'PIX';
+  if (order.paymentMethod !== 'PAY_ON_DELIVERY') return 'Forma de pagamento indisponível';
   return order.fulfillment === 'DELIVERY' ? 'Pagamento na entrega' : 'Pagamento na retirada';
+}
+
+function paymentStatusLabel(status) {
+  return (
+    {
+      PENDING: 'Aguardando pagamento',
+      AWAITING_PAYMENT: 'Aguardando pagamento',
+      PAID: 'Pago',
+      FAILED: 'Pagamento não aprovado',
+      CANCELLED: 'Pagamento cancelado',
+      REFUNDED: 'Estornado'
+    }[status] || 'Situação do pagamento indisponível'
+  );
+}
+
+function fulfillmentLabel(fulfillment) {
+  return fulfillment === 'DELIVERY'
+    ? 'Entrega'
+    : fulfillment === 'PICKUP'
+      ? 'Retirada no local'
+      : 'Forma de recebimento indisponível';
+}
+
+function orderStatusLabel(status, fulfillment) {
+  if (status === 'READY') {
+    return fulfillment === 'DELIVERY' ? 'Pronto para entrega' : 'Pronto para retirada';
+  }
+  return (
+    {
+      RECEIVED: 'Pedido recebido',
+      CONFIRMED: 'Pedido confirmado',
+      PREPARING: 'Em preparo',
+      DISPATCHED: 'Saiu para entrega',
+      COMPLETED: 'Concluído',
+      CANCELLED: 'Cancelado'
+    }[status] || 'Status do pedido indisponível'
+  );
+}
+
+function orderNumberLabel(order) {
+  return /^\d{5}$/.test(order.orderNumber || '') ? `#${order.orderNumber}` : 'Pedido antigo';
+}
+
+function deliveryAddressLabel(address) {
+  if (!address || typeof address !== 'object') return 'Endereço não informado';
+  return [address.street, address.number, address.district, address.complement, address.reference]
+    .filter(Boolean)
+    .join(', ');
+}
+
+function operatorErrorMessage(payload, status) {
+  const code = String(payload.code || '');
+  const raw = Array.isArray(payload.message) ? payload.message.join(', ') : payload.message;
+  const known = {
+    INVALID_STORE_SETTINGS: 'Revise os campos das configurações da loja.',
+    INVALID_ACTIVE_ORDER_STATUS: 'O filtro de status informado não é válido.',
+    INVALID_UPDATED_AFTER: 'Não foi possível sincronizar os pedidos.',
+    ORDER_NOT_FOUND: 'Pedido não encontrado.'
+  };
+  if (known[code]) return known[code];
+  if (String(raw || '').startsWith('INVALID_ORDER_TRANSITION:')) {
+    return 'Esta mudança de status não é permitida.';
+  }
+  if (code === 'STORE_CLOSED' && raw) return String(raw);
+  if (status === 401 || status === 403) return 'Acesso não autorizado. Verifique sua chave.';
+  if (status === 404) return 'Registro não encontrado.';
+  if (status >= 500) return 'Serviço temporariamente indisponível. Tente novamente.';
+  return 'Não foi possível concluir a operação. Revise os dados e tente novamente.';
 }
 
 function transitionsForOrder(order) {
@@ -161,9 +230,7 @@ async function api(path, options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = Array.isArray(payload.message) ? payload.message.join(', ') : payload.message;
-    const fields = Array.isArray(payload.fields) ? `: ${payload.fields.join(', ')}` : '';
-    throw new Error(`${message || payload.code || `HTTP_${response.status}`}${fields}`);
+    throw new Error(operatorErrorMessage(payload, response.status));
   }
   return payload;
 }
@@ -309,7 +376,8 @@ function settingsPayload() {
       preparationTimeMinMinutes: Number(settingsControl('preparationTimeMinMinutes').value),
       preparationTimeMaxMinutes: Number(settingsControl('preparationTimeMaxMinutes').value),
       minimumOrderCents: settingsCents('minimumOrder'),
-      orderReceiptMode: settingsControl('automaticOrderReceipt').checked ? 'AUTOMATIC' : 'MANUAL'
+      orderReceiptMode: settingsControl('automaticOrderReceipt').checked ? 'AUTOMATIC' : 'MANUAL',
+      timezone: settingsControl('timezone').value
     },
     delivery: {
       maxRadiusKm: nullableNumberInput('maxRadiusKm'),
@@ -379,7 +447,7 @@ function renderDashboard() {
     ? recent
         .map(
           (order) =>
-            `<button class="summary-row" type="button" data-order-id="${escapeHtml(order.orderId)}"><span><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><small>${escapeHtml(order.customerName)}</small></span><span>${money(order.totalCents)}</span></button>`
+            `<button class="summary-row" type="button" data-order-id="${escapeHtml(order.orderId)}"><span><strong>${escapeHtml(orderNumberLabel(order))}</strong><small>${escapeHtml(order.customerName)}</small></span><span>${money(order.totalCents)}</span></button>`
         )
         .join('')
     : '<p class="muted">Nenhum pedido ativo agora.</p>';
@@ -412,7 +480,7 @@ function renderBoard() {
 function createCard(order) {
   const article = document.createElement('article');
   article.className = 'order-card';
-  article.innerHTML = `<button class="card-main" type="button"><div class="order-meta"><strong>#${escapeHtml(order.orderId.slice(0, 8))}</strong><span>${order.fulfillment === 'DELIVERY' ? 'Entrega' : 'Retirada'}</span></div><h3>${escapeHtml(order.customerName)}</h3><div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(paymentMethodLabel(order))}</span></div></button><div class="actions"></div>`;
+  article.innerHTML = `<button class="card-main" type="button"><div class="order-meta"><strong>${escapeHtml(orderNumberLabel(order))}</strong><span>${escapeHtml(fulfillmentLabel(order.fulfillment))}</span></div><h3>${escapeHtml(order.customerName)}</h3><div class="order-meta"><span>${money(order.totalCents)}</span><span>${escapeHtml(paymentMethodLabel(order))}</span></div></button><div class="actions"></div>`;
   article.querySelector('.card-main').addEventListener('click', () => openDetail(order.orderId));
   const actions = article.querySelector('.actions');
   for (const next of transitionsForOrder(order)) {
@@ -434,7 +502,7 @@ function actionLabel(status) {
       DISPATCHED: 'Despachar',
       COMPLETED: 'Concluir',
       CANCELLED: 'Cancelar'
-    }[status] || status
+    }[status] || 'Atualizar pedido'
   );
 }
 
@@ -474,15 +542,23 @@ async function openDetail(orderId) {
     const itemRows = items
       .map(
         (item) =>
-          `<li>${escapeHtml(item.quantity)}× ${escapeHtml(item.name)}${item.note ? ` — ${escapeHtml(item.note)}` : ''}</li>`
+          `<li><span>${escapeHtml(item.quantity)}× ${escapeHtml(item.name)}</span>${item.note ? `<div class="order-item-note"><strong>Observações</strong><p>${escapeHtml(item.note)}</p></div>` : ''}</li>`
       )
       .join('');
     const historyRows = history
       .map(
-        (entry) => `<li>${escapeHtml(entry.fromStatus || '—')} → ${escapeHtml(entry.toStatus)}</li>`
+        (entry) =>
+          `<li>${entry.fromStatus ? `${escapeHtml(orderStatusLabel(entry.fromStatus, order.fulfillment))} → ` : ''}${escapeHtml(orderStatusLabel(entry.toStatus, order.fulfillment))}</li>`
       )
       .join('');
-    orderDetail.innerHTML = `<h2>Pedido #${escapeHtml(order.orderId.slice(0, 8))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(order.fulfillment === 'DELIVERY' ? order.deliveryAddress || 'Entrega' : 'Retirada no local')}</p><ul>${itemRows}</ul><p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(order.paymentStatus)}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
+    const fulfillment =
+      order.fulfillment === 'DELIVERY'
+        ? `${fulfillmentLabel(order.fulfillment)} · ${deliveryAddressLabel(order.deliveryAddress)}`
+        : fulfillmentLabel(order.fulfillment);
+    const orderNote = order.orderNote
+      ? `<section class="order-note-section"><h3>Observações do pedido</h3><p>${escapeHtml(order.orderNote)}</p></section>`
+      : '';
+    orderDetail.innerHTML = `<h2>${escapeHtml(orderNumberLabel(order))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(fulfillment)}</p><p><strong>${escapeHtml(orderStatusLabel(order.status, order.fulfillment))}</strong></p><ul class="order-items">${itemRows}</ul>${orderNote}<p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(paymentStatusLabel(order.paymentStatus))}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;

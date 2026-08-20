@@ -1,4 +1,4 @@
-/* global document, localStorage, MutationObserver, FileReader, window, setInterval, clearInterval, Audio */
+/* global document, localStorage, MutationObserver, indexedDB, URL, window, setInterval, clearInterval, Audio */
 
 const ALERT_VERSION = 1;
 const DEFAULT_ALERTS = {
@@ -6,8 +6,8 @@ const DEFAULT_ALERTS = {
   enabled: false,
   manualSound: 'PHONE',
   automaticSound: 'CHIME',
-  manualCustom: null,
-  automaticCustom: null
+  manualCustomName: null,
+  automaticCustomName: null
 };
 
 let audioContext = null;
@@ -30,14 +30,25 @@ function storageKey() {
 
 function loadConfig() {
   try {
-    return { ...DEFAULT_ALERTS, ...JSON.parse(localStorage.getItem(storageKey()) || '{}') };
+    const stored = JSON.parse(localStorage.getItem(storageKey()) || '{}');
+    delete stored.manualCustom;
+    delete stored.automaticCustom;
+    return { ...DEFAULT_ALERTS, ...stored };
   } catch {
     return { ...DEFAULT_ALERTS };
   }
 }
 
 function saveConfig(next) {
-  localStorage.setItem(storageKey(), JSON.stringify({ ...next, version: ALERT_VERSION }));
+  const persisted = {
+    version: ALERT_VERSION,
+    enabled: next.enabled,
+    manualSound: next.manualSound,
+    automaticSound: next.automaticSound,
+    manualCustomName: next.manualCustomName || null,
+    automaticCustomName: next.automaticCustomName || null
+  };
+  localStorage.setItem(storageKey(), JSON.stringify(persisted));
 }
 
 function context() {
@@ -84,29 +95,86 @@ function synth(kind) {
   tone(880, now + 0.18, 0.28, 0.12, 'sine');
 }
 
-async function playDataUrl(dataUrl) {
-  if (!dataUrl) return false;
-  const audio = new Audio();
-  audio.preload = 'auto';
-  audio.volume = 0.8;
-  audio.src = dataUrl;
+function audioStorageKey(mode) {
+  return `${tenantId()}:${mode}`;
+}
+
+function openAudioDatabase() {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') {
+      reject(new Error('Este navegador não permite salvar áudio personalizado.'));
+      return;
+    }
+    const request = indexedDB.open('vero_order_alerts', 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains('audio')) {
+        request.result.createObjectStore('audio');
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () =>
+      reject(new Error('Não foi possível acessar os áudios salvos neste navegador.'));
+  });
+}
+
+async function storeAudioBlob(mode, blob) {
+  const database = await openAudioDatabase();
   try {
-    await audio.play();
-    return true;
-  } catch (error) {
-    throw new Error(
-      `Não foi possível reproduzir o MP3: ${error?.message || 'formato não suportado'}`
-    );
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction('audio', 'readwrite');
+      transaction.objectStore('audio').put(blob, audioStorageKey(mode));
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(new Error('Não foi possível salvar o áudio.'));
+      transaction.onabort = () => reject(new Error('Não foi possível salvar o áudio.'));
+    });
+  } finally {
+    database.close();
   }
 }
 
-async function playAlert(mode, config = loadConfig()) {
+async function loadAudioBlob(mode) {
+  const database = await openAudioDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const transaction = database.transaction('audio', 'readonly');
+      const request = transaction.objectStore('audio').get(audioStorageKey(mode));
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(new Error('Não foi possível carregar o áudio salvo.'));
+    });
+  } finally {
+    database.close();
+  }
+}
+
+async function playAudioBlob(blob) {
+  if (!blob) throw new Error('Nenhum áudio personalizado foi salvo.');
+  const objectUrl = URL.createObjectURL(blob);
+  const audio = new Audio();
+  audio.preload = 'auto';
+  audio.volume = 0.8;
+  audio.src = objectUrl;
+  let released = false;
+  const release = () => {
+    if (released) return;
+    released = true;
+    URL.revokeObjectURL(objectUrl);
+  };
+  audio.addEventListener('ended', release, { once: true });
+  audio.addEventListener('error', release, { once: true });
+  try {
+    await audio.play();
+    return true;
+  } catch {
+    release();
+    throw new Error('Não foi possível reproduzir o arquivo. Verifique se o MP3 ou WAV é válido.');
+  }
+}
+
+async function playAlert(mode, config = loadConfig(), previewBlob = null) {
   if (!config.enabled) return;
-  const custom = mode === 'manual' ? config.manualCustom : config.automaticCustom;
   const selected = mode === 'manual' ? config.manualSound : config.automaticSound;
   if (selected === 'CUSTOM') {
-    if (!custom) throw new Error('Nenhum áudio personalizado foi salvo.');
-    await playDataUrl(custom);
+    await playAudioBlob(previewBlob || (await loadAudioBlob(mode)));
     return;
   }
   synth(selected);
@@ -172,18 +240,22 @@ function syncAlerts() {
   lastAutomaticSignature = automaticSignature;
 }
 
-function readAudioFile(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
-    if (!file.type.startsWith('audio/')) {
-      return reject(new Error('Selecione um arquivo de áudio.'));
-    }
-    if (file.size > 900 * 1024) return reject(new Error('O áudio deve ter no máximo 900 KB.'));
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
-    reader.readAsDataURL(file);
-  });
+function validateAudioFile(file) {
+  if (!file) return null;
+  const extension = file.name.toLowerCase().match(/\.(mp3|wav)$/)?.[1];
+  const mime = String(file.type || '').toLowerCase();
+  const validMime =
+    extension === 'mp3'
+      ? !mime || mime === 'audio/mpeg' || mime === 'audio/mp3'
+      : extension === 'wav'
+        ? !mime || ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave'].includes(mime)
+        : false;
+  if (!extension || !validMime) {
+    throw new Error('Selecione um arquivo MP3 ou WAV válido.');
+  }
+  if (file.size > 900 * 1024) throw new Error('O áudio deve ter no máximo 900 KB.');
+  if (file.size < 1) throw new Error('O arquivo de áudio está vazio.');
+  return file;
 }
 
 function injectStyles() {
@@ -204,11 +276,11 @@ function injectSettings() {
     <div class="panel-heading"><div><p class="eyebrow">ALERTAS</p><h2>Sons de novos pedidos</h2></div></div>
     <label class="toggle-row"><span><strong>Alertas sonoros</strong><small>Avise a operação quando um pedido exigir atenção.</small></span><input id="alert-enabled" type="checkbox" /></label>
     <div class="alert-grid">
-      <div class="alert-choice"><strong>Pedido aguardando confirmação</strong><small class="muted">Repete enquanto houver pedido em Recebidos.</small><select id="manual-sound"><option value="PHONE">Telefone</option><option value="BELL">Campainha</option><option value="CHIME">Aviso curto</option><option value="CUSTOM">MP3 personalizado</option></select><input id="manual-file" type="file" accept="audio/*" /><button id="test-manual" class="text-button" type="button">Testar som</button></div>
-      <div class="alert-choice"><strong>Pedido recebido automaticamente</strong><small class="muted">Toca uma vez quando o pedido entra confirmado.</small><select id="automatic-sound"><option value="CHIME">Aviso curto</option><option value="BELL">Campainha</option><option value="PHONE">Telefone</option><option value="CUSTOM">MP3 personalizado</option></select><input id="automatic-file" type="file" accept="audio/*" /><button id="test-automatic" class="text-button" type="button">Testar som</button></div>
+      <div class="alert-choice"><strong>Pedido aguardando confirmação</strong><small class="muted">Repete enquanto houver pedido em Recebidos.</small><select id="manual-sound"><option value="PHONE">Telefone</option><option value="BELL">Campainha</option><option value="CHIME">Aviso curto</option><option value="CUSTOM">MP3 ou WAV personalizado</option></select><input id="manual-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav" /><small id="manual-file-name" class="muted"></small><button id="test-manual" class="text-button" type="button">Testar som</button></div>
+      <div class="alert-choice"><strong>Pedido recebido automaticamente</strong><small class="muted">Toca uma vez quando o pedido entra confirmado.</small><select id="automatic-sound"><option value="CHIME">Aviso curto</option><option value="BELL">Campainha</option><option value="PHONE">Telefone</option><option value="CUSTOM">MP3 ou WAV personalizado</option></select><input id="automatic-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav" /><small id="automatic-file-name" class="muted"></small><button id="test-automatic" class="text-button" type="button">Testar som</button></div>
     </div>
     <div class="alert-actions"><button id="save-alerts" class="primary-button" type="button">Salvar alertas</button></div>
-    <p class="alert-note">Os sons ficam salvos neste navegador, separados por estabelecimento. Arquivos personalizados: até 900 KB.</p>
+    <p class="alert-note">Os sons ficam salvos neste navegador, separados por estabelecimento. Arquivos MP3 ou WAV: até 900 KB.</p>
     <p id="alert-status" class="alert-status" aria-live="polite"></p>`;
   grid.append(section);
 
@@ -218,10 +290,18 @@ function injectSettings() {
   const automatic = section.querySelector('#automatic-sound');
   const manualFileInput = section.querySelector('#manual-file');
   const automaticFileInput = section.querySelector('#automatic-file');
+  const manualFileName = section.querySelector('#manual-file-name');
+  const automaticFileName = section.querySelector('#automatic-file-name');
   const status = section.querySelector('#alert-status');
   enabled.checked = current.enabled;
   manual.value = current.manualSound;
   automatic.value = current.automaticSound;
+  manualFileName.textContent = current.manualCustomName
+    ? `Salvo: ${current.manualCustomName}`
+    : 'Nenhum arquivo salvo.';
+  automaticFileName.textContent = current.automaticCustomName
+    ? `Salvo: ${current.automaticCustomName}`
+    : 'Nenhum arquivo salvo.';
 
   async function testSound(mode) {
     try {
@@ -229,17 +309,14 @@ function injectSettings() {
       const select = mode === 'manual' ? manual : automatic;
       const fileInput = mode === 'manual' ? manualFileInput : automaticFileInput;
       const previous = loadConfig();
-      const selectedFile = fileInput.files[0];
-      const customKey = mode === 'manual' ? 'manualCustom' : 'automaticCustom';
+      const selectedFile = validateAudioFile(fileInput.files[0]);
       const soundKey = mode === 'manual' ? 'manualSound' : 'automaticSound';
-      const previewCustom = selectedFile ? await readAudioFile(selectedFile) : previous[customKey];
       const preview = {
         ...previous,
         enabled: true,
-        [soundKey]: select.value,
-        [customKey]: previewCustom
+        [soundKey]: select.value
       };
-      await playAlert(mode, preview);
+      await playAlert(mode, preview, selectedFile);
       status.textContent = 'Som reproduzido com sucesso.';
     } catch (error) {
       status.textContent = error.message;
@@ -251,25 +328,34 @@ function injectSettings() {
   section.querySelector('#save-alerts').addEventListener('click', async () => {
     try {
       const previous = loadConfig();
-      const manualFile = manualFileInput.files[0];
-      const automaticFile = automaticFileInput.files[0];
+      const manualFile = validateAudioFile(manualFileInput.files[0]);
+      const automaticFile = validateAudioFile(automaticFileInput.files[0]);
+      if (manualFile) await storeAudioBlob('manual', manualFile);
+      if (automaticFile) await storeAudioBlob('automatic', automaticFile);
       const next = {
         ...previous,
         enabled: enabled.checked,
         manualSound: manual.value,
         automaticSound: automatic.value,
-        manualCustom: manualFile ? await readAudioFile(manualFile) : previous.manualCustom,
-        automaticCustom: automaticFile
-          ? await readAudioFile(automaticFile)
-          : previous.automaticCustom
+        manualCustomName: manualFile ? manualFile.name : previous.manualCustomName,
+        automaticCustomName: automaticFile ? automaticFile.name : previous.automaticCustomName
       };
-      if (next.manualSound === 'CUSTOM' && !next.manualCustom) {
+      if (next.manualSound === 'CUSTOM' && !(manualFile || (await loadAudioBlob('manual')))) {
         throw new Error('Envie o áudio personalizado do pedido manual.');
       }
-      if (next.automaticSound === 'CUSTOM' && !next.automaticCustom) {
+      if (
+        next.automaticSound === 'CUSTOM' &&
+        !(automaticFile || (await loadAudioBlob('automatic')))
+      ) {
         throw new Error('Envie o áudio personalizado do pedido automático.');
       }
       saveConfig(next);
+      manualFileName.textContent = next.manualCustomName
+        ? `Salvo: ${next.manualCustomName}`
+        : 'Nenhum arquivo salvo.';
+      automaticFileName.textContent = next.automaticCustomName
+        ? `Salvo: ${next.automaticCustomName}`
+        : 'Nenhum arquivo salvo.';
       if (next.enabled) context();
       status.textContent = 'Alertas sonoros salvos para este estabelecimento.';
       syncAlerts();

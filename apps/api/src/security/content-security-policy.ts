@@ -16,7 +16,7 @@ const defaultContentSecurityPolicy = [
 
 const managerContentSecurityPolicy = defaultContentSecurityPolicy.replace(
   ';upgrade-insecure-requests',
-  ''
+  ";media-src 'self' blob: data:"
 );
 
 const inlineApplicationContentSecurityPolicy = [
