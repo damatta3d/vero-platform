@@ -23,336 +23,43 @@
       </aside>
       <div class="workspace">
         <header class="topbar">
-          <div>
-            <p class="eyebrow">VERO MANAGER</p>
-            <h1 id="page-title">Visão geral</h1>
-          </div>
-          <div class="topbar-actions">
-            <button id="refresh" class="primary-button" type="button">Atualizar dados</button>
-          </div>
+          <div><p class="eyebrow">VERO MANAGER</p><h1 id="page-title">Visão geral</h1></div>
+          <div class="topbar-actions"><button id="refresh" class="primary-button" type="button">Atualizar dados</button></div>
         </header>
         <main>
           <section id="dashboard-view" class="view active" aria-labelledby="page-title">
             <div id="metrics" class="metrics"></div>
             <div class="dashboard-grid">
-              <article class="panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">OPERAÇÃO</p>
-                    <h2>Pedidos em andamento</h2>
-                  </div>
-                  <button class="text-button" data-open-view="orders" type="button">
-                    Ver pedidos
-                  </button>
-                </div>
-                <div id="active-orders-summary" class="summary-list"></div>
-              </article>
-              <article class="panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">ATENÇÃO</p>
-                    <h2>Fila operacional</h2>
-                  </div>
-                </div>
-                <div id="stage-summary" class="stage-summary"></div>
-              </article>
+              <article class="panel"><div class="panel-heading"><div><p class="eyebrow">OPERAÇÃO</p><h2>Pedidos em andamento</h2></div><button class="text-button" data-open-view="orders" type="button">Ver pedidos</button></div><div id="active-orders-summary" class="summary-list"></div></article>
+              <article class="panel"><div class="panel-heading"><div><p class="eyebrow">ATENÇÃO</p><h2>Fila operacional</h2></div></div><div id="stage-summary" class="stage-summary"></div></article>
             </div>
           </section>
-          <section id="orders-view" class="view" aria-labelledby="page-title">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">OPERAÇÃO EM TEMPO REAL</p>
-                <h2>Board de pedidos</h2>
-              </div>
-            </div>
-            <section id="board" class="board" aria-live="polite"></section>
-          </section>
-          <section id="catalog-view" class="view" aria-labelledby="page-title">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">VENDA DIRETA</p>
-                <h2>Gestão do cardápio</h2>
-              </div>
-              <div>
-                <button id="new-menu" class="text-button" type="button">Novo menu</button
-                ><button id="catalog-refresh" class="primary-button" type="button">
-                  Atualizar cardápio
-                </button>
-              </div>
-            </div>
-            <div class="catalog-layout">
-              <article class="panel">
-                <div class="panel-heading">
-                  <div>
-                    <p class="eyebrow">CARDÁPIOS</p>
-                    <h2>Menus</h2>
-                  </div>
-                </div>
-                <div id="menu-list" class="summary-list"><p class="muted">Carregando…</p></div>
-              </article>
-              <article class="panel catalog-detail">
-                <div id="catalog-detail">
-                  <p class="muted">Selecione um menu para administrar categorias e itens.</p>
-                </div>
-              </article>
-            </div>
-          </section>
+          <section id="orders-view" class="view" aria-labelledby="page-title"><div class="section-heading"><div><p class="eyebrow">OPERAÇÃO EM TEMPO REAL</p><h2>Board de pedidos</h2></div></div><section id="board" class="board" aria-live="polite"></section></section>
+          <section id="catalog-view" class="view" aria-labelledby="page-title"><div class="section-heading"><div><p class="eyebrow">VENDA DIRETA</p><h2>Gestão do cardápio</h2></div><div><button id="new-menu" class="text-button" type="button">Novo menu</button><button id="catalog-refresh" class="primary-button" type="button">Atualizar cardápio</button></div></div><div class="catalog-layout"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">CARDÁPIOS</p><h2>Menus</h2></div></div><div id="menu-list" class="summary-list"><p class="muted">Carregando…</p></div></article><article class="panel catalog-detail"><div id="catalog-detail"><p class="muted">Selecione um menu para administrar categorias e itens.</p></div></article></div></section>
           <section id="settings-view" class="view" aria-labelledby="page-title">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">ESTABELECIMENTO</p>
-                <h2>Configurações da operação</h2>
-              </div>
-            </div>
-            <div id="settings-loading" class="panel settings-message" aria-live="polite">
-              Carregando configurações…
-            </div>
+            <div class="section-heading"><div><p class="eyebrow">ESTABELECIMENTO</p><h2>Configurações da operação</h2></div></div>
+            <div id="settings-loading" class="panel settings-message" aria-live="polite">Carregando configurações…</div>
             <div id="settings-error" class="panel settings-message error" role="alert" hidden></div>
             <form id="settings-form" hidden>
               <div class="settings-grid">
-                <section class="panel settings-section settings-identity">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">IDENTIDADE</p>
-                      <h2>Dados da loja</h2>
-                    </div>
-                  </div>
-                  <div class="form-grid">
-                    <label class="form-field settings-wide">
-                      <span>Nome de exibição</span>
-                      <input name="displayName" maxlength="160" required />
-                    </label>
-                    <label class="form-field">
-                      <span>Telefone</span>
-                      <input name="phone" inputmode="tel" maxlength="32" />
-                    </label>
-                    <label class="form-field">
-                      <span>WhatsApp</span>
-                      <input name="whatsapp" inputmode="tel" maxlength="32" />
-                    </label>
-                    <label class="form-field settings-wide">
-                      <span>Endereço</span>
-                      <input name="address" maxlength="240" />
-                    </label>
-                    <label class="form-field">
-                      <span>Complemento</span>
-                      <input name="addressComplement" maxlength="160" />
-                    </label>
-                    <label class="form-field">
-                      <span>Bairro</span>
-                      <input name="neighborhood" maxlength="120" />
-                    </label>
-                    <label class="form-field">
-                      <span>Cidade</span>
-                      <input name="city" maxlength="120" />
-                    </label>
-                    <label class="form-field">
-                      <span>UF</span>
-                      <input name="stateCode" maxlength="2" autocapitalize="characters" />
-                    </label>
-                    <label class="form-field">
-                      <span>CEP</span>
-                      <input name="postalCode" inputmode="numeric" maxlength="9" />
-                    </label>
-                  </div>
-                </section>
-                <section class="panel settings-section">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">ATENDIMENTO</p>
-                      <h2>Operação</h2>
-                    </div>
-                  </div>
-                  <div class="toggle-list">
-                    <label class="toggle-row">
-                      <span
-                        ><strong>Loja aberta</strong
-                        ><small>Disponível operacionalmente</small></span
-                      >
-                      <input name="operationallyOpen" type="checkbox" />
-                    </label>
-                    <label class="toggle-row">
-                      <span
-                        ><strong>Aceitar retirada</strong
-                        ><small>Cliente retira no local</small></span
-                      >
-                      <input name="pickupEnabled" type="checkbox" />
-                    </label>
-                    <label class="toggle-row">
-                      <span
-                        ><strong>Aceitar entrega</strong><small>Pedidos com entrega</small></span
-                      >
-                      <input name="deliveryEnabled" type="checkbox" />
-                    </label>
-                  </div>
-                  <div class="form-grid settings-fields">
-                    <label class="form-field">
-                      <span>Preparo mínimo (min)</span>
-                      <input
-                        name="preparationTimeMinMinutes"
-                        type="number"
-                        min="1"
-                        max="1440"
-                        required
-                      />
-                    </label>
-                    <label class="form-field">
-                      <span>Preparo máximo (min)</span>
-                      <input
-                        name="preparationTimeMaxMinutes"
-                        type="number"
-                        min="1"
-                        max="1440"
-                        required
-                      />
-                    </label>
-                    <label class="form-field settings-wide">
-                      <span>Pedido mínimo (R$)</span>
-                      <input name="minimumOrder" type="number" min="0" step="0.01" required />
-                    </label>
-                  </div>
-                </section>
-                <section class="panel settings-section">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">PEDIDOS</p>
-                      <h2>Recebimento</h2>
-                    </div>
-                  </div>
-                  <div class="toggle-list">
-                    <label class="toggle-row">
-                      <span
-                        ><strong>Recebimento automático de pedidos</strong
-                        ><small
-                          >Novos pedidos válidos serão confirmados automaticamente.</small
-                        ></span
-                      >
-                      <input name="automaticOrderReceipt" type="checkbox" />
-                    </label>
-                  </div>
-                  <p class="muted">
-                    Desativado, os novos pedidos permanecem em Recebidos até a confirmação manual.
-                  </p>
-                </section>
-                <section class="panel settings-section">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">LOGÍSTICA</p>
-                      <h2>Entrega</h2>
-                    </div>
-                  </div>
-                  <div id="delivery-fields" class="form-grid">
-                    <label class="form-field">
-                      <span>Raio máximo (km)</span>
-                      <input name="maxRadiusKm" type="number" min="0" max="1000" step="0.1" />
-                    </label>
-                    <label class="form-field">
-                      <span>Taxa base (R$)</span>
-                      <input name="baseFee" type="number" min="0" step="0.01" required />
-                    </label>
-                    <label class="form-field settings-wide">
-                      <span>Frete grátis acima de (R$)</span>
-                      <input name="freeAbove" type="number" min="0" step="0.01" />
-                    </label>
-                  </div>
-                </section>
-                <section class="panel settings-section settings-schedule">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">SEMANA</p>
-                      <h2>Horários</h2>
-                    </div>
-                  </div>
-                  <div id="schedule-fields" class="schedule-list"></div>
-                </section>
-                <section class="panel settings-section">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">RECEBIMENTO</p>
-                      <h2>Pagamentos</h2>
-                    </div>
-                  </div>
-                  <div class="toggle-list">
-                    <label class="toggle-row"
-                      ><span><strong>PIX</strong></span
-                      ><input name="pixEnabled" type="checkbox"
-                    /></label>
-                    <label class="toggle-row"
-                      ><span><strong>Pagamento na entrega</strong></span
-                      ><input name="paymentOnDeliveryEnabled" type="checkbox"
-                    /></label>
-                    <label class="toggle-row"
-                      ><span><strong>Dinheiro</strong></span
-                      ><input name="cashEnabled" type="checkbox"
-                    /></label>
-                    <label class="toggle-row"
-                      ><span><strong>Cartão na entrega</strong></span
-                      ><input name="cardOnDeliveryEnabled" type="checkbox"
-                    /></label>
-                  </div>
-                </section>
-                <section class="panel settings-section">
-                  <div class="panel-heading">
-                    <div>
-                      <p class="eyebrow">SEGURANÇA</p>
-                      <h2>Acesso</h2>
-                    </div>
-                  </div>
-                  <p class="muted">
-                    Atualize a chave e a empresa usadas por este navegador para acessar o Manager.
-                  </p>
-                  <button id="change-access" class="text-button" type="button">
-                    Administrar acesso
-                  </button>
-                </section>
+                <section class="panel settings-section settings-identity"><div class="panel-heading"><div><p class="eyebrow">IDENTIDADE</p><h2>Dados da loja</h2></div></div><div class="form-grid"><label class="form-field settings-wide"><span>Nome de exibição</span><input name="displayName" maxlength="160" required /></label><label class="form-field"><span>Telefone</span><input name="phone" inputmode="tel" maxlength="32" /></label><label class="form-field"><span>WhatsApp</span><input name="whatsapp" inputmode="tel" maxlength="32" /></label><label class="form-field settings-wide"><span>Endereço</span><input name="address" maxlength="240" /></label><label class="form-field"><span>Complemento</span><input name="addressComplement" maxlength="160" /></label><label class="form-field"><span>Bairro</span><input name="neighborhood" maxlength="120" /></label><label class="form-field"><span>Cidade</span><input name="city" maxlength="120" /></label><label class="form-field"><span>UF</span><input name="stateCode" maxlength="2" autocapitalize="characters" /></label><label class="form-field"><span>CEP</span><input name="postalCode" inputmode="numeric" maxlength="9" /></label></div></section>
+                <section class="panel settings-section"><div class="panel-heading"><div><p class="eyebrow">ATENDIMENTO</p><h2>Operação</h2></div></div><div class="toggle-list"><label class="toggle-row"><span><strong>Loja aberta</strong><small>Disponível operacionalmente</small></span><input name="operationallyOpen" type="checkbox" /></label><label class="toggle-row"><span><strong>Aceitar retirada</strong><small>Cliente retira no local</small></span><input name="pickupEnabled" type="checkbox" /></label><label class="toggle-row"><span><strong>Aceitar entrega</strong><small>Pedidos com entrega</small></span><input name="deliveryEnabled" type="checkbox" /></label></div><div class="form-grid settings-fields"><label class="form-field"><span>Preparo mínimo (min)</span><input name="preparationTimeMinMinutes" type="number" min="1" max="1440" required /></label><label class="form-field"><span>Preparo máximo (min)</span><input name="preparationTimeMaxMinutes" type="number" min="1" max="1440" required /></label><label class="form-field settings-wide"><span>Pedido mínimo (R$)</span><input name="minimumOrder" type="number" min="0" step="0.01" required /></label></div></section>
+                <section class="panel settings-section"><div class="panel-heading"><div><p class="eyebrow">PEDIDOS</p><h2>Recebimento</h2></div></div><div class="toggle-list"><label class="toggle-row"><span><strong>Recebimento automático de pedidos</strong><small>Novos pedidos válidos serão confirmados automaticamente.</small></span><input name="automaticOrderReceipt" type="checkbox" /></label></div><p class="muted">Desativado, os novos pedidos permanecem em Recebidos até a confirmação manual.</p></section>
+                <section class="panel settings-section"><div class="panel-heading"><div><p class="eyebrow">LOGÍSTICA</p><h2>Entrega</h2></div></div><div id="delivery-fields" class="form-grid"><label class="form-field"><span>Raio máximo (km)</span><input name="maxRadiusKm" type="number" min="0" max="1000" step="0.1" /></label><label class="form-field"><span>Taxa base (R$)</span><input name="baseFee" type="number" min="0" step="0.01" required /></label><label class="form-field settings-wide"><span>Frete grátis acima de (R$)</span><input name="freeAbove" type="number" min="0" step="0.01" /></label></div></section>
+                <section class="panel settings-section settings-schedule"><div class="panel-heading"><div><p class="eyebrow">SEMANA</p><h2>Horários</h2></div></div><div id="schedule-fields" class="schedule-list"></div></section>
+                <section class="panel settings-section"><div class="panel-heading"><div><p class="eyebrow">RECEBIMENTO</p><h2>Pagamentos</h2></div></div><div class="toggle-list"><label class="toggle-row"><span><strong>PIX</strong></span><input name="pixEnabled" type="checkbox" /></label><label class="toggle-row"><span><strong>Pagamento na entrega</strong></span><input name="paymentOnDeliveryEnabled" type="checkbox" /></label><label class="toggle-row"><span><strong>Dinheiro</strong></span><input name="cashEnabled" type="checkbox" /></label><label class="toggle-row"><span><strong>Cartão na entrega</strong></span><input name="cardOnDeliveryEnabled" type="checkbox" /></label></div></section>
+                <section class="panel settings-section"><div class="panel-heading"><div><p class="eyebrow">SEGURANÇA</p><h2>Acesso</h2></div></div><p class="muted">Atualize a chave e a empresa usadas por este navegador para acessar o Manager.</p><button id="change-access" class="text-button" type="button">Administrar acesso</button></section>
               </div>
-              <div class="settings-actions">
-                <p id="settings-status" class="muted" aria-live="polite"></p>
-                <button id="settings-submit" class="primary-button" type="submit">
-                  Salvar configurações
-                </button>
-              </div>
+              <div class="settings-actions"><p id="settings-status" class="muted" aria-live="polite"></p><button id="settings-submit" class="primary-button" type="submit">Salvar configurações</button></div>
             </form>
           </section>
         </main>
       </div>
     </div>
-    <dialog id="order-dialog">
-      <div id="order-detail"></div>
-      <form method="dialog"><button class="primary-button">Fechar</button></form>
-    </dialog>
-    <dialog id="catalog-dialog">
-      <form id="catalog-form">
-        <div id="catalog-form-fields"></div>
-        <p id="catalog-form-error" class="muted" role="alert"></p>
-        <div class="actions">
-          <button type="button" id="catalog-form-cancel">Cancelar</button
-          ><button class="primary-button" type="submit">Salvar</button>
-        </div>
-      </form>
-    </dialog>
-    <dialog id="access-dialog">
-      <form id="access-form">
-        <div>
-          <p class="eyebrow">ACESSO OPERACIONAL</p>
-          <h2>Conectar ao Santo Parma</h2>
-          <p class="muted">A chave fica armazenada somente neste navegador.</p>
-        </div>
-        <label class="form-field">
-          <span>Chave de acesso</span>
-          <input id="access-token" type="password" autocomplete="current-password" required />
-        </label>
-        <label class="form-field">
-          <span>Empresa</span>
-          <input id="access-tenant" value="santo-parma" required />
-        </label>
-        <p id="access-error" class="access-error" role="alert"></p>
-        <div class="access-actions">
-          <button id="access-cancel" class="text-button" type="button">Cancelar</button>
-          <button class="primary-button" type="submit">Salvar e conectar</button>
-        </div>
-      </form>
-    </dialog>
+    <dialog id="order-dialog"><div id="order-detail"></div><form method="dialog"><button class="primary-button">Fechar</button></form></dialog>
+    <dialog id="catalog-dialog"><form id="catalog-form"><div id="catalog-form-fields"></div><p id="catalog-form-error" class="muted" role="alert"></p><div class="actions"><button type="button" id="catalog-form-cancel">Cancelar</button><button class="primary-button" type="submit">Salvar</button></div></form></dialog>
+    <dialog id="access-dialog"><form id="access-form"><div><p class="eyebrow">ACESSO OPERACIONAL</p><h2>Conectar ao Santo Parma</h2><p class="muted">A chave fica armazenada somente neste navegador.</p></div><label class="form-field"><span>Chave de acesso</span><input id="access-token" type="password" autocomplete="current-password" required /></label><label class="form-field"><span>Empresa</span><input id="access-tenant" value="santo-parma" required /></label><p id="access-error" class="access-error" role="alert"></p><div class="access-actions"><button id="access-cancel" class="text-button" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar e conectar</button></div></form></dialog>
     <script type="module" src="/manager/main.js"></script>
+    <script type="module" src="/manager/order-display.js"></script>
   </body>
 </html>
