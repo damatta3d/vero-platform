@@ -41,6 +41,6 @@ export class ManagerPageController {
       readAsset('main.js'),
       readAsset('order-alerts.js')
     ]);
-    void reply.send(`${managerScript}\n\n${alertScript}`);
+    void reply.send(`${managerScript}\n\n;(() => {\n${alertScript}\n})();\n`);
   }
 }
