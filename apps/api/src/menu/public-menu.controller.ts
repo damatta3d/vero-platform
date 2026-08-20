@@ -158,7 +158,9 @@ export class PublicMenuController {
           minimumOrderCents: settings.minimumOrderCents,
           pixEnabled: settings.pixEnabled,
           paymentOnDeliveryEnabled:
-            settings.paymentOnDeliveryEnabled || settings.cashEnabled || settings.cardOnDeliveryEnabled
+            settings.paymentOnDeliveryEnabled ||
+            settings.cashEnabled ||
+            settings.cardOnDeliveryEnabled
         }
       : {
           operationallyOpen: false,

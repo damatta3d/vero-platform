@@ -94,7 +94,9 @@ async function playDataUrl(dataUrl) {
     await audio.play();
     return true;
   } catch (error) {
-    throw new Error(`Não foi possível reproduzir o MP3: ${error?.message || 'formato não suportado'}`);
+    throw new Error(
+      `Não foi possível reproduzir o MP3: ${error?.message || 'formato não suportado'}`
+    );
   }
 }
 
@@ -231,7 +233,12 @@ function injectSettings() {
       const customKey = mode === 'manual' ? 'manualCustom' : 'automaticCustom';
       const soundKey = mode === 'manual' ? 'manualSound' : 'automaticSound';
       const previewCustom = selectedFile ? await readAudioFile(selectedFile) : previous[customKey];
-      const preview = { ...previous, enabled: true, [soundKey]: select.value, [customKey]: previewCustom };
+      const preview = {
+        ...previous,
+        enabled: true,
+        [soundKey]: select.value,
+        [customKey]: previewCustom
+      };
       await playAlert(mode, preview);
       status.textContent = 'Som reproduzido com sucesso.';
     } catch (error) {
