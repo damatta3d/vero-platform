@@ -81,9 +81,10 @@ node -e '
   const settings = JSON.parse(process.argv[1]);
   if (settings.identity?.displayName !== "store-settings-container-smoke") process.exit(1);
   if (settings.operation?.orderReceiptMode !== "MANUAL") process.exit(1);
+  if (settings.operation?.timezone !== "America/Campo_Grande") process.exit(1);
 ' "${settings}"
 
-readonly update_payload='{"identity":{"displayName":"Santo Parma Container","phone":null,"whatsapp":null,"address":null,"addressComplement":null,"neighborhood":null,"city":"Campo Grande","stateCode":"MS","postalCode":"79000-000"},"operation":{"operationallyOpen":false,"pickupEnabled":true,"deliveryEnabled":false,"preparationTimeMinMinutes":30,"preparationTimeMaxMinutes":60,"minimumOrderCents":0,"orderReceiptMode":"AUTOMATIC"},"delivery":{"maxRadiusKm":null,"baseFeeCents":0,"freeAboveCents":null},"schedule":[{"weekday":"MONDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"TUESDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"WEDNESDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"THURSDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"FRIDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"SATURDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"SUNDAY","enabled":false,"opensAt":null,"closesAt":null}],"payments":{"pixEnabled":true,"paymentOnDeliveryEnabled":true,"cashEnabled":true,"cardOnDeliveryEnabled":true}}'
+readonly update_payload='{"identity":{"displayName":"Santo Parma Container","phone":null,"whatsapp":null,"address":null,"addressComplement":null,"neighborhood":null,"city":"Campo Grande","stateCode":"MS","postalCode":"79000-000"},"operation":{"operationallyOpen":false,"pickupEnabled":true,"deliveryEnabled":false,"preparationTimeMinMinutes":30,"preparationTimeMaxMinutes":60,"minimumOrderCents":0,"orderReceiptMode":"AUTOMATIC","timezone":"America/Campo_Grande"},"delivery":{"maxRadiusKm":null,"baseFeeCents":0,"freeAboveCents":null},"schedule":[{"weekday":"MONDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"TUESDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"WEDNESDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"THURSDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"FRIDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"SATURDAY","enabled":false,"opensAt":null,"closesAt":null},{"weekday":"SUNDAY","enabled":false,"opensAt":null,"closesAt":null}],"payments":{"pixEnabled":true,"paymentOnDeliveryEnabled":true,"cashEnabled":true,"cardOnDeliveryEnabled":true}}'
 updated="$(curl --fail --silent --show-error \
   --request PUT \
   --header "${authorization}" \
@@ -95,6 +96,7 @@ node -e '
   const settings = JSON.parse(process.argv[1]);
   if (settings.identity?.displayName !== "Santo Parma Container") process.exit(1);
   if (settings.operation?.orderReceiptMode !== "AUTOMATIC") process.exit(1);
+  if (settings.operation?.timezone !== "America/Campo_Grande") process.exit(1);
 ' "${updated}"
 
 if docker logs "${api_container}" 2>&1 | grep -F "Cannot read properties of undefined"; then
