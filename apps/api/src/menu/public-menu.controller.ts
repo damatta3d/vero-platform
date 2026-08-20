@@ -171,7 +171,7 @@ export class PublicMenuController {
           paymentOnDeliveryEnabled: true
         };
 
-    const { tenantId: _tenantId, ...publicMenu } = menu;
+    const { tenantId, ...publicMenu } = menu;
     return {
       ...publicMenu,
       checkout,
