@@ -16,7 +16,12 @@ let lastAutomaticSignature = '';
 let boardInitialized = false;
 
 function tenantId() {
-  return window.VERO_TENANT_ID || localStorage.getItem('vero_tenant') || localStorage.getItem('veroTenantId') || 'santo-parma';
+  return (
+    window.VERO_TENANT_ID ||
+    localStorage.getItem('vero_tenant') ||
+    localStorage.getItem('veroTenantId') ||
+    'santo-parma'
+  );
 }
 
 function storageKey() {
@@ -102,7 +107,10 @@ function columnCards(label) {
 }
 
 function cardSignature(card) {
-  return card.querySelector('.order-meta strong')?.textContent.trim() || card.textContent.trim().slice(0, 80);
+  return (
+    card.querySelector('.order-meta strong')?.textContent.trim() ||
+    card.textContent.trim().slice(0, 80)
+  );
 }
 
 function syncAlerts() {
@@ -141,7 +149,9 @@ function syncAlerts() {
     automaticSignature !== lastAutomaticSignature
   ) {
     const previous = new Set(lastAutomaticSignature.split('|').filter(Boolean));
-    if (confirmed.some((card) => !previous.has(cardSignature(card)))) playAlert('automatic', config);
+    if (confirmed.some((card) => !previous.has(cardSignature(card)))) {
+      playAlert('automatic', config);
+    }
   }
   lastAutomaticSignature = automaticSignature;
 }
@@ -149,7 +159,9 @@ function syncAlerts() {
 function readAudioFile(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
-    if (!file.type.startsWith('audio/')) return reject(new Error('Selecione um arquivo de áudio.'));
+    if (!file.type.startsWith('audio/')) {
+      return reject(new Error('Selecione um arquivo de áudio.'));
+    }
     if (file.size > 900 * 1024) return reject(new Error('O áudio deve ter no máximo 900 KB.'));
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
@@ -210,10 +222,16 @@ function injectSettings() {
         manualSound: manual.value,
         automaticSound: automatic.value,
         manualCustom: manualFile ? await readAudioFile(manualFile) : previous.manualCustom,
-        automaticCustom: automaticFile ? await readAudioFile(automaticFile) : previous.automaticCustom
+        automaticCustom: automaticFile
+          ? await readAudioFile(automaticFile)
+          : previous.automaticCustom
       };
-      if (next.manualSound === 'CUSTOM' && !next.manualCustom) throw new Error('Envie o áudio personalizado do pedido manual.');
-      if (next.automaticSound === 'CUSTOM' && !next.automaticCustom) throw new Error('Envie o áudio personalizado do pedido automático.');
+      if (next.manualSound === 'CUSTOM' && !next.manualCustom) {
+        throw new Error('Envie o áudio personalizado do pedido manual.');
+      }
+      if (next.automaticSound === 'CUSTOM' && !next.automaticCustom) {
+        throw new Error('Envie o áudio personalizado do pedido automático.');
+      }
       saveConfig(next);
       if (next.enabled) context();
       status.textContent = 'Alertas sonoros salvos para este estabelecimento.';
@@ -228,12 +246,16 @@ injectStyles();
 injectSettings();
 const board = document.querySelector('#board');
 if (board) new MutationObserver(syncAlerts).observe(board, { childList: true, subtree: true });
-document.addEventListener('click', () => {
-  if (loadConfig().enabled) {
-    try {
-      context();
-    } catch {
-      // The settings test action will surface unsupported audio explicitly.
+document.addEventListener(
+  'click',
+  () => {
+    if (loadConfig().enabled) {
+      try {
+        context();
+      } catch {
+        // The settings test action will surface unsupported audio explicitly.
+      }
     }
-  }
-}, { once: true });
+  },
+  { once: true }
+);
