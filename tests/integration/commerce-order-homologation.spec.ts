@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 
 import { createDatabaseClient } from '@vero/infrastructure-database';
 import { KitchenOrderController } from '../../apps/api/src/menu/kitchen-order.controller';
@@ -36,6 +36,82 @@ describe('Santo Parma VERO Menu application homologation', () => {
   const tracking = new PublicOrderStatusController(database);
   const kitchen = new KitchenOrderController({ authorize } as never, database);
   const menuAdmin = new MenuAdminController(database, { authorize } as never);
+
+  async function setAvailability(
+    operationallyOpen: boolean,
+    withinSchedule: boolean,
+    boundary?: 'OPEN' | 'CLOSE',
+    target: Database = database
+  ) {
+    const timestamps = await target.$queryRawUnsafe<Array<{ now: Date }>>(
+      'SELECT CURRENT_TIMESTAMP AS now'
+    );
+    const now = new Date(timestamps[0]!.now);
+    const candidates = ['America/Campo_Grande', 'UTC', 'Pacific/Kiritimati'];
+    const details = candidates.map((timezone) => {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(now);
+      const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+      return {
+        currentMinute: Number(values['hour']) * 60 + Number(values['minute']),
+        timezone,
+        weekday: values['weekday'] ?? ''
+      };
+    });
+    const selected =
+      details.find(({ currentMinute }) => currentMinute > 60 && currentMinute < 1379) ??
+      details[0]!;
+    const timezone = selected.timezone;
+    const local = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    }).formatToParts(now);
+    const value = Object.fromEntries(local.map((part) => [part.type, part.value]));
+    const weekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(
+      value['weekday'] ?? ''
+    );
+    const currentMinute = Number(value['hour']) * 60 + Number(value['minute']);
+    const opensMinute = Math.max(0, currentMinute - 60);
+    const closesMinute = Math.min(1439, Math.max(currentMinute + 60, 1));
+    const clock = (minute: number) =>
+      `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
+
+    await target.$executeRawUnsafe(
+      `UPDATE store_settings
+          SET operationally_open=$2, timezone=$3
+        WHERE tenant_id=$1`,
+      tenantId,
+      operationallyOpen,
+      timezone
+    );
+    await target.$executeRawUnsafe(
+      'DELETE FROM store_schedule_windows WHERE tenant_id=$1',
+      tenantId
+    );
+    for (let day = 0; day < 7; day += 1) {
+      const enabled = (withinSchedule || boundary === 'CLOSE') && day === weekday;
+      const opensAt = boundary === 'OPEN' ? currentMinute : opensMinute;
+      const closesAt = boundary === 'CLOSE' ? currentMinute : closesMinute;
+      await target.$executeRawUnsafe(
+        `INSERT INTO store_schedule_windows
+           (tenant_id, weekday, sequence, enabled, opens_at, closes_at)
+         VALUES ($1, $2, 0, $3, $4::time, $5::time)`,
+        tenantId,
+        day,
+        enabled,
+        enabled ? clock(opensAt) : '09:00',
+        enabled ? clock(closesAt) : '18:00'
+      );
+    }
+  }
 
   beforeAll(async () => {
     await database.$executeRawUnsafe(
@@ -84,12 +160,16 @@ describe('Santo Parma VERO Menu application homologation', () => {
       4590
     );
     await database.$executeRawUnsafe(
-      `INSERT INTO store_settings (tenant_id, display_name, order_receipt_mode)
-       VALUES ($1, $2, 'MANUAL')
-       ON CONFLICT (tenant_id) DO UPDATE SET order_receipt_mode='MANUAL'`,
+      `INSERT INTO store_settings
+         (tenant_id, display_name, order_receipt_mode, operationally_open, timezone)
+       VALUES ($1, $2, 'MANUAL', true, 'America/Campo_Grande')
+       ON CONFLICT (tenant_id) DO UPDATE
+         SET order_receipt_mode='MANUAL', operationally_open=true,
+             timezone='America/Campo_Grande'`,
       tenantId,
       'Santo Parma Homologacao'
     );
+    await setAvailability(true, true);
   });
 
   afterAll(async () => {
@@ -156,6 +236,7 @@ describe('Santo Parma VERO Menu application homologation', () => {
       fulfillment: 'PICKUP' as const,
       customer: { name: 'Cliente Homologacao', phone: '67999999999' },
       address: null,
+      orderNote: 'Tocar a campainha',
       items: [
         {
           menuItemId,
@@ -202,6 +283,8 @@ describe('Santo Parma VERO Menu application homologation', () => {
       menuSlug,
       customer: browserDraft.customer,
       fulfillment: 'PICKUP' as const,
+      address: browserDraft.address,
+      orderNote: browserDraft.orderNote,
       items: [{ menuItemId, quantity: 2, note: 'Sem cebola', unitPriceCents: 1 }],
       payment: {
         method: payment.method,
@@ -218,7 +301,8 @@ describe('Santo Parma VERO Menu application homologation', () => {
       paymentMethod: 'PAY_ON_DELIVERY',
       paymentStatus: 'PENDING',
       status: 'RECEIVED',
-      trackingToken: checkoutId
+      trackingToken: checkoutId,
+      orderNumber: expect.stringMatching(/^\d{5}$/)
     });
 
     const persistedOrders = await database.$queryRawUnsafe<
@@ -229,12 +313,18 @@ describe('Santo Parma VERO Menu application homologation', () => {
         status: string;
         trackingTokenHash: string;
         idempotencyKeyHash: string;
+        operationalNumber: number;
+        orderNote: string | null;
+        deliveryAddress: unknown;
         serializedOrder: string;
       }>
     >(
       `SELECT provider, tenant_id AS "tenantId", total_cents AS "totalCents", status,
               tracking_token_hash AS "trackingTokenHash",
               idempotency_key_hash AS "idempotencyKeyHash",
+              operational_number AS "operationalNumber",
+              order_note AS "orderNote",
+              delivery_address AS "deliveryAddress",
               to_jsonb(commerce_native_orders)::text AS "serializedOrder"
          FROM commerce_native_orders
         WHERE id = $1::uuid`,
@@ -249,6 +339,9 @@ describe('Santo Parma VERO Menu application homologation', () => {
         status: 'RECEIVED',
         trackingTokenHash: expectedTokenHash,
         idempotencyKeyHash: expectedTokenHash,
+        operationalNumber: Number(created.orderNumber),
+        orderNote: 'Tocar a campainha',
+        deliveryAddress: null,
         serializedOrder: expect.any(String)
       }
     ]);
@@ -271,7 +364,13 @@ describe('Santo Parma VERO Menu application homologation', () => {
       orderId: created.orderId,
       status: 'RECEIVED',
       paymentStatus: 'PENDING',
-      fulfillment: 'PICKUP'
+      fulfillment: 'PICKUP',
+      orderNumber: created.orderNumber,
+      orderNote: 'Tocar a campainha',
+      itemsTotalCents: 9180,
+      discountCents: 0,
+      totalCents: 9180,
+      items: [expect.objectContaining({ name: 'Parmegiana Homologacao', note: 'Sem cebola' })]
     });
     await expect(tracking.status(created.orderId, randomUUID())).rejects.toBeInstanceOf(
       NotFoundException
@@ -282,6 +381,7 @@ describe('Santo Parma VERO Menu application homologation', () => {
       expect.arrayContaining([
         expect.objectContaining({
           orderId: created.orderId,
+          orderNumber: created.orderNumber,
           status: 'RECEIVED',
           allowedTransitions: ['CONFIRMED', 'CANCELLED']
         })
@@ -316,6 +416,9 @@ describe('Santo Parma VERO Menu application homologation', () => {
     expect(ticket).toMatchObject({
       order: {
         orderId: created.orderId,
+        orderNumber: created.orderNumber,
+        orderNote: 'Tocar a campainha',
+        deliveryAddress: null,
         status: 'READY',
         allowedTransitions: ['COMPLETED', 'CANCELLED']
       },
@@ -351,6 +454,104 @@ describe('Santo Parma VERO Menu application homologation', () => {
     ).rejects.toThrow('INVALID_ORDER_TRANSITION:READY->DISPATCHED');
     expect(authorize).toHaveBeenCalledWith(authorization, tenantId, 'orders.kitchen.list');
     expect(authorize).toHaveBeenCalledWith(authorization, tenantId, 'orders.kitchen.transition');
+  });
+
+  it.each([
+    { manual: true, within: true, accepted: true },
+    { manual: true, within: false, accepted: false },
+    { manual: false, within: true, accepted: false },
+    { manual: false, within: false, accepted: false }
+  ])(
+    'enforces manual=$manual and withinSchedule=$within at checkout',
+    async ({ manual, within, accepted }) => {
+      await setAvailability(manual, within);
+      const request = {
+        menuSlug,
+        fulfillment: 'PICKUP' as const,
+        customer: { name: 'Cliente Horario', phone: '67999999996' },
+        address: null,
+        items: [{ menuItemId, quantity: 1 }]
+      };
+
+      if (accepted) {
+        await expect(checkout.validate(request)).resolves.toMatchObject({ valid: true });
+      } else {
+        await expect(checkout.validate(request)).rejects.toBeInstanceOf(ConflictException);
+      }
+    }
+  );
+
+  it('accepts at the exact opening minute and rejects at the exact closing minute', async () => {
+    const request = {
+      menuSlug,
+      fulfillment: 'PICKUP' as const,
+      customer: { name: 'Cliente Limite', phone: '67999999994' },
+      address: null,
+      items: [{ menuItemId, quantity: 1 }]
+    };
+
+    await database.$transaction(async (transaction) => {
+      await setAvailability(true, true, 'OPEN', transaction);
+      const transactionCheckout = new PublicCheckoutController(transaction);
+      await expect(transactionCheckout.validate(request)).resolves.toMatchObject({ valid: true });
+    });
+    await database.$transaction(async (transaction) => {
+      await setAvailability(true, false, 'CLOSE', transaction);
+      const transactionCheckout = new PublicCheckoutController(transaction);
+      await expect(transactionCheckout.validate(request)).rejects.toBeInstanceOf(ConflictException);
+    });
+    await setAvailability(true, true);
+  });
+
+  it('revalidates store availability in the final order transaction', async () => {
+    await setAvailability(true, false);
+    const request = {
+      idempotencyKey: randomUUID(),
+      menuSlug,
+      customer: { name: 'Cliente Loja Fechada', phone: '67999999995' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: { method: 'PAY_ON_DELIVERY' as const, status: 'PENDING' as const }
+    };
+
+    await expect(nativeOrders.create(request)).rejects.toBeInstanceOf(ConflictException);
+    const persisted = await database.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT COUNT(*) AS count FROM commerce_native_orders
+       WHERE tenant_id=$1 AND customer_phone=$2`,
+      tenantId,
+      request.customer.phone
+    );
+    expect(persisted[0]?.count).toBe(0n);
+    await setAvailability(true, true);
+  });
+
+  it('allocates unique persistent five-digit numbers under concurrent creation', async () => {
+    await setAvailability(true, true);
+    const orders = await Promise.all(
+      Array.from({ length: 6 }, (_, index) =>
+        nativeOrders.create({
+          idempotencyKey: randomUUID(),
+          menuSlug,
+          customer: { name: `Cliente Concorrente ${index}`, phone: `6799999998${index}` },
+          fulfillment: 'PICKUP',
+          items: [{ menuItemId, quantity: 1 }],
+          payment: { method: 'PAY_ON_DELIVERY', status: 'PENDING' }
+        })
+      )
+    );
+    const numbers = orders.map((order) => order.orderNumber);
+
+    expect(numbers).toHaveLength(new Set(numbers).size);
+    expect(numbers).toEqual(numbers.map(() => expect.stringMatching(/^\d{5}$/)));
+    const persisted = await database.$queryRawUnsafe<Array<{ operationalNumber: number }>>(
+      `SELECT operational_number AS "operationalNumber"
+       FROM commerce_native_orders
+       WHERE id=ANY($1::uuid[])`,
+      orders.map((order) => order.orderId)
+    );
+    expect(persisted.map(({ operationalNumber }) => operationalNumber).sort()).toEqual(
+      numbers.map(Number).sort((left, right) => left - right)
+    );
   });
 
   it('rejects unavailable items in checkout and native order creation', async () => {
@@ -575,6 +776,22 @@ describe('Santo Parma VERO Menu application homologation', () => {
       totalCents: 4131,
       coupon: { code: 'SANTO10' }
     });
+    await expect(tracking.status(created.orderId, idempotencyKey)).resolves.toMatchObject({
+      orderNumber: created.orderNumber,
+      itemsTotalCents: 4590,
+      discountCents: 459,
+      totalCents: 4131,
+      couponCode: 'SANTO10'
+    });
+    await expect(kitchen.detail(authorization, tenantId, created.orderId)).resolves.toMatchObject({
+      order: {
+        orderNumber: created.orderNumber,
+        itemsTotalCents: 4590,
+        discountCents: 459,
+        totalCents: 4131,
+        couponCode: 'SANTO10'
+      }
+    });
 
     const snapshots = await database.$queryRawUnsafe<
       Array<{
@@ -613,6 +830,216 @@ describe('Santo Parma VERO Menu application homologation', () => {
     await expect(
       nativeOrders.create({ ...request, idempotencyKey: randomUUID() })
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it.each([
+    { operationallyOpen: false, withinSchedule: true, label: 'fechamento manual' },
+    { operationallyOpen: true, withinSchedule: false, label: 'fora do horário' }
+  ])(
+    'does not create an order or consume a valid coupon during $label',
+    async ({ operationallyOpen, withinSchedule }) => {
+      const couponId = randomUUID();
+      const code = `FECHADO${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+      await database.$executeRawUnsafe(
+        `INSERT INTO commerce_coupons
+           (id,tenant_id,code,name,discount_type,discount_value,active,max_uses)
+         VALUES ($1::uuid,$2,$3,'Cupom fechado','FIXED_AMOUNT',500,true,1)`,
+        couponId,
+        tenantId,
+        code
+      );
+      await setAvailability(operationallyOpen, withinSchedule);
+      const phone = `67${randomUUID().replaceAll('-', '').slice(0, 9)}`;
+
+      await expect(
+        nativeOrders.create({
+          idempotencyKey: randomUUID(),
+          menuSlug,
+          couponCode: code,
+          customer: { name: 'Cliente Loja Fechada Cupom', phone },
+          fulfillment: 'PICKUP',
+          items: [{ menuItemId, quantity: 1 }],
+          payment: { method: 'PAY_ON_DELIVERY', status: 'PENDING' }
+        })
+      ).rejects.toBeInstanceOf(ConflictException);
+
+      const [coupon] = await database.$queryRawUnsafe<Array<{ usesCount: number }>>(
+        `SELECT uses_count AS "usesCount" FROM commerce_coupons WHERE id=$1::uuid`,
+        couponId
+      );
+      const [orders] = await database.$queryRawUnsafe<Array<{ count: bigint }>>(
+        `SELECT COUNT(*) AS count FROM commerce_native_orders
+         WHERE tenant_id=$1 AND customer_phone=$2`,
+        tenantId,
+        phone
+      );
+      expect(coupon?.usesCount).toBe(0);
+      expect(orders?.count).toBe(0n);
+      await setAvailability(true, true);
+    }
+  );
+
+  it('consumes a limited coupon exactly once for concurrent idempotent retries', async () => {
+    await setAvailability(true, true);
+    const couponId = randomUUID();
+    const code = `RETRY${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons
+         (id,tenant_id,code,name,discount_type,discount_value,active,max_uses)
+       VALUES ($1::uuid,$2,$3,'Retry','PERCENTAGE',10,true,1)`,
+      couponId,
+      tenantId,
+      code
+    );
+    const request = {
+      idempotencyKey: randomUUID(),
+      menuSlug,
+      couponCode: code,
+      customer: { name: 'Cliente Retry Concorrente', phone: '67995550001' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: { method: 'PAY_ON_DELIVERY' as const, status: 'PENDING' as const }
+    };
+
+    const retries = await Promise.all(
+      Array.from({ length: 6 }, () => nativeOrders.create(request))
+    );
+    expect(new Set(retries.map((order) => order.orderId))).toEqual(new Set([retries[0]!.orderId]));
+    const [coupon] = await database.$queryRawUnsafe<Array<{ usesCount: number }>>(
+      `SELECT uses_count AS "usesCount" FROM commerce_coupons WHERE id=$1::uuid`,
+      couponId
+    );
+    const [orders] = await database.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT COUNT(*) AS count FROM commerce_native_orders
+       WHERE tenant_id=$1 AND customer_phone=$2`,
+      tenantId,
+      request.customer.phone
+    );
+    expect(coupon?.usesCount).toBe(1);
+    expect(orders?.count).toBe(1n);
+  });
+
+  it('enforces a coupon usage limit under concurrent PostgreSQL transactions', async () => {
+    await setAvailability(true, true);
+    const couponId = randomUUID();
+    const code = `RACE${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons
+         (id,tenant_id,code,name,discount_type,discount_value,active,max_uses)
+       VALUES ($1::uuid,$2,$3,'Concorrência','FIXED_AMOUNT',500,true,3)`,
+      couponId,
+      tenantId,
+      code
+    );
+
+    const results = await Promise.allSettled(
+      Array.from({ length: 8 }, (_, index) =>
+        nativeOrders.create({
+          idempotencyKey: randomUUID(),
+          menuSlug,
+          couponCode: code,
+          customer: { name: `Cliente Limite ${index}`, phone: `6799444000${index}` },
+          fulfillment: 'PICKUP',
+          items: [{ menuItemId, quantity: 1 }],
+          payment: { method: 'PAY_ON_DELIVERY', status: 'PENDING' }
+        })
+      )
+    );
+    const created = results
+      .filter(
+        (
+          result
+        ): result is PromiseFulfilledResult<Awaited<ReturnType<typeof nativeOrders.create>>> =>
+          result.status === 'fulfilled'
+      )
+      .map((result) => result.value);
+    expect(created).toHaveLength(3);
+    expect(new Set(created.map((order) => order.orderNumber)).size).toBe(3);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(5);
+    const [coupon] = await database.$queryRawUnsafe<Array<{ usesCount: number }>>(
+      `SELECT uses_count AS "usesCount" FROM commerce_coupons WHERE id=$1::uuid`,
+      couponId
+    );
+    expect(coupon?.usesCount).toBe(3);
+  });
+
+  it('preserves delivery, structured notes and server totals with a fixed coupon', async () => {
+    await setAvailability(true, true);
+    const couponId = randomUUID();
+    const code = `ENTREGA${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons
+         (id,tenant_id,code,name,discount_type,discount_value,active)
+       VALUES ($1::uuid,$2,$3,'Entrega 500','FIXED_AMOUNT',500,true)`,
+      couponId,
+      tenantId,
+      code
+    );
+    const address = {
+      street: 'Rua do Cupom',
+      number: '59',
+      district: 'Centro',
+      complement: 'Fundos',
+      reference: 'Portão vermelho'
+    };
+    const draft = {
+      menuSlug,
+      couponCode: code,
+      fulfillment: 'DELIVERY' as const,
+      customer: { name: 'Cliente Entrega Cupom', phone: '67993330001' },
+      address,
+      orderNote: 'Não tocar a campainha',
+      items: [{ menuItemId, quantity: 1, note: 'Sem cebola' }]
+    };
+    await expect(checkout.validate(draft)).resolves.toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 500,
+      deliveryFeeCents: 0,
+      amountDueCents: 4090,
+      address,
+      orderNote: 'Não tocar a campainha'
+    });
+    const idempotencyKey = randomUUID();
+    const payment = await payments.create({
+      checkoutId: idempotencyKey,
+      menuSlug,
+      couponCode: code,
+      method: 'PAY_ON_DELIVERY',
+      customerName: draft.customer.name,
+      customerPhone: draft.customer.phone,
+      items: [{ menuItemId, quantity: 1 }]
+    });
+    expect(payment.amountCents).toBe(4090);
+    const created = await nativeOrders.create({
+      idempotencyKey,
+      ...draft,
+      payment: { method: payment.method, status: payment.status, paymentId: payment.paymentId }
+    });
+    expect(created).toMatchObject({
+      fulfillment: 'DELIVERY',
+      itemsTotalCents: 4590,
+      discountCents: 500,
+      deliveryFeeCents: 0,
+      totalCents: 4090,
+      orderNumber: expect.stringMatching(/^\d{5}$/)
+    });
+    await expect(kitchen.detail(authorization, tenantId, created.orderId)).resolves.toMatchObject({
+      order: {
+        deliveryAddress: address,
+        orderNote: 'Não tocar a campainha',
+        discountCents: 500,
+        couponCode: code
+      },
+      items: [expect.objectContaining({ note: 'Sem cebola' })]
+    });
+    await expect(tracking.status(created.orderId, idempotencyKey)).resolves.toMatchObject({
+      fulfillment: 'DELIVERY',
+      orderNote: 'Não tocar a campainha',
+      discountCents: 500,
+      totalCents: 4090,
+      couponCode: code,
+      items: [expect.objectContaining({ note: 'Sem cebola' })]
+    });
   });
 });
 

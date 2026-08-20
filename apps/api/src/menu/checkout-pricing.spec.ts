@@ -60,10 +60,55 @@ describe('checkout pricing with coupons', () => {
     expect(database.$queryRawUnsafe.mock.calls[1]?.slice(1)).toEqual(['tenant-a', 'SANTO10']);
   });
 
+  it('keeps the existing zero delivery fee outside the item-only coupon base', async () => {
+    const database = {
+      $queryRawUnsafe: jest
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            tenantId: 'tenant-a',
+            menuItemId: 'item-a',
+            name: 'Parmegiana',
+            priceCents: 4590,
+            available: true
+          }
+        ])
+        .mockResolvedValueOnce([
+          {
+            id: 'coupon-a',
+            code: 'FIXO500',
+            name: 'Fixo 500',
+            source: null,
+            discountType: 'FIXED_AMOUNT',
+            discountValue: 500,
+            active: true,
+            startsAt: null,
+            expiresAt: null,
+            minimumOrderCents: 0,
+            maxUses: null,
+            usesCount: 0
+          }
+        ])
+    };
+
+    await expect(
+      priceCheckout(database, {
+        menuSlug: 'santo-parma',
+        couponCode: 'FIXO500',
+        items: [{ menuItemId: 'item-a', quantity: 1 }]
+      })
+    ).resolves.toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 500,
+      deliveryFeeCents: 0,
+      totalCents: 4090
+    });
+  });
+
   it.each([
     ['inactive', { active: false }],
-    ['not started', { startsAt: new Date(Date.now() + 60_000) }],
-    ['expired', { expiresAt: new Date(Date.now() - 60_000) }],
+    ['not started', { startsAt: new Date('2026-08-20T12:00:01.000Z') }],
+    ['expired', { expiresAt: new Date('2026-08-20T12:00:00.000Z') }],
     ['exhausted', { maxUses: 1, usesCount: 1 }],
     ['below minimum', { minimumOrderCents: 5000 }]
   ])('rejects an %s coupon', async (_reason, override) => {
@@ -93,11 +138,81 @@ describe('checkout pricing with coupons', () => {
       $queryRawUnsafe: jest.fn().mockResolvedValueOnce([menuItem]).mockResolvedValueOnce([coupon])
     };
     await expect(
+      priceCheckout(
+        database,
+        {
+          menuSlug: 'santo-parma',
+          couponCode: 'LIMITADO',
+          items: [{ menuItemId: 'item-a', quantity: 1 }]
+        },
+        { now: new Date('2026-08-20T12:00:00.000Z') }
+      )
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('accepts the exact validity start and locks a coupon for final order creation', async () => {
+    const database = {
+      $queryRawUnsafe: jest
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            tenantId: 'tenant-a',
+            menuItemId: 'item-a',
+            name: 'Parmegiana',
+            priceCents: 4590,
+            available: true
+          }
+        ])
+        .mockResolvedValueOnce([
+          {
+            id: 'coupon-a',
+            code: 'AGORA10',
+            name: 'Agora 10',
+            source: null,
+            discountType: 'PERCENTAGE',
+            discountValue: 10,
+            active: true,
+            startsAt: new Date('2026-08-20T12:00:00.000Z'),
+            expiresAt: new Date('2026-08-20T13:00:00.000Z'),
+            minimumOrderCents: 0,
+            maxUses: 1,
+            usesCount: 0
+          }
+        ])
+    };
+
+    await expect(
+      priceCheckout(
+        database,
+        {
+          menuSlug: 'santo-parma',
+          couponCode: 'AGORA10',
+          items: [{ menuItemId: 'item-a', quantity: 1 }]
+        },
+        { lockCoupon: true, now: new Date('2026-08-20T12:00:00.000Z') }
+      )
+    ).resolves.toMatchObject({ discountCents: 459 });
+    expect(database.$queryRawUnsafe.mock.calls[1]?.[0]).toContain('FOR UPDATE');
+  });
+
+  it('rejects totals that exceed the supported monetary range', async () => {
+    const database = {
+      $queryRawUnsafe: jest.fn().mockResolvedValueOnce([
+        {
+          tenantId: 'tenant-a',
+          menuItemId: 'item-a',
+          name: 'Evento',
+          priceCents: 2_000_000,
+          available: true
+        }
+      ])
+    };
+
+    await expect(
       priceCheckout(database, {
         menuSlug: 'santo-parma',
-        couponCode: 'LIMITADO',
-        items: [{ menuItemId: 'item-a', quantity: 1 }]
+        items: [{ menuItemId: 'item-a', quantity: 100 }]
       })
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toThrow('O valor do pedido excede o limite permitido.');
   });
 });

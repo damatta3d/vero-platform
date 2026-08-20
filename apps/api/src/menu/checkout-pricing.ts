@@ -36,6 +36,8 @@ type CouponRow = CouponSnapshot & {
   usesCount: number;
 };
 
+const maximumCheckoutTotalCents = 100_000_000;
+
 export type CheckoutPricingRequest = {
   menuSlug: string;
   items: Array<{ menuItemId: string; quantity: number; note?: string }>;
@@ -81,10 +83,10 @@ export function calculateCouponDiscount(
 export async function priceCheckout(
   database: PricingDatabase,
   request: CheckoutPricingRequest,
-  options: { lockCoupon?: boolean } = {}
+  options: { lockCoupon?: boolean; now?: Date } = {}
 ): Promise<CheckoutPricing> {
   if (!request.menuSlug?.trim() || !Array.isArray(request.items) || request.items.length === 0) {
-    throw new BadRequestException('Invalid checkout items.');
+    throw new BadRequestException('Revise os itens do pedido.');
   }
   if (
     request.items.some(
@@ -96,7 +98,7 @@ export async function priceCheckout(
     ) ||
     new Set(request.items.map((item) => item.menuItemId)).size !== request.items.length
   ) {
-    throw new BadRequestException('Invalid checkout items.');
+    throw new BadRequestException('A quantidade de um dos itens não é válida.');
   }
 
   const ids = request.items.map((item) => item.menuItemId);
@@ -111,12 +113,21 @@ export async function priceCheckout(
     request.menuSlug.trim(),
     ids
   );
-  if (rows.length !== ids.length || rows.some((row) => !row.available)) {
-    throw new BadRequestException('One or more items are unavailable.');
+  if (
+    rows.length !== ids.length ||
+    rows.some(
+      (row) =>
+        !row.available ||
+        !Number.isSafeInteger(row.priceCents) ||
+        row.priceCents <= 0 ||
+        row.priceCents > maximumCheckoutTotalCents
+    )
+  ) {
+    throw new BadRequestException('Um ou mais itens não estão disponíveis.');
   }
   const tenantId = rows[0]?.tenantId;
   if (!tenantId || rows.some((row) => row.tenantId !== tenantId)) {
-    throw new BadRequestException('Invalid menu tenant.');
+    throw new BadRequestException('O cardápio informado não é válido.');
   }
 
   const current = new Map(rows.map((row) => [row.menuItemId, row]));
@@ -128,10 +139,13 @@ export async function priceCheckout(
       quantity: line.quantity,
       unitPriceCents: item.priceCents,
       totalCents: item.priceCents * line.quantity,
-      note: line.note?.trim() || null
+      note: line.note?.trim().slice(0, 1000) || null
     };
   });
   const itemsTotalCents = calculateCheckoutTotal(items);
+  if (!Number.isSafeInteger(itemsTotalCents) || itemsTotalCents > maximumCheckoutTotalCents) {
+    throw new BadRequestException('O valor do pedido excede o limite permitido.');
+  }
   let coupon: CouponSnapshot | null = null;
   let discountCents = 0;
   const code = request.couponCode ? normalizeCouponCode(request.couponCode) : '';
@@ -151,7 +165,7 @@ export async function priceCheckout(
       code
     );
     const selected = couponRows[0];
-    const now = Date.now();
+    const now = options.now?.getTime() ?? Date.now();
     if (
       !selected ||
       !selected.active ||

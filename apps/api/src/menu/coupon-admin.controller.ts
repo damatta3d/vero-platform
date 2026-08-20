@@ -67,6 +67,12 @@ const updateCouponSchema = z
   .strict();
 const idSchema = z.string().uuid();
 
+function databaseErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') return undefined;
+  const candidate = error as { code?: string; meta?: { code?: string } };
+  return candidate.meta?.code ?? candidate.code;
+}
+
 function validateCouponRules(
   coupon: {
     discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
@@ -168,11 +174,14 @@ export class CouponAdminController {
         body.minimumOrderCents,
         body.maxUses
       );
-    } catch {
-      throw new BadRequestException({
-        code: 'COUPON_CODE_CONFLICT',
-        message: 'Já existe um cupom com este código.'
-      });
+    } catch (error) {
+      if (databaseErrorCode(error) === '23505') {
+        throw new BadRequestException({
+          code: 'COUPON_CODE_CONFLICT',
+          message: 'Já existe um cupom com este código.'
+        });
+      }
+      throw error;
     }
     return { id, tenantId, ...body, usesCount: 0 };
   }
@@ -245,11 +254,14 @@ export class CouponAdminController {
         merged.minimumOrderCents,
         merged.maxUses
       );
-    } catch {
-      throw new BadRequestException({
-        code: 'COUPON_CODE_CONFLICT',
-        message: 'Já existe um cupom com este código.'
-      });
+    } catch (error) {
+      if (databaseErrorCode(error) === '23505') {
+        throw new BadRequestException({
+          code: 'COUPON_CODE_CONFLICT',
+          message: 'Já existe um cupom com este código.'
+        });
+      }
+      throw error;
     }
     return { id: couponId, tenantId, ...merged };
   }

@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Headers, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Headers, Inject, Put } from '@nestjs/common';
 import { z } from 'zod';
 
 import { storeWeekdays, type StoreSettingsInput } from '@vero/infrastructure-database';
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
+import { isValidStoreTimezone } from '../menu/store-availability.js';
 import { StoreSettingsService } from './store-settings.service.js';
 
 const nullableText = (maximum: number) => z.string().trim().min(1).max(maximum).nullable();
@@ -99,7 +100,8 @@ const storeSettingsSchema = z
         preparationTimeMinMinutes: z.number().int().min(1).max(1440),
         preparationTimeMaxMinutes: z.number().int().min(1).max(1440),
         minimumOrderCents: z.number().int().nonnegative().max(100_000_000),
-        orderReceiptMode: z.enum(['MANUAL', 'AUTOMATIC'])
+        orderReceiptMode: z.enum(['MANUAL', 'AUTOMATIC']),
+        timezone: z.string().trim().min(1).max(64).refine(isValidStoreTimezone)
       })
       .strict(),
     delivery: z
@@ -165,8 +167,8 @@ function parse(body: unknown): StoreSettingsInput {
 @Controller('v1/settings/store')
 export class StoreSettingsController {
   constructor(
-    private readonly settings: StoreSettingsService,
-    private readonly security: MvpSecurityService
+    @Inject(StoreSettingsService) private readonly settings: StoreSettingsService,
+    @Inject(MvpSecurityService) private readonly security: MvpSecurityService
   ) {}
 
   @Get()

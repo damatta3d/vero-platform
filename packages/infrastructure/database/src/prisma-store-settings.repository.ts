@@ -35,6 +35,7 @@ export interface StoreSettingsInput {
     readonly preparationTimeMaxMinutes: number;
     readonly minimumOrderCents: number;
     readonly orderReceiptMode: 'MANUAL' | 'AUTOMATIC';
+    readonly timezone: string;
   };
   readonly delivery: {
     readonly maxRadiusKm: number | null;
@@ -76,6 +77,7 @@ interface SettingsRow {
   readonly preparationTimeMaxMinutes: number;
   readonly minimumOrderCents: number;
   readonly orderReceiptMode: 'MANUAL' | 'AUTOMATIC';
+  readonly timezone: string;
   readonly maxRadiusKm: number | null;
   readonly baseFeeCents: number;
   readonly freeAboveCents: number | null;
@@ -99,18 +101,25 @@ export class PrismaStoreSettingsRepository {
   getOrCreate(tenantId: string): Promise<StoreSettings> {
     return this.client.$transaction(async (transaction) => {
       await transaction.$executeRaw(Prisma.sql`
-        INSERT INTO "store_settings" ("tenant_id", "display_name")
-        VALUES (${tenantId}, ${tenantId})
+        INSERT INTO "store_settings" (
+          "tenant_id", "display_name", "operationally_open", "pickup_enabled",
+          "delivery_enabled", "preparation_time_min_minutes",
+          "preparation_time_max_minutes", "minimum_order_cents", "order_receipt_mode",
+          "timezone", "delivery_base_fee_cents", "pix_enabled", "payment_on_delivery_enabled",
+          "cash_on_delivery_enabled", "card_on_delivery_enabled"
+        ) VALUES (
+          ${tenantId}, ${tenantId}, false, true, false, 30, 60, 0, 'MANUAL',
+          'America/Campo_Grande', 0, true, false, false, false
+        )
         ON CONFLICT ("tenant_id") DO NOTHING
       `);
 
-      for (let weekday = 0; weekday < storeWeekdays.length; weekday += 1) {
-        await transaction.$executeRaw(Prisma.sql`
-          INSERT INTO "store_schedule_windows" ("tenant_id", "weekday", "sequence")
-          VALUES (${tenantId}, ${weekday}, 0)
-          ON CONFLICT ("tenant_id", "weekday", "sequence") DO NOTHING
-        `);
-      }
+      await transaction.$executeRaw(Prisma.sql`
+        INSERT INTO "store_schedule_windows" ("tenant_id", "weekday", "sequence")
+        SELECT ${tenantId}, "weekday", 0
+        FROM generate_series(0, ${storeWeekdays.length - 1}) AS "weekdays"("weekday")
+        ON CONFLICT ("tenant_id", "weekday", "sequence") DO NOTHING
+      `);
 
       return this.read(transaction, tenantId);
     });
@@ -124,7 +133,7 @@ export class PrismaStoreSettingsRepository {
           "address_complement", "neighborhood", "city", "state_code", "postal_code",
           "operationally_open", "pickup_enabled", "delivery_enabled",
           "preparation_time_min_minutes", "preparation_time_max_minutes",
-          "minimum_order_cents", "order_receipt_mode", "delivery_radius_km", "delivery_base_fee_cents",
+          "minimum_order_cents", "order_receipt_mode", "timezone", "delivery_radius_km", "delivery_base_fee_cents",
           "free_delivery_above_cents", "pix_enabled", "payment_on_delivery_enabled",
           "cash_on_delivery_enabled", "card_on_delivery_enabled", "updated_at"
         ) VALUES (
@@ -135,7 +144,7 @@ export class PrismaStoreSettingsRepository {
           ${input.operation.operationallyOpen}, ${input.operation.pickupEnabled},
           ${input.operation.deliveryEnabled}, ${input.operation.preparationTimeMinMinutes},
           ${input.operation.preparationTimeMaxMinutes}, ${input.operation.minimumOrderCents},
-          ${input.operation.orderReceiptMode},
+          ${input.operation.orderReceiptMode}, ${input.operation.timezone},
           ${input.delivery.maxRadiusKm}, ${input.delivery.baseFeeCents},
           ${input.delivery.freeAboveCents}, ${input.payments.pixEnabled},
           ${input.payments.paymentOnDeliveryEnabled}, ${input.payments.cashEnabled},
@@ -158,6 +167,7 @@ export class PrismaStoreSettingsRepository {
           "preparation_time_max_minutes" = EXCLUDED."preparation_time_max_minutes",
           "minimum_order_cents" = EXCLUDED."minimum_order_cents",
           "order_receipt_mode" = EXCLUDED."order_receipt_mode",
+          "timezone" = EXCLUDED."timezone",
           "delivery_radius_km" = EXCLUDED."delivery_radius_km",
           "delivery_base_fee_cents" = EXCLUDED."delivery_base_fee_cents",
           "free_delivery_above_cents" = EXCLUDED."free_delivery_above_cents",
@@ -207,6 +217,7 @@ export class PrismaStoreSettingsRepository {
         "preparation_time_max_minutes" AS "preparationTimeMaxMinutes",
         "minimum_order_cents" AS "minimumOrderCents",
         "order_receipt_mode" AS "orderReceiptMode",
+        "timezone",
         "delivery_radius_km" AS "maxRadiusKm",
         "delivery_base_fee_cents" AS "baseFeeCents",
         "free_delivery_above_cents" AS "freeAboveCents",
@@ -250,7 +261,8 @@ export class PrismaStoreSettingsRepository {
         preparationTimeMinMinutes: row.preparationTimeMinMinutes,
         preparationTimeMaxMinutes: row.preparationTimeMaxMinutes,
         minimumOrderCents: row.minimumOrderCents,
-        orderReceiptMode: row.orderReceiptMode
+        orderReceiptMode: row.orderReceiptMode,
+        timezone: row.timezone
       },
       delivery: {
         maxRadiusKm: row.maxRadiusKm,

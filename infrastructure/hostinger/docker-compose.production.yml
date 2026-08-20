@@ -35,6 +35,8 @@ services:
     restart: unless-stopped
     env_file:
       - ../../.env.production
+    environment:
+      VERO_DATABASE_URL: ${VERO_DATABASE_URL:?VERO_DATABASE_URL must be set}
     depends_on:
       postgres:
         condition: service_healthy

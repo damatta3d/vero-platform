@@ -13,6 +13,7 @@ import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 import { nextOrderStatuses, transitionPersistedOrder } from './order-workflow.js';
 import type { NativeOrderStatus } from './native-order.types.js';
+import { formatOperationalOrderNumber } from './order-number.js';
 type Db = {
   $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T>;
   $executeRawUnsafe(query: string, ...values: unknown[]): Promise<number>;
@@ -46,16 +47,21 @@ export class KitchenOrderController {
     if (updatedAfterDate && Number.isNaN(updatedAfterDate.getTime()))
       throw new BadRequestException('INVALID_UPDATED_AFTER');
     const orders = await this.db.$queryRawUnsafe<
-      Array<{ status: NativeOrderStatus; fulfillment: 'DELIVERY' | 'PICKUP' }>
+      Array<{
+        operationalNumber: number;
+        status: NativeOrderStatus;
+        fulfillment: 'DELIVERY' | 'PICKUP';
+      }>
     >(
-      `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",fulfillment,total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE tenant_id=$1 AND status NOT IN ('COMPLETED','CANCELLED') AND (payment_method='PAY_ON_DELIVERY' OR payment_status='PAID') AND ($2::text IS NULL OR status=$2) AND ($3::timestamptz IS NULL OR updated_at>$3) ORDER BY created_at`,
+      `SELECT id AS "orderId",operational_number AS "operationalNumber",menu_slug AS "menuSlug",customer_name AS "customerName",fulfillment,total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE tenant_id=$1 AND status NOT IN ('COMPLETED','CANCELLED') AND (payment_method='PAY_ON_DELIVERY' OR payment_status='PAID') AND ($2::text IS NULL OR status=$2) AND ($3::timestamptz IS NULL OR updated_at>$3) ORDER BY created_at`,
       tenantId,
       status ?? null,
       updatedAfterDate?.toISOString() ?? null
     );
     return {
-      orders: orders.map((order) => ({
+      orders: orders.map(({ operationalNumber, ...order }) => ({
         ...order,
+        orderNumber: formatOperationalOrderNumber(operationalNumber),
         allowedTransitions: nextOrderStatuses(order.status, order.fulfillment)
       })),
       sync: { serverTime: new Date().toISOString() }
@@ -70,14 +76,19 @@ export class KitchenOrderController {
     await this.security.authorize(authorization, tenantId, 'orders.kitchen.list');
     if (!tenantId) throw new BadRequestException('Tenant is required.');
     const orders = await this.db.$queryRawUnsafe<
-      Array<{ status: NativeOrderStatus; fulfillment: 'DELIVERY' | 'PICKUP' }>
+      Array<{
+        operationalNumber: number;
+        status: NativeOrderStatus;
+        fulfillment: 'DELIVERY' | 'PICKUP';
+      }>
     >(
-      `SELECT id AS "orderId",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,NULL::text AS "deliveryAddress",items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",coupon_code AS "couponCode",coupon_name AS "couponName",coupon_source AS "couponSource",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
+      `SELECT id AS "orderId",operational_number AS "operationalNumber",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",order_note AS "orderNote",items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",coupon_code AS "couponCode",coupon_name AS "couponName",coupon_source AS "couponSource",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
       tenantId
     );
-    const order = orders[0];
-    if (!order) throw new BadRequestException('ORDER_NOT_FOUND');
+    const storedOrder = orders[0];
+    if (!storedOrder) throw new BadRequestException('ORDER_NOT_FOUND');
+    const { operationalNumber, ...order } = storedOrder;
     const items = await this.db.$queryRawUnsafe<unknown[]>(
       `SELECT id,menu_item_id AS "menuItemId",name,quantity,unit_price_cents AS "unitPriceCents",total_cents AS "totalCents",note FROM commerce_native_order_items WHERE order_id=$1::uuid ORDER BY id`,
       orderId
@@ -89,6 +100,7 @@ export class KitchenOrderController {
     return {
       order: {
         ...order,
+        orderNumber: formatOperationalOrderNumber(operationalNumber),
         allowedTransitions: nextOrderStatuses(order.status, order.fulfillment)
       },
       items,
