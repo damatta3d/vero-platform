@@ -179,6 +179,11 @@ describe('Santo Parma VERO Menu application homologation', () => {
       otherTenantId
     );
     await database.$executeRawUnsafe(
+      'DELETE FROM commerce_coupons WHERE tenant_id IN ($1, $2)',
+      tenantId,
+      otherTenantId
+    );
+    await database.$executeRawUnsafe(
       'DELETE FROM commerce_menu_items WHERE tenant_id IN ($1, $2)',
       tenantId,
       otherTenantId
@@ -362,6 +367,9 @@ describe('Santo Parma VERO Menu application homologation', () => {
       fulfillment: 'PICKUP',
       orderNumber: created.orderNumber,
       orderNote: 'Tocar a campainha',
+      itemsTotalCents: 9180,
+      discountCents: 0,
+      totalCents: 9180,
       items: [expect.objectContaining({ name: 'Parmegiana Homologacao', note: 'Sem cebola' })]
     });
     await expect(tracking.status(created.orderId, randomUUID())).rejects.toBeInstanceOf(
@@ -702,6 +710,336 @@ describe('Santo Parma VERO Menu application homologation', () => {
     await expect(
       kitchen.transition(authorization, tenantId, nonexistentOrderId, { status: 'CONFIRMED' })
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('applies a tenant coupon atomically and preserves its order snapshot', async () => {
+    const couponId = randomUUID();
+    const otherCouponId = randomUUID();
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons (
+         id,tenant_id,code,name,source,discount_type,discount_value,active,max_uses
+       ) VALUES
+         ($1::uuid,$2,'SANTO10','Santo 10','RC1','PERCENTAGE',10,true,1),
+         ($3::uuid,$4,'SANTO10','Outro tenant','ISOLATION','PERCENTAGE',50,true,NULL)`,
+      couponId,
+      tenantId,
+      otherCouponId,
+      otherTenantId
+    );
+
+    const priced = await checkout.price({
+      menuSlug,
+      couponCode: 'santo10',
+      items: [{ menuItemId, quantity: 1 }]
+    });
+    expect(priced).toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 459,
+      amountDueCents: 4131,
+      coupon: { code: 'SANTO10', discountValue: 10 }
+    });
+
+    const idempotencyKey = randomUUID();
+    const payment = await payments.create({
+      checkoutId: idempotencyKey,
+      menuSlug,
+      couponCode: 'SANTO10',
+      method: 'PAY_ON_DELIVERY',
+      customerName: 'Cliente Cupom',
+      customerPhone: '67999999994',
+      items: [{ menuItemId, quantity: 1 }]
+    });
+    expect(payment.amountCents).toBe(4131);
+    const request = {
+      idempotencyKey,
+      menuSlug,
+      couponCode: 'SANTO10',
+      customer: { name: 'Cliente Cupom', phone: '67999999994' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: {
+        method: payment.method,
+        status: payment.status,
+        paymentId: payment.paymentId
+      }
+    };
+    const created = await nativeOrders.create(request);
+    expect(created).toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 459,
+      totalCents: 4131,
+      coupon: { code: 'SANTO10', name: 'Santo 10', source: 'RC1' }
+    });
+    await expect(nativeOrders.create(request)).resolves.toMatchObject({
+      orderId: created.orderId,
+      discountCents: 459,
+      totalCents: 4131,
+      coupon: { code: 'SANTO10' }
+    });
+    await expect(tracking.status(created.orderId, idempotencyKey)).resolves.toMatchObject({
+      orderNumber: created.orderNumber,
+      itemsTotalCents: 4590,
+      discountCents: 459,
+      totalCents: 4131,
+      couponCode: 'SANTO10'
+    });
+    await expect(kitchen.detail(authorization, tenantId, created.orderId)).resolves.toMatchObject({
+      order: {
+        orderNumber: created.orderNumber,
+        itemsTotalCents: 4590,
+        discountCents: 459,
+        totalCents: 4131,
+        couponCode: 'SANTO10'
+      }
+    });
+
+    const snapshots = await database.$queryRawUnsafe<
+      Array<{
+        discountCents: number;
+        code: string | null;
+        source: string | null;
+        usesCount: number;
+      }>
+    >(
+      `SELECT o.discount_cents AS "discountCents",o.coupon_code AS code,
+              o.coupon_source AS source,c.uses_count AS "usesCount"
+         FROM commerce_native_orders o
+         JOIN commerce_coupons c ON c.id=o.coupon_id
+        WHERE o.id=$1::uuid`,
+      created.orderId
+    );
+    expect(snapshots[0]).toEqual({
+      discountCents: 459,
+      code: 'SANTO10',
+      source: 'RC1',
+      usesCount: 1
+    });
+    const tenantUsage = await database.$queryRawUnsafe<
+      Array<{ tenantId: string; usesCount: number }>
+    >(
+      `SELECT tenant_id AS "tenantId",uses_count AS "usesCount"
+         FROM commerce_coupons WHERE code='SANTO10' ORDER BY tenant_id`
+    );
+    expect(tenantUsage).toEqual(
+      expect.arrayContaining([
+        { tenantId, usesCount: 1 },
+        { tenantId: otherTenantId, usesCount: 0 }
+      ])
+    );
+
+    await expect(
+      nativeOrders.create({ ...request, idempotencyKey: randomUUID() })
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it.each([
+    { operationallyOpen: false, withinSchedule: true, label: 'fechamento manual' },
+    { operationallyOpen: true, withinSchedule: false, label: 'fora do horário' }
+  ])(
+    'does not create an order or consume a valid coupon during $label',
+    async ({ operationallyOpen, withinSchedule }) => {
+      const couponId = randomUUID();
+      const code = `FECHADO${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+      await database.$executeRawUnsafe(
+        `INSERT INTO commerce_coupons
+           (id,tenant_id,code,name,discount_type,discount_value,active,max_uses)
+         VALUES ($1::uuid,$2,$3,'Cupom fechado','FIXED_AMOUNT',500,true,1)`,
+        couponId,
+        tenantId,
+        code
+      );
+      await setAvailability(operationallyOpen, withinSchedule);
+      const phone = `67${randomUUID().replaceAll('-', '').slice(0, 9)}`;
+
+      await expect(
+        nativeOrders.create({
+          idempotencyKey: randomUUID(),
+          menuSlug,
+          couponCode: code,
+          customer: { name: 'Cliente Loja Fechada Cupom', phone },
+          fulfillment: 'PICKUP',
+          items: [{ menuItemId, quantity: 1 }],
+          payment: { method: 'PAY_ON_DELIVERY', status: 'PENDING' }
+        })
+      ).rejects.toBeInstanceOf(ConflictException);
+
+      const [coupon] = await database.$queryRawUnsafe<Array<{ usesCount: number }>>(
+        `SELECT uses_count AS "usesCount" FROM commerce_coupons WHERE id=$1::uuid`,
+        couponId
+      );
+      const [orders] = await database.$queryRawUnsafe<Array<{ count: bigint }>>(
+        `SELECT COUNT(*) AS count FROM commerce_native_orders
+         WHERE tenant_id=$1 AND customer_phone=$2`,
+        tenantId,
+        phone
+      );
+      expect(coupon?.usesCount).toBe(0);
+      expect(orders?.count).toBe(0n);
+      await setAvailability(true, true);
+    }
+  );
+
+  it('consumes a limited coupon exactly once for concurrent idempotent retries', async () => {
+    await setAvailability(true, true);
+    const couponId = randomUUID();
+    const code = `RETRY${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons
+         (id,tenant_id,code,name,discount_type,discount_value,active,max_uses)
+       VALUES ($1::uuid,$2,$3,'Retry','PERCENTAGE',10,true,1)`,
+      couponId,
+      tenantId,
+      code
+    );
+    const request = {
+      idempotencyKey: randomUUID(),
+      menuSlug,
+      couponCode: code,
+      customer: { name: 'Cliente Retry Concorrente', phone: '67995550001' },
+      fulfillment: 'PICKUP' as const,
+      items: [{ menuItemId, quantity: 1 }],
+      payment: { method: 'PAY_ON_DELIVERY' as const, status: 'PENDING' as const }
+    };
+
+    const retries = await Promise.all(
+      Array.from({ length: 6 }, () => nativeOrders.create(request))
+    );
+    expect(new Set(retries.map((order) => order.orderId))).toEqual(new Set([retries[0]!.orderId]));
+    const [coupon] = await database.$queryRawUnsafe<Array<{ usesCount: number }>>(
+      `SELECT uses_count AS "usesCount" FROM commerce_coupons WHERE id=$1::uuid`,
+      couponId
+    );
+    const [orders] = await database.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT COUNT(*) AS count FROM commerce_native_orders
+       WHERE tenant_id=$1 AND customer_phone=$2`,
+      tenantId,
+      request.customer.phone
+    );
+    expect(coupon?.usesCount).toBe(1);
+    expect(orders?.count).toBe(1n);
+  });
+
+  it('enforces a coupon usage limit under concurrent PostgreSQL transactions', async () => {
+    await setAvailability(true, true);
+    const couponId = randomUUID();
+    const code = `RACE${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons
+         (id,tenant_id,code,name,discount_type,discount_value,active,max_uses)
+       VALUES ($1::uuid,$2,$3,'Concorrência','FIXED_AMOUNT',500,true,3)`,
+      couponId,
+      tenantId,
+      code
+    );
+
+    const results = await Promise.allSettled(
+      Array.from({ length: 8 }, (_, index) =>
+        nativeOrders.create({
+          idempotencyKey: randomUUID(),
+          menuSlug,
+          couponCode: code,
+          customer: { name: `Cliente Limite ${index}`, phone: `6799444000${index}` },
+          fulfillment: 'PICKUP',
+          items: [{ menuItemId, quantity: 1 }],
+          payment: { method: 'PAY_ON_DELIVERY', status: 'PENDING' }
+        })
+      )
+    );
+    const created = results
+      .filter(
+        (
+          result
+        ): result is PromiseFulfilledResult<Awaited<ReturnType<typeof nativeOrders.create>>> =>
+          result.status === 'fulfilled'
+      )
+      .map((result) => result.value);
+    expect(created).toHaveLength(3);
+    expect(new Set(created.map((order) => order.orderNumber)).size).toBe(3);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(5);
+    const [coupon] = await database.$queryRawUnsafe<Array<{ usesCount: number }>>(
+      `SELECT uses_count AS "usesCount" FROM commerce_coupons WHERE id=$1::uuid`,
+      couponId
+    );
+    expect(coupon?.usesCount).toBe(3);
+  });
+
+  it('preserves delivery, structured notes and server totals with a fixed coupon', async () => {
+    await setAvailability(true, true);
+    const couponId = randomUUID();
+    const code = `ENTREGA${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
+    await database.$executeRawUnsafe(
+      `INSERT INTO commerce_coupons
+         (id,tenant_id,code,name,discount_type,discount_value,active)
+       VALUES ($1::uuid,$2,$3,'Entrega 500','FIXED_AMOUNT',500,true)`,
+      couponId,
+      tenantId,
+      code
+    );
+    const address = {
+      street: 'Rua do Cupom',
+      number: '59',
+      district: 'Centro',
+      complement: 'Fundos',
+      reference: 'Portão vermelho'
+    };
+    const draft = {
+      menuSlug,
+      couponCode: code,
+      fulfillment: 'DELIVERY' as const,
+      customer: { name: 'Cliente Entrega Cupom', phone: '67993330001' },
+      address,
+      orderNote: 'Não tocar a campainha',
+      items: [{ menuItemId, quantity: 1, note: 'Sem cebola' }]
+    };
+    await expect(checkout.validate(draft)).resolves.toMatchObject({
+      itemsTotalCents: 4590,
+      discountCents: 500,
+      deliveryFeeCents: 0,
+      amountDueCents: 4090,
+      address,
+      orderNote: 'Não tocar a campainha'
+    });
+    const idempotencyKey = randomUUID();
+    const payment = await payments.create({
+      checkoutId: idempotencyKey,
+      menuSlug,
+      couponCode: code,
+      method: 'PAY_ON_DELIVERY',
+      customerName: draft.customer.name,
+      customerPhone: draft.customer.phone,
+      items: [{ menuItemId, quantity: 1 }]
+    });
+    expect(payment.amountCents).toBe(4090);
+    const created = await nativeOrders.create({
+      idempotencyKey,
+      ...draft,
+      payment: { method: payment.method, status: payment.status, paymentId: payment.paymentId }
+    });
+    expect(created).toMatchObject({
+      fulfillment: 'DELIVERY',
+      itemsTotalCents: 4590,
+      discountCents: 500,
+      deliveryFeeCents: 0,
+      totalCents: 4090,
+      orderNumber: expect.stringMatching(/^\d{5}$/)
+    });
+    await expect(kitchen.detail(authorization, tenantId, created.orderId)).resolves.toMatchObject({
+      order: {
+        deliveryAddress: address,
+        orderNote: 'Não tocar a campainha',
+        discountCents: 500,
+        couponCode: code
+      },
+      items: [expect.objectContaining({ note: 'Sem cebola' })]
+    });
+    await expect(tracking.status(created.orderId, idempotencyKey)).resolves.toMatchObject({
+      fulfillment: 'DELIVERY',
+      orderNote: 'Não tocar a campainha',
+      discountCents: 500,
+      totalCents: 4090,
+      couponCode: code,
+      items: [expect.objectContaining({ note: 'Sem cebola' })]
+    });
   });
 });
 

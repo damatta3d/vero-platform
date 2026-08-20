@@ -56,6 +56,15 @@ describe('Manager order presentation', () => {
     expect(managerSource).toContain("? 'AUTOMATIC' : 'MANUAL'");
   });
 
+  it('exposes tenant coupon management inside settings without replacing homologated assets', () => {
+    expect(managerHtml).toContain('<h2>Cupons</h2>');
+    expect(managerHtml).toContain('id="coupon-dialog"');
+    expect(managerSource).toContain("api('/v1/coupons')");
+    expect(managerSource).toContain('discountType');
+    expect(managerSource).toContain('order.discountCents');
+    expect(managerSource).toContain('order.couponCode');
+  });
+
   it('provides tenant-scoped configurable order sound alerts', () => {
     expect(() => new Script(`(() => {${orderAlertsSource}})();`)).not.toThrow();
     expect(orderAlertsSource).toContain('vero_order_alerts:${tenantId()}');

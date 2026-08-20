@@ -22,6 +22,7 @@ export type CheckoutItem = {
 
 export type CheckoutDraft = {
   menuSlug: string;
+  couponCode?: string;
   fulfillment: FulfillmentMode;
   customer: CheckoutCustomer;
   address: CheckoutAddress | null;

@@ -82,7 +82,7 @@ export class KitchenOrderController {
         fulfillment: 'DELIVERY' | 'PICKUP';
       }>
     >(
-      `SELECT id AS "orderId",operational_number AS "operationalNumber",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",order_note AS "orderNote",items_total_cents AS "itemsTotalCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
+      `SELECT id AS "orderId",operational_number AS "operationalNumber",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",order_note AS "orderNote",items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",coupon_code AS "couponCode",coupon_name AS "couponName",coupon_source AS "couponSource",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
       tenantId
     );

@@ -7,6 +7,7 @@ import {
   Post
 } from '@nestjs/common';
 import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
+import { priceCheckout } from './checkout-pricing.js';
 import { MercadoPagoPaymentGateway } from './mercado-pago-payment.gateway.js';
 import { PaymentService } from './payment.service.js';
 import type { PaymentMethod } from './payment.types.js';
@@ -19,9 +20,9 @@ type PaymentInput = {
   method: PaymentMethod;
   customerName: string;
   customerPhone: string;
+  couponCode?: string;
   items: Array<{ menuItemId: string; quantity: number }>;
 };
-type Row = { tenantId: string; menuItemId: string; priceCents: number; available: boolean };
 
 @Controller('v1/payments')
 export class PaymentController {
@@ -41,27 +42,13 @@ export class PaymentController {
     if (request.checkoutId && request.checkoutId.trim().length < 32)
       throw new BadRequestException('A identificação do checkout não é válida.');
 
-    const ids = request.items.map((item) => item.menuItemId);
-    const rows = await this.db.$queryRawUnsafe<Row[]>(
-      `SELECT i.tenant_id AS "tenantId",i.id AS "menuItemId",COALESCE(i.sale_price_cents,p."salePriceCents") AS "priceCents",i.available FROM commerce_menu_items i JOIN commerce_menus m ON m.tenant_id=i.tenant_id AND m.id=i.menu_id JOIN catalog_products p ON p."tenantId"=i.tenant_id AND p.id=i.catalog_product_id WHERE m.slug=$1 AND m.published=true AND i.active=true AND i.id=ANY($2::uuid[])`,
-      request.menuSlug,
-      ids
-    );
-    if (rows.length !== ids.length || rows.some((row) => !row.available))
-      throw new BadRequestException('Um ou mais itens não estão disponíveis.');
-    const tenantId = rows[0]?.tenantId;
-    if (!tenantId || rows.some((row) => row.tenantId !== tenantId))
-      throw new BadRequestException('O cardápio informado não é válido.');
-    const availability = await loadStoreAvailability(this.db, tenantId);
+    const pricing = await priceCheckout(this.db, request);
+    const availability = await loadStoreAvailability(this.db, pricing.tenantId);
     if (!availability.canAcceptOrders) {
       throw new ConflictException({ code: 'STORE_CLOSED', message: availability.statusMessage });
     }
 
-    const prices = new Map(rows.map((row) => [row.menuItemId, row.priceCents]));
-    const amountCents = request.items.reduce(
-      (sum, item) => sum + (prices.get(item.menuItemId) ?? 0) * item.quantity,
-      0
-    );
+    const amountCents = pricing.totalCents;
     if (amountCents <= 0) throw new BadRequestException('O valor do pagamento não é válido.');
 
     const checkoutId = request.checkoutId?.trim();

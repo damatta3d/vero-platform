@@ -543,7 +543,8 @@ dialog ol {
   margin-bottom: 0;
 }
 .settings-identity,
-.settings-schedule {
+.settings-schedule,
+.settings-coupons {
   grid-column: 1 / -1;
 }
 .settings-wide {
@@ -614,6 +615,42 @@ dialog ol {
 .settings-actions p {
   margin: 0 auto 0 0;
 }
+.coupon-list {
+  display: grid;
+  gap: 10px;
+}
+.coupon-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+.coupon-row-main,
+.coupon-row-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.coupon-row-main {
+  flex-wrap: wrap;
+}
+.coupon-row-main small {
+  width: 100%;
+  color: #6b7280;
+}
+.coupon-active {
+  align-self: end;
+  border-bottom: 0;
+}
+#coupon-form {
+  display: grid;
+  gap: 18px;
+  width: min(720px, calc(100vw - 48px));
+}
 @media (max-width: 1000px) {
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -624,7 +661,8 @@ dialog ol {
     grid-template-columns: 1fr;
   }
   .settings-identity,
-  .settings-schedule {
+  .settings-schedule,
+  .settings-coupons {
     grid-column: auto;
   }
   .board {
@@ -686,5 +724,11 @@ dialog ol {
   }
   .settings-actions button {
     width: 100%;
+  }
+  .coupon-row {
+    grid-template-columns: 1fr;
+  }
+  .coupon-row-actions {
+    justify-content: flex-start;
   }
 }

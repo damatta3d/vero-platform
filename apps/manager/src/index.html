@@ -297,6 +297,21 @@
                     Administrar acesso
                   </button>
                 </section>
+                <section class="panel settings-section settings-coupons">
+                  <div class="panel-heading">
+                    <div>
+                      <p class="eyebrow">COMERCIAL</p>
+                      <h2>Cupons</h2>
+                    </div>
+                    <button id="new-coupon" class="text-button" type="button">Novo cupom</button>
+                  </div>
+                  <p class="muted">
+                    Descontos validados no servidor e isolados para este estabelecimento.
+                  </p>
+                  <div id="coupon-list" class="coupon-list" aria-live="polite">
+                    <p class="muted">Carregando cupons…</p>
+                  </div>
+                </section>
               </div>
               <div class="settings-actions">
                 <p id="settings-status" class="muted" aria-live="polite"></p>
@@ -344,6 +359,68 @@
         <div class="access-actions">
           <button id="access-cancel" class="text-button" type="button">Cancelar</button
           ><button class="primary-button" type="submit">Salvar e conectar</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="coupon-dialog">
+      <form id="coupon-form">
+        <div>
+          <p class="eyebrow">CUPOM</p>
+          <h2 id="coupon-form-title">Novo cupom</h2>
+        </div>
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Código</span>
+            <input name="code" maxlength="64" autocomplete="off" required />
+          </label>
+          <label class="form-field">
+            <span>Nome</span>
+            <input name="name" maxlength="160" required />
+          </label>
+          <label class="form-field settings-wide">
+            <span>Descrição</span>
+            <textarea name="description" maxlength="500"></textarea>
+          </label>
+          <label class="form-field">
+            <span>Origem</span>
+            <input name="source" maxlength="160" placeholder="Campanha, parceiro…" />
+          </label>
+          <label class="form-field">
+            <span>Tipo</span>
+            <select name="discountType">
+              <option value="PERCENTAGE">Percentual</option>
+              <option value="FIXED_AMOUNT">Valor fixo</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span>Desconto (% ou R$)</span>
+            <input name="discountValue" type="number" min="0.01" step="0.01" required />
+          </label>
+          <label class="form-field">
+            <span>Pedido mínimo (R$)</span>
+            <input name="minimumOrder" type="number" min="0" step="0.01" value="0" required />
+          </label>
+          <label class="form-field">
+            <span>Início</span>
+            <input name="startsAt" type="datetime-local" />
+          </label>
+          <label class="form-field">
+            <span>Expiração</span>
+            <input name="expiresAt" type="datetime-local" />
+          </label>
+          <label class="form-field">
+            <span>Limite total de usos</span>
+            <input name="maxUses" type="number" min="1" step="1" />
+          </label>
+          <label class="toggle-row coupon-active">
+            <span><strong>Cupom ativo</strong></span>
+            <input name="active" type="checkbox" checked />
+          </label>
+        </div>
+        <p id="coupon-form-error" class="access-error" role="alert"></p>
+        <div class="access-actions">
+          <button id="coupon-form-cancel" class="text-button" type="button">Cancelar</button>
+          <button class="primary-button" type="submit">Salvar cupom</button>
         </div>
       </form>
     </dialog>

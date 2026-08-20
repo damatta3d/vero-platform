@@ -61,6 +61,13 @@ describe(MvpSecurityService.name, () => {
     expect(trusted.request.action.value).toBe('settings.store.write');
   });
 
+  it('creates coupon access only on the coupon management resource', async () => {
+    const context = await service.authorize(`Bearer ${apiKey}`, 'santo-parma', 'coupons.write');
+    const trusted = consumeAuthorizedAccess(context);
+    expect(trusted.request.resource.value).toBe('coupons.management');
+    expect(trusted.request.action.value).toBe('coupons.write');
+  });
+
   it.each([
     ['Bearer wrong-key-that-is-long-enough', 'santo-parma'],
     [`Bearer ${apiKey}`, 'another-tenant'],

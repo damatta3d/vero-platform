@@ -53,8 +53,12 @@ async function executeCheckout(
     [
       'back',
       'address',
+      'apply-coupon',
       'cart-items',
       'cart-availability',
+      'cart-discount',
+      'cart-discount-label',
+      'cart-subtotal',
       'cart-total',
       'catalog',
       'checkout',
@@ -63,6 +67,8 @@ async function executeCheckout(
       'customer-name',
       'customer-phone',
       'complement',
+      'coupon-code',
+      'coupon-message',
       'district',
       'finish',
       'fulfillment',
@@ -74,6 +80,7 @@ async function executeCheckout(
       'order-note',
       'postal-code',
       'reference',
+      'remove-coupon',
       'street',
       'store-status',
       'success'
@@ -133,6 +140,16 @@ async function executeCheckout(
     }
     if (url === '/v1/checkout/validate') {
       return Promise.resolve(successResponse({ valid: true }));
+    }
+    if (url === '/v1/checkout/price') {
+      return Promise.resolve(
+        successResponse({
+          coupon: { code: 'SANTO10' },
+          discountCents: 490,
+          itemsTotalCents: 4900,
+          amountDueCents: 4410
+        })
+      );
     }
     if (url === '/v1/payments') {
       return Promise.resolve(
@@ -220,7 +237,7 @@ describe('publicMenuPage', () => {
     expect(script).not.toContain('</script>');
     expect(() => new Script(script ?? '')).not.toThrow();
 
-    const serializedSlug = script?.match(/^const slug=(.*?);let menu=/)?.[1] ?? '';
+    const serializedSlug = script?.match(/^const slug=(.*?);\s*let menu=/)?.[1] ?? '';
     const context: { slug?: string } = {};
     new Script(`globalThis.slug=${serializedSlug}`).runInNewContext(context);
     expect(context.slug).toBe('</script><script>alert(1)</script>');
@@ -274,6 +291,64 @@ describe('publicMenuPage', () => {
     expect(elements['success']!.classList.remove).toHaveBeenCalledWith('hidden');
     expect(elements['success']!.innerHTML).toContain('<h2>Pedido #00427</h2>');
     expect(elements['store-status']!.textContent).toBe('Aberto agora');
+  });
+
+  it('applies, revalidates and removes a coupon while sending only its code as intent', async () => {
+    const { documentListeners, elements, fetchMock } = await executeCheckout(
+      {
+        getRandomValues: (values) => {
+          values.forEach((_, index) => (values[index] = index + 1));
+          return values;
+        }
+      },
+      false
+    );
+    elements['coupon-code']!.value = ' santo10 ';
+
+    await elements['apply-coupon']!.onclick?.();
+    expect(elements['coupon-code']!.value).toBe('SANTO10');
+    expect(elements['coupon-message']!.textContent).toBe('Cupom SANTO10 aplicado.');
+    expect(elements['cart-discount']!.textContent).toContain('4,90');
+
+    const click = documentListeners.get('click');
+    click?.({
+      target: {
+        closest: (selector: string) =>
+          selector === '[data-inc]' ? { dataset: { inc: 'item-1' } } : null
+      }
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(fetchMock.mock.calls.filter(([url]) => url === '/v1/checkout/price')).toHaveLength(2);
+
+    await elements['finish']!.onclick?.();
+    for (const endpoint of ['/v1/checkout/validate', '/v1/payments', '/v1/orders/native']) {
+      const request = fetchMock.mock.calls.find(([url]) => url === endpoint);
+      expect(JSON.parse(request?.[1]?.body ?? '')).toMatchObject({ couponCode: 'SANTO10' });
+    }
+
+    elements['remove-coupon']!.onclick?.();
+    expect(elements['coupon-code']!.value).toBe('');
+    expect(elements['coupon-message']!.textContent).toBe('Cupom removido.');
+  });
+
+  it('shows a friendly invalid-coupon response without trusting a browser discount', async () => {
+    const { elements, fetchMock } = await executeCheckout(
+      { getRandomValues: (values) => values },
+      false
+    );
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: false,
+        json: () => Promise.resolve({ message: 'Cupom inválido ou expirado.' })
+      })
+    );
+    elements['coupon-code']!.value = 'INEXISTENTE';
+
+    await elements['apply-coupon']!.onclick?.();
+
+    expect(elements['coupon-message']!.textContent).toBe('Cupom inválido ou expirado.');
+    expect(elements['coupon-message']!.className).toBe('coupon-message error');
+    expect(elements['cart-total']!.textContent).toBe(elements['cart-subtotal']!.textContent);
   });
 
   it('blocks checkout and explains when the store is outside its operational window', async () => {
