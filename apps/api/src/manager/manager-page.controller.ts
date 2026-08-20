@@ -5,12 +5,16 @@ import type { FastifyReply } from 'fastify';
 
 const managerOutput = resolve('dist/apps/manager');
 
-async function sendAsset(reply: FastifyReply, filename: string): Promise<void> {
+async function readAsset(filename: string): Promise<string> {
   try {
-    void reply.send(await readFile(resolve(managerOutput, filename), 'utf8'));
+    return await readFile(resolve(managerOutput, filename), 'utf8');
   } catch {
     throw new ServiceUnavailableException('VERO Manager assets are not available.');
   }
+}
+
+async function sendAsset(reply: FastifyReply, filename: string): Promise<void> {
+  void reply.send(await readAsset(filename));
 }
 
 @Controller('manager')
@@ -33,6 +37,10 @@ export class ManagerPageController {
   @Header('content-type', 'application/javascript; charset=utf-8')
   @Header('cache-control', 'no-store')
   async script(@Res() reply: FastifyReply): Promise<void> {
-    await sendAsset(reply, 'main.js');
+    const [managerScript, alertScript] = await Promise.all([
+      readAsset('main.js'),
+      readAsset('order-alerts.js')
+    ]);
+    void reply.send(`${managerScript}\n\n${alertScript}`);
   }
 }
