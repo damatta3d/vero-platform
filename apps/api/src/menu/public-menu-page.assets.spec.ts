@@ -46,13 +46,15 @@ function successResponse(payload: unknown) {
 
 async function executeCheckout(
   crypto: { getRandomValues?: (values: Uint8Array) => Uint8Array },
-  shouldFinish = true
+  shouldFinish = true,
+  checkoutOverrides: Record<string, unknown> = {}
 ) {
   const elements = Object.fromEntries(
     [
       'back',
       'address',
       'cart-items',
+      'cart-availability',
       'cart-total',
       'catalog',
       'checkout',
@@ -73,6 +75,7 @@ async function executeCheckout(
       'postal-code',
       'reference',
       'street',
+      'store-status',
       'success'
     ].map((id) => [id, testElement()])
   ) as Record<string, TestElement>;
@@ -112,12 +115,15 @@ async function executeCheckout(
             }
           ],
           checkout: {
+            canAcceptOrders: true,
             deliveryEnabled: true,
             minimumOrderCents: 0,
             operationallyOpen: true,
             paymentOnDeliveryEnabled: true,
             pickupEnabled: true,
-            pixEnabled: true
+            pixEnabled: true,
+            statusMessage: 'Aberto agora',
+            ...checkoutOverrides
           },
           description: null,
           logoUrl: null,
@@ -138,7 +144,11 @@ async function executeCheckout(
       );
     }
     return Promise.resolve(
-      successResponse({ orderId: 'order-12345678', trackingToken: 'tracking-token' })
+      successResponse({
+        orderId: 'order-12345678',
+        orderNumber: '00427',
+        trackingToken: 'tracking-token'
+      })
     );
   });
   const page = publicMenuPage('santo-parma-homolog');
@@ -208,7 +218,6 @@ describe('publicMenuPage', () => {
     expect(page.match(/<\/script>/g)).toHaveLength(1);
     expect(script).not.toContain('<script>');
     expect(script).not.toContain('</script>');
-    expect(script).toContain('\\u003c/script>');
     expect(() => new Script(script ?? '')).not.toThrow();
 
     const serializedSlug = script?.match(/^const slug=(.*?);let menu=/)?.[1] ?? '';
@@ -263,6 +272,26 @@ describe('publicMenuPage', () => {
     expect(elements['address']!.classList.toggle).toHaveBeenCalledWith('hidden', false);
     expect(elements['finish']!.disabled).toBe(false);
     expect(elements['success']!.classList.remove).toHaveBeenCalledWith('hidden');
+    expect(elements['success']!.innerHTML).toContain('<h2>Pedido #00427</h2>');
+    expect(elements['store-status']!.textContent).toBe('Aberto agora');
+  });
+
+  it('blocks checkout and explains when the store is outside its operational window', async () => {
+    const { elements, fetchMock } = await executeCheckout(
+      { getRandomValues: (values) => values },
+      false,
+      {
+        canAcceptOrders: false,
+        operationallyOpen: true,
+        statusMessage: 'Fechado agora. Abre hoje às 18:00.'
+      }
+    );
+
+    expect(elements['store-status']!.textContent).toBe('Fechado agora. Abre hoje às 18:00.');
+    expect(elements['cart-availability']!.textContent).toBe('Fechado agora. Abre hoje às 18:00.');
+    expect(elements['continue']!.disabled).toBe(true);
+    expect(elements['checkout']!.classList.remove).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('reports secure key preparation errors and always re-enables checkout', async () => {

@@ -1,6 +1,7 @@
 import { Controller, Get, Inject, NotFoundException, Param } from '@nestjs/common';
 
 import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
+import { loadStoreAvailability } from './store-availability.repository.js';
 
 type PublicMenuDatabase = {
   $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T>;
@@ -58,9 +59,9 @@ export class PublicMenuController {
     );
 
     const menu = menus[0];
-    if (!menu) throw new NotFoundException('Menu not found.');
+    if (!menu) throw new NotFoundException('Cardápio não encontrado.');
 
-    const [rows, settingsRows] = await Promise.all([
+    const [rows, settingsRows, availability] = await Promise.all([
       this.database.$queryRawUnsafe<MenuItemRow[]>(
         `SELECT
            c.id AS "categoryId",
@@ -103,7 +104,8 @@ export class PublicMenuController {
          WHERE tenant_id = $1
          LIMIT 1`,
         menu.tenantId
-      )
+      ),
+      loadStoreAvailability(this.database, menu.tenantId)
     ]);
 
     const categories = rows.reduce<
@@ -160,7 +162,8 @@ export class PublicMenuController {
           paymentOnDeliveryEnabled:
             settings.paymentOnDeliveryEnabled ||
             settings.cashEnabled ||
-            settings.cardOnDeliveryEnabled
+            settings.cardOnDeliveryEnabled,
+          ...availability
         }
       : {
           operationallyOpen: false,
@@ -168,7 +171,8 @@ export class PublicMenuController {
           deliveryEnabled: false,
           minimumOrderCents: 0,
           pixEnabled: false,
-          paymentOnDeliveryEnabled: true
+          paymentOnDeliveryEnabled: true,
+          ...availability
         };
 
     const { tenantId: _tenantId, ...publicMenu } = menu;
