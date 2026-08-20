@@ -1,13 +1,17 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
+import { Test } from '@nestjs/testing';
 
 import { parseConfiguration } from '@vero/core-configuration';
 import type {
   PrismaStoreSettingsRepository,
   StoreSettingsInput
 } from '@vero/infrastructure-database';
+import { CatalogModule } from '../catalog/catalog.module.js';
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 import { StoreSettingsController } from './store-settings.controller.js';
 import { StoreSettingsService } from './store-settings.service.js';
+import { STORE_SETTINGS_REPOSITORY } from './store-settings.tokens.js';
 
 const apiKey = 'santo-parma-integration-key-123456';
 
@@ -48,7 +52,9 @@ function validInput(): MutableStoreSettings {
       deliveryEnabled: false,
       preparationTimeMinMinutes: 30,
       preparationTimeMaxMinutes: 60,
-      minimumOrderCents: 0
+      minimumOrderCents: 0,
+      orderReceiptMode: 'MANUAL',
+      timezone: 'America/Campo_Grande'
     },
     delivery: { maxRadiusKm: null, baseFeeCents: 0, freeAboveCents: null },
     schedule: weekdays.map((weekday) => ({
@@ -126,6 +132,12 @@ describe(StoreSettingsController.name, () => {
         value.operation.pickupEnabled = false;
         value.operation.deliveryEnabled = false;
       }
+    ],
+    [
+      'invalid timezone',
+      (value: MutableStoreSettings) => {
+        value.operation.timezone = 'Campo Grande';
+      }
     ]
   ])('rejects %s', async (_label, mutate) => {
     const value = structuredClone(validInput());
@@ -154,6 +166,7 @@ describe(StoreSettingsController.name, () => {
 
   it('validates and persists a complete update', async () => {
     const value = validInput();
+    value.operation.orderReceiptMode = 'AUTOMATIC';
     const stored = { ...value, updatedAt: new Date('2026-08-14T18:00:00.000Z') };
     repository.update.mockResolvedValue(stored);
 
@@ -161,5 +174,86 @@ describe(StoreSettingsController.name, () => {
       stored
     );
     expect(repository.update).toHaveBeenCalledWith('santo-parma', value);
+  });
+});
+
+describe(`${StoreSettingsController.name} Nest bootstrap`, () => {
+  const repository = { getOrCreate: jest.fn(), update: jest.fn() };
+  let app: NestFastifyApplication;
+
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      imports: [
+        CatalogModule.register(
+          parseConfiguration({
+            VERO_ENVIRONMENT: 'test',
+            VERO_POSTGRES_ENABLED: 'true',
+            VERO_DATABASE_URL: 'postgresql://vero:vero@localhost:5432/vero',
+            VERO_MVP_ENABLED: 'true',
+            VERO_MVP_API_KEY: apiKey,
+            VERO_MVP_TENANT_ID: 'santo-parma'
+          })
+        )
+      ]
+    })
+      .overrideProvider(STORE_SETTINGS_REPOSITORY)
+      .useValue(repository)
+      .compile();
+
+    app = module.createNestApplication<NestFastifyApplication>(new FastifyAdapter());
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+  });
+
+  afterAll(async () => app.close());
+  beforeEach(() => jest.clearAllMocks());
+
+  it('injects both controller dependencies through the real module', () => {
+    const controller: {
+      security?: MvpSecurityService;
+      settings?: StoreSettingsService;
+    } = app.get(StoreSettingsController);
+
+    expect(controller.settings).toBeInstanceOf(StoreSettingsService);
+    expect(controller.security).toBeInstanceOf(MvpSecurityService);
+  });
+
+  it('executes GET through security, service and repository', async () => {
+    const stored = { ...validInput(), updatedAt: new Date('2026-08-19T18:00:00.000Z') };
+    repository.getOrCreate.mockResolvedValue(stored);
+
+    const response = await app
+      .getHttpAdapter()
+      .getInstance()
+      .inject({
+        method: 'GET',
+        url: '/v1/settings/store',
+        headers: { authorization: `Bearer ${apiKey}`, 'x-tenant-id': 'santo-parma' }
+      });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ ...stored, updatedAt: stored.updatedAt.toISOString() });
+    expect(repository.getOrCreate).toHaveBeenCalledWith('santo-parma');
+  });
+
+  it('executes PUT through security, service and repository', async () => {
+    const input = validInput();
+    input.operation.orderReceiptMode = 'AUTOMATIC';
+    const stored = { ...input, updatedAt: new Date('2026-08-19T18:00:00.000Z') };
+    repository.update.mockResolvedValue(stored);
+
+    const response = await app
+      .getHttpAdapter()
+      .getInstance()
+      .inject({
+        method: 'PUT',
+        url: '/v1/settings/store',
+        headers: { authorization: `Bearer ${apiKey}`, 'x-tenant-id': 'santo-parma' },
+        payload: input
+      });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ ...stored, updatedAt: stored.updatedAt.toISOString() });
+    expect(repository.update).toHaveBeenCalledWith('santo-parma', input);
   });
 });

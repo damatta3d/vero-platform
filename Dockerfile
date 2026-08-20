@@ -17,7 +17,7 @@ COPY tools ./tools
 
 RUN pnpm install --frozen-lockfile
 RUN VERO_DATABASE_URL=postgresql://vero:vero@localhost:5432/vero pnpm prisma:generate
-RUN pnpm nx build api
+RUN pnpm nx run-many -t build -p api manager
 
 FROM node:24-bookworm-slim AS runtime
 
@@ -49,4 +49,4 @@ EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD node -e "fetch('http://127.0.0.1:'+(process.env.VERO_HTTP_PORT||3000)+'/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["sh", "-c", "pnpm prisma:migrate:deploy && pnpm start:api"]
+CMD ["sh", "-ceu", ": \"${VERO_DATABASE_URL:?VERO_DATABASE_URL is required}\"; pnpm exec prisma migrate deploy; exec pnpm start:api"]

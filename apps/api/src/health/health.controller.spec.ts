@@ -55,7 +55,7 @@ describe(HealthController.name, () => {
   });
 
   it('fails readiness when a required dependency is unavailable', async () => {
-    databaseCheck.mockRejectedValue(new Error('POSTGRES_UNAVAILABLE'));
+    databaseCheck.mockResolvedValue({ postgres: { status: 'down' } });
     const controller = await createController();
 
     await expect(controller.ready()).rejects.toThrow();

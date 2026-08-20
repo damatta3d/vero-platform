@@ -82,4 +82,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma:generate
       - run: pnpm exec prisma migrate deploy
+      - run: pnpm nx build api --skip-nx-cache
       - run: pnpm test:integration

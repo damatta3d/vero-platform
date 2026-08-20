@@ -138,7 +138,7 @@ export class MenuAdminController {
       menuId
     );
     const items = await this.database.$queryRawUnsafe<Array<Record<string, unknown>>>(
-      `SELECT mi.id, mi.category_id AS "categoryId", mi.catalog_product_id AS "catalogProductId", COALESCE(mi.display_name,p.name) AS name, mi.display_name AS "displayName", mi.description, mi.image_url AS "imageUrl", COALESCE(mi.sale_price_cents,p.sale_price_cents) AS "priceCents", mi.sale_price_cents AS "salePriceCents", mi.sort_order AS "sortOrder", mi.active, mi.available, mi.featured FROM commerce_menu_items mi JOIN catalog_items p ON p.id=mi.catalog_product_id AND p.tenant_id=mi.tenant_id WHERE mi.tenant_id=$1 AND mi.menu_id=$2::uuid ORDER BY mi.sort_order, name`,
+      `SELECT mi.id, mi.category_id AS "categoryId", mi.catalog_product_id AS "catalogProductId", COALESCE(mi.display_name,p.name) AS name, mi.display_name AS "displayName", mi.description, mi.image_url AS "imageUrl", COALESCE(mi.sale_price_cents,p."salePriceCents") AS "priceCents", mi.sale_price_cents AS "salePriceCents", mi.sort_order AS "sortOrder", mi.active, mi.available, mi.featured FROM commerce_menu_items mi JOIN catalog_products p ON p.id=mi.catalog_product_id AND p."tenantId"=mi.tenant_id WHERE mi.tenant_id=$1 AND mi.menu_id=$2::uuid ORDER BY mi.sort_order, name`,
       tenant,
       menuId
     );
@@ -207,7 +207,7 @@ export class MenuAdminController {
     const body = parse(createCategorySchema, rawBody);
     const id = randomUUID();
     const changed = await this.database.$executeRawUnsafe(
-      `INSERT INTO commerce_menu_categories (id,tenant_id,menu_id,name,description,sort_order,active,created_at,updated_at) SELECT $1::uuid,$2,$3::uuid,$4,$5,$6,true,NOW(),NOW() FROM commerce_menus WHERE tenant_id=$2 AND id=$3::uuid`,
+      `INSERT INTO commerce_menu_categories (id,tenant_id,menu_id,name,description,sort_order,active,created_at,updated_at) SELECT $1::uuid,$2::varchar(128),$3::uuid,$4::varchar(160),$5::varchar(500),$6::integer,true,NOW(),NOW() FROM commerce_menus WHERE tenant_id=$2::varchar(128) AND id=$3::uuid`,
       id,
       tenant,
       menuId,
@@ -258,7 +258,7 @@ export class MenuAdminController {
     const body = parse(createItemSchema, rawBody);
     const id = randomUUID();
     const changed = await this.database.$executeRawUnsafe(
-      `INSERT INTO commerce_menu_items (id,tenant_id,menu_id,category_id,catalog_product_id,display_name,description,image_url,sale_price_cents,sort_order,active,available,featured,created_at,updated_at) SELECT $1::uuid,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,$8,$9,$10,true,true,$11,NOW(),NOW() FROM commerce_menu_categories c JOIN catalog_items p ON p.id=$5::uuid AND p.tenant_id=$2 WHERE c.id=$4::uuid AND c.menu_id=$3::uuid AND c.tenant_id=$2`,
+      `INSERT INTO commerce_menu_items (id,tenant_id,menu_id,category_id,catalog_product_id,display_name,description,image_url,sale_price_cents,sort_order,active,available,featured,created_at,updated_at) SELECT $1::uuid,$2,$3::uuid,$4::uuid,$5::uuid,$6,$7,$8,$9,$10,true,true,$11,NOW(),NOW() FROM commerce_menu_categories c JOIN catalog_products p ON p.id=$5::uuid AND p."tenantId"=$2 WHERE c.id=$4::uuid AND c.menu_id=$3::uuid AND c.tenant_id=$2`,
       id,
       tenant,
       menuId,

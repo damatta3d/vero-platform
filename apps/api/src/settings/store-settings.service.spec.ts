@@ -27,7 +27,9 @@ function input(): StoreSettingsInput {
       deliveryEnabled: true,
       preparationTimeMinMinutes: 30,
       preparationTimeMaxMinutes: 50,
-      minimumOrderCents: 2500
+      minimumOrderCents: 2500,
+      orderReceiptMode: 'MANUAL',
+      timezone: 'America/Campo_Grande'
     },
     delivery: { maxRadiusKm: 8.5, baseFeeCents: 700, freeAboveCents: 10_000 },
     schedule: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map(

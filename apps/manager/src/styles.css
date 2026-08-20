@@ -100,6 +100,11 @@ select {
   border-bottom: 1px solid #e5e7eb;
   backdrop-filter: blur(10px);
 }
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
 .eyebrow {
   margin: 0 0 5px;
   font-size: 11px;
@@ -429,9 +434,40 @@ dialog ul,
 dialog ol {
   padding-left: 20px;
 }
+.order-items {
+  display: grid;
+  gap: 12px;
+}
+.order-item-note,
+.order-note-section {
+  margin-top: 7px;
+  padding: 9px 11px;
+  color: #713f12;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 5px;
+}
+.order-item-note p,
+.order-note-section p {
+  margin: 4px 0 0;
+}
 #catalog-form {
   display: grid;
   gap: 18px;
+}
+#access-form {
+  display: grid;
+  gap: 16px;
+}
+.access-error {
+  min-height: 18px;
+  margin: 0;
+  color: #991b1b;
+}
+.access-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 #catalog-form-fields {
   display: grid;
@@ -616,6 +652,10 @@ dialog ol {
   }
   .topbar {
     padding: 16px;
+  }
+  .topbar-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
   main {
     padding: 18px 16px 30px;

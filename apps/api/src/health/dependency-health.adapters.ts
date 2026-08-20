@@ -15,7 +15,11 @@ export class DatabaseHealthAdapter implements HealthAdapter {
 
   async check(): Promise<HealthIndicatorResult> {
     if (!this.config.postgres.enabled) return { postgres: { status: 'up', skipped: true } };
-    return new PostgresHealthClient(this.config.postgres.url).check();
+    try {
+      return await new PostgresHealthClient(this.config.postgres.url).check();
+    } catch {
+      return { postgres: { status: 'down' } };
+    }
   }
 }
 
@@ -25,7 +29,11 @@ export class CacheHealthAdapter implements HealthAdapter {
 
   async check(): Promise<HealthIndicatorResult> {
     if (!this.config.redis.enabled) return { redis: { status: 'up', skipped: true } };
-    return new RedisHealthClient(this.config.redis.url).check();
+    try {
+      return await new RedisHealthClient(this.config.redis.url).check();
+    } catch {
+      return { redis: { status: 'down' } };
+    }
   }
 }
 
@@ -35,6 +43,10 @@ export class MessagingHealthAdapter implements HealthAdapter {
 
   async check(): Promise<HealthIndicatorResult> {
     if (!this.config.rabbitmq.enabled) return { rabbitmq: { status: 'up', skipped: true } };
-    return new RabbitMqHealthClient(this.config.rabbitmq.url).check();
+    try {
+      return await new RabbitMqHealthClient(this.config.rabbitmq.url).check();
+    } catch {
+      return { rabbitmq: { status: 'down' } };
+    }
   }
 }

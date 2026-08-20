@@ -26,6 +26,7 @@ import { FinancePageController } from '../finance/finance-page.controller.js';
 import { FINANCE_REPOSITORY } from '../finance/finance.tokens.js';
 import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
+import { ManagerPageController } from '../manager/manager-page.controller.js';
 import { KitchenOrderController } from '../menu/kitchen-order.controller.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
 import { NativeOrderController } from '../menu/native-order.controller.js';
@@ -35,6 +36,7 @@ import { PublicCheckoutController } from '../menu/public-checkout.controller.js'
 import { PublicMenuController } from '../menu/public-menu.controller.js';
 import { PublicMenuPageController } from '../menu/public-menu-page.controller.js';
 import { PublicOrderStatusController } from '../menu/public-order-status.controller.js';
+import { PublicTrackingPageController } from '../menu/public-tracking-page.controller.js';
 import { OperationalEntryController } from '../operations/operational-entry.controller.js';
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
@@ -65,6 +67,7 @@ export class CatalogModule {
       module: CatalogModule,
       controllers: [
         PortalPageController,
+        ManagerPageController,
         CatalogController,
         InventoryController,
         ProductionController,
@@ -82,6 +85,7 @@ export class CatalogModule {
         NativeOrderController,
         KitchenOrderController,
         PublicOrderStatusController,
+        PublicTrackingPageController,
         MenuAdminController,
         StoreSettingsController
       ],
