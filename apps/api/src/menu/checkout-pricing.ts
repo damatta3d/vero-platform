@@ -42,6 +42,7 @@ export type CheckoutPricingRequest = {
   menuSlug: string;
   items: Array<{ menuItemId: string; quantity: number; note?: string }>;
   couponCode?: string;
+  fulfillment?: 'DELIVERY' | 'PICKUP';
 };
 
 export type CheckoutPricing = {
@@ -195,13 +196,57 @@ export async function priceCheckout(
     discountCents = calculateCouponDiscount(itemsTotalCents, coupon);
   }
 
+  let deliveryFeeCents = 0;
+  if (request.fulfillment === 'DELIVERY') {
+    const settings = await database.$queryRawUnsafe<
+      Array<{
+        deliveryEnabled: boolean;
+        deliveryBaseFeeCents: number;
+        freeDeliveryAboveCents: number | null;
+      }>
+    >(
+      `SELECT delivery_enabled AS "deliveryEnabled",
+              delivery_base_fee_cents AS "deliveryBaseFeeCents",
+              free_delivery_above_cents AS "freeDeliveryAboveCents"
+         FROM store_settings WHERE tenant_id=$1`,
+      tenantId
+    );
+    const delivery = settings[0];
+    if (!delivery?.deliveryEnabled) {
+      throw new BadRequestException('A entrega não está disponível para este pedido.');
+    }
+    if (
+      !Number.isSafeInteger(delivery.deliveryBaseFeeCents) ||
+      delivery.deliveryBaseFeeCents < 0 ||
+      delivery.deliveryBaseFeeCents > maximumCheckoutTotalCents ||
+      (delivery.freeDeliveryAboveCents !== null &&
+        (!Number.isSafeInteger(delivery.freeDeliveryAboveCents) ||
+          delivery.freeDeliveryAboveCents < 0 ||
+          delivery.freeDeliveryAboveCents > maximumCheckoutTotalCents))
+    ) {
+      throw new BadRequestException('A taxa de entrega configurada não é válida.');
+    }
+    deliveryFeeCents =
+      delivery.freeDeliveryAboveCents !== null && itemsTotalCents >= delivery.freeDeliveryAboveCents
+        ? 0
+        : delivery.deliveryBaseFeeCents;
+  }
+  const totalCents = itemsTotalCents - discountCents + deliveryFeeCents;
+  if (
+    !Number.isSafeInteger(totalCents) ||
+    totalCents <= 0 ||
+    totalCents > maximumCheckoutTotalCents
+  ) {
+    throw new BadRequestException('O valor do pedido excede o limite permitido.');
+  }
+
   return {
     tenantId,
     items,
     itemsTotalCents,
     discountCents,
-    deliveryFeeCents: 0,
-    totalCents: itemsTotalCents - discountCents,
+    deliveryFeeCents,
+    totalCents,
     coupon
   };
 }

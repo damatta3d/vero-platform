@@ -209,11 +209,20 @@ describe('Manager order presentation', () => {
       'Aguardando pagamento'
     );
     expect(evaluate(`paymentStatusLabel('REFUNDED')`, ['paymentStatusLabel'])).toBe('Estornado');
+    expect(evaluate(`paymentStatusLabel('CHARGED_BACK')`, ['paymentStatusLabel'])).toBe(
+      'Pagamento contestado'
+    );
     expect(evaluate(`fulfillmentLabel('DELIVERY')`, ['fulfillmentLabel'])).toBe('Entrega');
     expect(evaluate(`orderStatusLabel('PREPARING')`, ['orderStatusLabel'])).toBe('Em preparo');
     expect(managerSource).not.toContain('orderId.slice');
     expect(managerSource).not.toContain('MutationObserver');
     expect(managerHtml).not.toContain('order-display.js');
+  });
+
+  it('keeps order and financial status separate and confirms pay-on-delivery through RBAC', () => {
+    expect(managerSource).toContain('data-receive-payment');
+    expect(managerSource).toContain('api(`/v1/kitchen/orders/${orderId}/payment`');
+    expect(managerSource).toContain("body: JSON.stringify({ status: 'PAID' })");
   });
 
   it('renders item notes, general notes and delivery address in distinct safe sections', () => {

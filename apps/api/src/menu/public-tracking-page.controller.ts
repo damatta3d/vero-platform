@@ -26,7 +26,8 @@ const paymentLabels = {
   PAID: 'Pago',
   FAILED: 'Pagamento não aprovado',
   CANCELLED: 'Pagamento cancelado',
-  REFUNDED: 'Estornado'
+  REFUNDED: 'Estornado',
+  CHARGED_BACK: 'Pagamento contestado'
 };
 
 function safeJson(value: unknown): string {

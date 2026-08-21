@@ -149,7 +149,8 @@ function paymentStatusLabel(status) {
       PAID: 'Pago',
       FAILED: 'Pagamento não aprovado',
       CANCELLED: 'Pagamento cancelado',
-      REFUNDED: 'Estornado'
+      REFUNDED: 'Estornado',
+      CHARGED_BACK: 'Pagamento contestado'
     }[status] || 'Situação do pagamento indisponível'
   );
 }
@@ -688,6 +689,22 @@ async function transition(orderId, status) {
   }
 }
 
+async function receivePayment(orderId) {
+  try {
+    await api(`/v1/kitchen/orders/${orderId}/payment`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'PAID' })
+    });
+    const detail = await api(`/v1/kitchen/orders/${orderId}`);
+    state.orders.set(orderId, detail.order);
+    render();
+    dialog.close();
+    await openDetail(orderId);
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
 async function openDetail(orderId) {
   try {
     const result = await api(`/v1/kitchen/orders/${orderId}`);
@@ -714,7 +731,14 @@ async function openDetail(orderId) {
     const discount = order.discountCents
       ? `<p>Subtotal: ${money(order.itemsTotalCents)}<br>Desconto${order.couponCode ? ` (${escapeHtml(order.couponCode)})` : ''}: − ${money(order.discountCents)}</p>`
       : '';
-    orderDetail.innerHTML = `<h2>${escapeHtml(orderNumberLabel(order))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(fulfillment)}</p><p><strong>${escapeHtml(orderStatusLabel(order.status, order.fulfillment))}</strong></p><ul class="order-items">${itemRows}</ul>${orderNote}${discount}<p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(paymentStatusLabel(order.paymentStatus))}</p><h3>Histórico</h3><ol>${historyRows}</ol>`;
+    const paymentAction =
+      order.paymentMethod === 'PAY_ON_DELIVERY' && order.paymentStatus === 'PENDING'
+        ? '<button type="button" class="primary-button" data-receive-payment>Marcar pagamento como recebido</button>'
+        : '';
+    orderDetail.innerHTML = `<h2>${escapeHtml(orderNumberLabel(order))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(fulfillment)}</p><p><strong>${escapeHtml(orderStatusLabel(order.status, order.fulfillment))}</strong></p><ul class="order-items">${itemRows}</ul>${orderNote}${discount}<p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(paymentStatusLabel(order.paymentStatus))}</p>${paymentAction}<h3>Histórico</h3><ol>${historyRows}</ol>`;
+    orderDetail
+      .querySelector('[data-receive-payment]')
+      ?.addEventListener('click', () => receivePayment(orderId));
     dialog.showModal();
   } catch (error) {
     connection.textContent = `Erro: ${error.message}`;
