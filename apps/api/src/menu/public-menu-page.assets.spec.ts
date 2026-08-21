@@ -47,7 +47,12 @@ function successResponse(payload: unknown) {
 async function executeCheckout(
   crypto: { getRandomValues?: (values: Uint8Array) => Uint8Array },
   shouldFinish = true,
-  checkoutOverrides: Record<string, unknown> = {}
+  checkoutOverrides: Record<string, unknown> = {},
+  paymentPayload: Record<string, unknown> = {
+    method: 'PAY_ON_DELIVERY',
+    paymentId: 'payment-1',
+    status: 'PENDING'
+  }
 ) {
   const elements = Object.fromEntries(
     [
@@ -65,6 +70,7 @@ async function executeCheckout(
       'checkout-message',
       'continue',
       'customer-name',
+      'customer-email',
       'customer-phone',
       'complement',
       'coupon-code',
@@ -87,6 +93,7 @@ async function executeCheckout(
     ].map((id) => [id, testElement()])
   ) as Record<string, TestElement>;
   elements['customer-name']!.value = 'Cliente Homologação';
+  elements['customer-email']!.value = 'cliente@example.com';
   elements['customer-phone']!.value = '63999999999';
   elements['fulfillment']!.value = 'DELIVERY';
   elements['fulfillment']!.options = [{}];
@@ -152,13 +159,7 @@ async function executeCheckout(
       );
     }
     if (url === '/v1/payments') {
-      return Promise.resolve(
-        successResponse({
-          method: 'PAY_ON_DELIVERY',
-          paymentId: 'payment-1',
-          status: 'PENDING'
-        })
-      );
+      return Promise.resolve(successResponse(paymentPayload));
     }
     return Promise.resolve(
       successResponse({
@@ -269,6 +270,7 @@ describe('publicMenuPage', () => {
       idempotencyKey: string;
       items: Array<{ note?: string }>;
       orderNote?: string;
+      payment: { method: string; paymentId: string; status?: string };
     };
     expect(paymentBody.checkoutId).toMatch(/^[0-9a-f]{64}$/);
     expect(orderBody.idempotencyKey).toBe(paymentBody.checkoutId);
@@ -282,6 +284,11 @@ describe('publicMenuPage', () => {
     expect(checkoutBody.items[0]?.note).toBe('Bem passado');
     expect(orderBody.orderNote).toBe('Entregar talheres');
     expect(orderBody.items[0]?.note).toBe('Bem passado');
+    expect(orderBody.payment).toEqual({
+      method: 'PAY_ON_DELIVERY',
+      paymentId: 'payment-1'
+    });
+    expect(orderBody.payment).not.toHaveProperty('status');
     expect(elements['fulfillment']!.innerHTML).toContain('value="PICKUP"');
     expect(elements['fulfillment']!.innerHTML).toContain('value="DELIVERY"');
     expect(elements['method']!.innerHTML).toContain('value="PAY_ON_DELIVERY"');
@@ -329,6 +336,38 @@ describe('publicMenuPage', () => {
     elements['remove-coupon']!.onclick?.();
     expect(elements['coupon-code']!.value).toBe('');
     expect(elements['coupon-message']!.textContent).toBe('Cupom removido.');
+  });
+
+  it('shows a pending PIX QR Code and never lets the browser claim payment approval', async () => {
+    const { elements, fetchMock } = await executeCheckout(
+      {
+        getRandomValues: (values) => values
+      },
+      false,
+      {},
+      {
+        amountCents: 4900,
+        method: 'PIX',
+        paymentId: 'payment-attempt-1',
+        pixCopyPaste: '000201PIX-SEGURO',
+        qrCodeUrl: 'data:image/png;base64,cXItY29kZQ==',
+        status: 'AWAITING_PAYMENT'
+      }
+    );
+    elements['method']!.value = 'PIX';
+    elements['method']!.onchange?.();
+
+    await elements['finish']!.onclick?.();
+
+    expect(elements['success']!.innerHTML).toContain('Aguardando pagamento');
+    expect(elements['success']!.innerHTML).toContain('QR Code PIX');
+    expect(elements['success']!.innerHTML).toContain('000201PIX-SEGURO');
+    expect(elements['success']!.innerHTML).not.toContain('Pagamento aprovado');
+    const orderRequest = fetchMock.mock.calls.find(([url]) => url === '/v1/orders/native');
+    const orderBody = JSON.parse(orderRequest?.[1]?.body ?? '') as {
+      payment: Record<string, unknown>;
+    };
+    expect(orderBody.payment).toEqual({ method: 'PIX', paymentId: 'payment-attempt-1' });
   });
 
   it('shows a friendly invalid-coupon response without trusting a browser discount', async () => {
