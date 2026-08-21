@@ -9,6 +9,7 @@ import {
   Patch,
   Query
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
 import { MvpSecurityService } from '../catalog/mvp-security.service.js';
 import { nextOrderStatuses, transitionPersistedOrder } from './order-workflow.js';
@@ -17,7 +18,7 @@ import { formatOperationalOrderNumber } from './order-number.js';
 type Db = {
   $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T>;
   $executeRawUnsafe(query: string, ...values: unknown[]): Promise<number>;
-  $transaction?<T>(callback: (transaction: Db) => Promise<T>): Promise<T>;
+  $transaction<T>(callback: (transaction: Db) => Promise<T>): Promise<T>;
 };
 const activeStatuses: readonly NativeOrderStatus[] = [
   'RECEIVED',
@@ -135,5 +136,66 @@ export class KitchenOrderController {
         error instanceof Error ? error.message : 'Invalid order transition.'
       );
     }
+  }
+
+  @Patch(':orderId/payment')
+  async receivePayment(
+    @Headers('authorization') authorization: string | undefined,
+    @Headers('x-tenant-id') tenantId: string | undefined,
+    @Param('orderId') orderId: string,
+    @Body() body: { status?: 'PAID' }
+  ) {
+    await this.security.authorize(authorization, tenantId, 'orders.payment.receive');
+    if (!tenantId || body.status !== 'PAID') {
+      throw new BadRequestException('Informe a confirmação do pagamento recebido.');
+    }
+    return this.db.$transaction(async (tx) => {
+      const rows = await tx.$queryRawUnsafe<
+        Array<{
+          paymentId: string | null;
+          paymentMethod: string;
+          paymentStatus: string;
+        }>
+      >(
+        `SELECT payment_id AS "paymentId",payment_method AS "paymentMethod",
+                payment_status AS "paymentStatus"
+           FROM commerce_native_orders
+          WHERE id=$1::uuid AND tenant_id=$2 FOR UPDATE`,
+        orderId,
+        tenantId
+      );
+      const order = rows[0];
+      if (!order) throw new BadRequestException('ORDER_NOT_FOUND');
+      if (order.paymentMethod !== 'PAY_ON_DELIVERY') {
+        throw new BadRequestException('Somente pagamentos ao receber podem ser confirmados aqui.');
+      }
+      if (order.paymentStatus === 'PAID') return { orderId, paymentStatus: 'PAID' };
+      if (order.paymentStatus !== 'PENDING') {
+        throw new BadRequestException('A situação atual do pagamento não permite confirmação.');
+      }
+      await tx.$executeRawUnsafe(
+        `UPDATE commerce_native_orders SET payment_status='PAID',updated_at=NOW()
+          WHERE id=$1::uuid AND tenant_id=$2 AND payment_status='PENDING'`,
+        orderId,
+        tenantId
+      );
+      if (order.paymentId) {
+        await tx.$executeRawUnsafe(
+          `UPDATE commerce_payment_attempts
+              SET status='PAID',provider_status='received_by_operator',updated_at=NOW()
+            WHERE id=$1::uuid AND tenant_id=$2 AND method='PAY_ON_DELIVERY' AND status='PENDING'`,
+          order.paymentId,
+          tenantId
+        );
+        await tx.$executeRawUnsafe(
+          `INSERT INTO commerce_payment_status_history
+             (id,payment_id,from_status,to_status,provider_status,source,occurred_at)
+           VALUES ($1::uuid,$2::uuid,'PENDING','PAID','received_by_operator','MANAGER',NOW())`,
+          randomUUID(),
+          order.paymentId
+        );
+      }
+      return { orderId, paymentStatus: 'PAID' };
+    });
   }
 }

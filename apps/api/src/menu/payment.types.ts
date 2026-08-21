@@ -1,13 +1,19 @@
 export type PaymentMethod = 'PIX' | 'PAY_ON_DELIVERY';
-export type PaymentStatus = 'PENDING' | 'AWAITING_PAYMENT' | 'PAID' | 'FAILED' | 'CANCELLED';
+export type PaymentStatus =
+  | 'PENDING'
+  | 'AWAITING_PAYMENT'
+  | 'PAID'
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'REFUNDED'
+  | 'CHARGED_BACK';
 
-export type PaymentRequest = {
-  checkoutId?: string;
-  menuSlug: string;
-  method: PaymentMethod;
+export type ProviderPixRequest = {
+  idempotencyKey: string;
+  externalReference: string;
   amountCents: number;
   customerName: string;
-  customerPhone: string;
+  customerEmail: string;
 };
 
 export type PaymentResult = {
@@ -17,9 +23,25 @@ export type PaymentResult = {
   amountCents: number;
   pixCopyPaste?: string | null;
   qrCodeUrl?: string | null;
+  pixTicketUrl?: string | null;
   expiresAt?: string | null;
 };
 
+export type ProviderPaymentSnapshot = {
+  providerOrderId: string;
+  providerPaymentId: string;
+  externalReference: string;
+  amountCents: number;
+  providerStatus: string;
+  providerStatusDetail: string | null;
+  status: PaymentStatus;
+  pixCopyPaste: string | null;
+  qrCodeBase64: string | null;
+  pixTicketUrl: string | null;
+  expiresAt: string | null;
+};
+
 export interface PaymentGateway {
-  createPayment(request: PaymentRequest): Promise<PaymentResult>;
+  createPixPayment(request: ProviderPixRequest): Promise<ProviderPaymentSnapshot>;
+  getOrder(providerOrderId: string): Promise<ProviderPaymentSnapshot>;
 }
