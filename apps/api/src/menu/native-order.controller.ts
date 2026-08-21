@@ -28,6 +28,9 @@ type ExistingOrder = {
   itemsTotalCents: number;
   discountCents: number;
   deliveryFeeCents: number;
+  deliveryDistanceMeters: number | null;
+  deliveryQuoteProvider: string | null;
+  deliveryFeeRule: string | null;
   totalCents: number;
   couponId: string | null;
   couponCode: string | null;
@@ -156,14 +159,15 @@ export class NativeOrderController {
         const inserted = await tx.$queryRawUnsafe<Array<{ operationalNumber: number }>>(
           `INSERT INTO commerce_native_orders (
              id,tenant_id,menu_slug,provider,customer_name,customer_phone,fulfillment,
-             items_total_cents,discount_cents,delivery_fee_cents,total_cents,
+             items_total_cents,discount_cents,delivery_fee_cents,delivery_distance_m,
+             delivery_quote_provider,delivery_fee_rule,total_cents,
              coupon_id,coupon_code,coupon_name,coupon_source,coupon_discount_type,coupon_discount_value,
              payment_id,payment_method,payment_status,provider_payment_id,status,order_note,
              delivery_address,tracking_token_hash,idempotency_key_hash,created_at,updated_at
            ) VALUES (
-             $1::uuid,$2,$3,'VERO_NATIVE',$4,$5,$6,$7,$8,$9,$10,
-             $11::uuid,$12,$13,$14,$15,$16,$17::uuid,$18,$19,$20,'RECEIVED',$21,
-             $22::jsonb,$23,$24,$25::timestamptz,$25::timestamptz
+             $1::uuid,$2,$3,'VERO_NATIVE',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,
+             $14::uuid,$15,$16,$17,$18,$19,$20::uuid,$21,$22,$23,'RECEIVED',$24,
+             $25::jsonb,$26,$27,$28::timestamptz,$28::timestamptz
            ) RETURNING operational_number AS "operationalNumber"`,
           orderId,
           tenantId,
@@ -174,6 +178,9 @@ export class NativeOrderController {
           finalPricing.itemsTotalCents,
           finalPricing.discountCents,
           finalPricing.deliveryFeeCents,
+          finalPricing.deliveryDistanceMeters,
+          finalPricing.deliveryQuoteProvider,
+          finalPricing.deliveryFeeRule,
           finalPricing.totalCents,
           finalPricing.coupon?.id ?? null,
           finalPricing.coupon?.code ?? null,
@@ -275,6 +282,9 @@ export class NativeOrderController {
       itemsTotalCents: finalPricing.itemsTotalCents,
       discountCents: finalPricing.discountCents,
       deliveryFeeCents: finalPricing.deliveryFeeCents,
+      deliveryDistanceMeters: finalPricing.deliveryDistanceMeters,
+      deliveryQuoteProvider: finalPricing.deliveryQuoteProvider,
+      deliveryFeeRule: finalPricing.deliveryFeeRule,
       totalCents: finalPricing.totalCents,
       coupon: finalPricing.coupon,
       paymentMethod: request.payment.method,
@@ -292,7 +302,8 @@ export class NativeOrderController {
     const rows = await this.db.$queryRawUnsafe<ExistingOrder[]>(
       `SELECT id AS "orderId",operational_number AS "operationalNumber",fulfillment,
               items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",
-              delivery_fee_cents AS "deliveryFeeCents",
+              delivery_fee_cents AS "deliveryFeeCents",delivery_distance_m AS "deliveryDistanceMeters",
+              delivery_quote_provider AS "deliveryQuoteProvider",delivery_fee_rule AS "deliveryFeeRule",
               total_cents AS "totalCents",coupon_id AS "couponId",coupon_code AS "couponCode",
               coupon_name AS "couponName",coupon_source AS "couponSource",
               coupon_discount_type AS "couponDiscountType",
@@ -313,6 +324,9 @@ export class NativeOrderController {
       itemsTotalCents: order.itemsTotalCents,
       discountCents: order.discountCents,
       deliveryFeeCents: order.deliveryFeeCents,
+      deliveryDistanceMeters: order.deliveryDistanceMeters,
+      deliveryQuoteProvider: order.deliveryQuoteProvider,
+      deliveryFeeRule: order.deliveryFeeRule,
       totalCents: order.totalCents,
       coupon: this.existingCoupon(order),
       paymentMethod: order.paymentMethod,
