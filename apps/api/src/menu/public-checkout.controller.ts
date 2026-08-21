@@ -23,6 +23,8 @@ export class PublicCheckoutController {
     request: {
       menuSlug: string;
       couponCode?: string;
+      fulfillment?: 'DELIVERY' | 'PICKUP';
+      address?: CheckoutDraft['address'];
       items: Array<{ menuItemId: string; quantity: number; note?: string }>;
     }
   ) {
@@ -32,6 +34,7 @@ export class PublicCheckoutController {
       itemsTotalCents: pricing.itemsTotalCents,
       discountCents: pricing.discountCents,
       deliveryFeeCents: pricing.deliveryFeeCents,
+      deliveryDistanceMeters: pricing.deliveryDistanceMeters,
       amountDueCents: pricing.totalCents,
       coupon: pricing.coupon
     };
@@ -58,6 +61,7 @@ export class PublicCheckoutController {
       itemsTotalCents: pricing.itemsTotalCents,
       discountCents: pricing.discountCents,
       deliveryFeeCents: pricing.deliveryFeeCents,
+      deliveryDistanceMeters: pricing.deliveryDistanceMeters,
       amountDueCents: pricing.totalCents,
       coupon: pricing.coupon
     };
