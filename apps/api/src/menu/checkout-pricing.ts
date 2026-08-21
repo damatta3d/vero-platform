@@ -1,4 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+import type { CheckoutAddress } from './checkout.types.js';
+import { quoteDelivery, type DeliveryRouteProvider } from './delivery-pricing.js';
+import { configuredDeliveryRouteProvider } from './google-maps-delivery.gateway.js';
 
 export type CheckoutPriceLine = {
   menuItemId: string;
@@ -43,6 +46,7 @@ export type CheckoutPricingRequest = {
   items: Array<{ menuItemId: string; quantity: number; note?: string }>;
   couponCode?: string;
   fulfillment?: 'DELIVERY' | 'PICKUP';
+  address?: CheckoutAddress | null;
 };
 
 export type CheckoutPricing = {
@@ -58,6 +62,9 @@ export type CheckoutPricing = {
   itemsTotalCents: number;
   discountCents: number;
   deliveryFeeCents: number;
+  deliveryDistanceMeters: number | null;
+  deliveryQuoteProvider: string | null;
+  deliveryFeeRule: string | null;
   totalCents: number;
   coupon: CouponSnapshot | null;
 };
@@ -84,7 +91,7 @@ export function calculateCouponDiscount(
 export async function priceCheckout(
   database: PricingDatabase,
   request: CheckoutPricingRequest,
-  options: { lockCoupon?: boolean; now?: Date } = {}
+  options: { lockCoupon?: boolean; now?: Date; deliveryRouteProvider?: DeliveryRouteProvider } = {}
 ): Promise<CheckoutPricing> {
   if (!request.menuSlug?.trim() || !Array.isArray(request.items) || request.items.length === 0) {
     throw new BadRequestException('Revise os itens do pedido.');
@@ -197,6 +204,9 @@ export async function priceCheckout(
   }
 
   let deliveryFeeCents = 0;
+  let deliveryDistanceMeters: number | null = null;
+  let deliveryQuoteProvider: string | null = null;
+  let deliveryFeeRule: string | null = null;
   if (request.fulfillment === 'DELIVERY') {
     const settings = await database.$queryRawUnsafe<
       Array<{
@@ -226,10 +236,34 @@ export async function priceCheckout(
     ) {
       throw new BadRequestException('A taxa de entrega configurada não é válida.');
     }
-    deliveryFeeCents =
-      delivery.freeDeliveryAboveCents !== null && itemsTotalCents >= delivery.freeDeliveryAboveCents
-        ? 0
-        : delivery.deliveryBaseFeeCents;
+
+    const automaticRouteConfigured =
+      options.deliveryRouteProvider !== undefined || Boolean(process.env.GOOGLE_MAPS_API_KEY?.trim());
+    if (automaticRouteConfigured) {
+      if (
+        !request.address?.street?.trim() ||
+        !request.address.number?.trim() ||
+        !request.address.district?.trim()
+      ) {
+        throw new BadRequestException('Informe o endereço para calcular a entrega.');
+      }
+      const quote = await quoteDelivery(
+        database,
+        options.deliveryRouteProvider ?? configuredDeliveryRouteProvider(),
+        { tenantId, address: request.address, itemsTotalCents }
+      );
+      deliveryFeeCents = quote.feeCents;
+      deliveryDistanceMeters = quote.distanceMeters;
+      deliveryQuoteProvider = quote.provider;
+      deliveryFeeRule = quote.feeRule;
+    } else {
+      deliveryFeeCents =
+        delivery.freeDeliveryAboveCents !== null &&
+        itemsTotalCents >= delivery.freeDeliveryAboveCents
+          ? 0
+          : delivery.deliveryBaseFeeCents;
+      deliveryFeeRule = 'LEGACY_BASE_FEE';
+    }
   }
   const totalCents = itemsTotalCents - discountCents + deliveryFeeCents;
   if (
@@ -246,6 +280,9 @@ export async function priceCheckout(
     itemsTotalCents,
     discountCents,
     deliveryFeeCents,
+    deliveryDistanceMeters,
+    deliveryQuoteProvider,
+    deliveryFeeRule,
     totalCents,
     coupon
   };
