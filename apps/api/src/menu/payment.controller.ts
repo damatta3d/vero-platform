@@ -87,7 +87,7 @@ export class PaymentController {
 
     try {
       return await this.db.$transaction(async (tx) => {
-        await tx.$queryRawUnsafe(
+        await tx.$executeRawUnsafe(
           'SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',
           `${pricing.tenantId}:${checkoutHash}`
         );
