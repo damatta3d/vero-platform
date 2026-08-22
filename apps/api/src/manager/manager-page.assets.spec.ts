@@ -65,6 +65,20 @@ describe('Manager order presentation', () => {
     expect(managerSource).toContain('order.couponCode');
   });
 
+  it('exposes delivery pricing bands, drivers and the logistics board in Portuguese', () => {
+    expect(managerHtml).toContain('data-view="deliveries"');
+    expect(managerHtml).toContain('id="delivery-board"');
+    expect(managerHtml).toContain('id="driver-form"');
+    expect(managerHtml).toContain('id="delivery-band-list"');
+    expect(managerHtml).toContain('+ Adicionar faixa');
+    expect(managerSource).toContain("api('/v1/delivery/fee-bands')");
+    expect(managerSource).toContain("api('/v1/delivery/drivers')");
+    expect(managerSource).toContain("api('/v1/delivery/operations')");
+    expect(managerSource).toContain("OUT_FOR_DELIVERY: 'Em rota'");
+    expect(managerSource).toContain('escapeHtml(delivery.customerName)');
+    expect(managerSource).toContain('escapeHtml(deliveryAddressSummary(delivery.address))');
+  });
+
   it('provides tenant-scoped configurable order sound alerts', () => {
     expect(() => new Script(`(() => {${orderAlertsSource}})();`)).not.toThrow();
     expect(orderAlertsSource).toContain('vero_order_alerts:${tenantId()}');
@@ -252,16 +266,16 @@ describe('Manager order presentation', () => {
     ).toBe('Loja temporariamente fechada');
   });
 
-  it('hides dispatch for pickup and preserves it for delivery', () => {
+  it('keeps pickup completion and routes delivery dispatch through the logistics board', () => {
     const order = `{allowedTransitions:['DISPATCHED','COMPLETED','CANCELLED']`;
     expect(evaluate(`transitionsForOrder(${order},fulfillment:'PICKUP'})`)).toEqual([
       'COMPLETED',
       'CANCELLED'
     ]);
     expect(evaluate(`transitionsForOrder(${order},fulfillment:'DELIVERY'})`)).toEqual([
-      'DISPATCHED',
-      'COMPLETED',
       'CANCELLED'
     ]);
+    expect(managerSource).toContain("deliveryAction(button.dataset.startDelivery, 'start')");
+    expect(managerSource).toContain("deliveryAction(button.dataset.completeDelivery, 'complete')");
   });
 });

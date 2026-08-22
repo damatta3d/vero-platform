@@ -1,5 +1,10 @@
 import { createHash, createHmac, randomUUID } from 'node:crypto';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  ServiceUnavailableException
+} from '@nestjs/common';
 
 import { createDatabaseClient } from '@vero/infrastructure-database';
 import { KitchenOrderController } from '../../apps/api/src/menu/kitchen-order.controller';
@@ -10,6 +15,8 @@ import { PaymentWebhookController } from '../../apps/api/src/menu/payment-webhoo
 import { PublicCheckoutController } from '../../apps/api/src/menu/public-checkout.controller';
 import { PublicMenuController } from '../../apps/api/src/menu/public-menu.controller';
 import { PublicOrderStatusController } from '../../apps/api/src/menu/public-order-status.controller';
+import { DeliveryAdminController } from '../../apps/api/src/menu/delivery-admin.controller';
+import { DeliveryOperationsController } from '../../apps/api/src/menu/delivery-operations.controller';
 import type { NativeOrderStatus } from '../../apps/api/src/menu/native-order.types';
 
 type Database = {
@@ -38,6 +45,8 @@ describe('Santo Parma VERO Menu application homologation', () => {
   const tracking = new PublicOrderStatusController(database);
   const kitchen = new KitchenOrderController({ authorize } as never, database);
   const menuAdmin = new MenuAdminController(database, { authorize } as never);
+  const deliveryAdmin = new DeliveryAdminController(database, { authorize } as never);
+  const deliveryOperations = new DeliveryOperationsController(database, { authorize } as never);
 
   async function setAvailability(
     operationallyOpen: boolean,
@@ -125,7 +134,9 @@ describe('Santo Parma VERO Menu application homologation', () => {
       street: string;
       number: string;
       district: string;
-      postalCode?: string;
+      postalCode: string;
+      city: string;
+      stateCode: string;
       complement?: string;
       reference?: string;
     } | null;
@@ -227,6 +238,11 @@ describe('Santo Parma VERO Menu application homologation', () => {
     );
     await database.$executeRawUnsafe(
       'DELETE FROM commerce_coupons WHERE tenant_id IN ($1, $2)',
+      tenantId,
+      otherTenantId
+    );
+    await database.$executeRawUnsafe(
+      'DELETE FROM commerce_delivery_drivers WHERE tenant_id IN ($1, $2)',
       tenantId,
       otherTenantId
     );
@@ -907,7 +923,14 @@ describe('Santo Parma VERO Menu application homologation', () => {
         email: 'cliente.pix@example.com'
       },
       fulfillment: 'DELIVERY' as const,
-      address: { street: 'Rua PIX', number: '10', district: 'Centro' },
+      address: {
+        postalCode: '79000-010',
+        street: 'Rua PIX',
+        number: '10',
+        district: 'Centro',
+        city: 'Campo Grande',
+        stateCode: 'MS'
+      },
       orderNote: 'Entregar na recepção',
       items: [{ menuItemId, quantity: 1, note: 'Sem cebola' }]
     };
@@ -1504,6 +1527,9 @@ describe('Santo Parma VERO Menu application homologation', () => {
       street: 'Rua do Cupom',
       number: '59',
       district: 'Centro',
+      postalCode: '79000-059',
+      city: 'Campo Grande',
+      stateCode: 'MS',
       complement: 'Fundos',
       reference: 'Portão vermelho'
     };
@@ -1557,6 +1583,254 @@ describe('Santo Parma VERO Menu application homologation', () => {
       couponCode: code,
       items: [expect.objectContaining({ note: 'Sem cebola' })]
     });
+  });
+
+  it('quotes distance bands server-side and operates an assigned delivery atomically', async () => {
+    await setAvailability(true, true);
+    await database.$executeRawUnsafe(
+      `UPDATE store_settings
+          SET address='Rua da Loja, 1',neighborhood='Centro',city='Campo Grande',
+              state_code='MS',postal_code='79000-000',delivery_enabled=true,
+              delivery_radius_km=3,delivery_base_fee_cents=1500,
+              free_delivery_above_cents=10000,order_receipt_mode='MANUAL'
+        WHERE tenant_id=$1`,
+      tenantId
+    );
+    await deliveryAdmin.replace(authorization, tenantId, {
+      bands: [
+        { minDistanceMeters: 0, maxDistanceMeters: 500, feeCents: 0, active: true },
+        { minDistanceMeters: 500, maxDistanceMeters: 1000, feeCents: 800, active: true },
+        { minDistanceMeters: 1000, maxDistanceMeters: 3000, feeCents: 1000, active: true }
+      ]
+    });
+
+    const previousKey = process.env.GOOGLE_MAPS_API_KEY;
+    const previousProvider = process.env.VERO_MAPS_PROVIDER;
+    process.env.GOOGLE_MAPS_API_KEY = 'integration-fake-key';
+    process.env.VERO_MAPS_PROVIDER = 'GOOGLE';
+    let routeDistanceMeters = 500;
+    const mapsFetch = jest.spyOn(global, 'fetch').mockImplementation((url) => {
+      if (String(url).startsWith('https://maps.googleapis.com/maps/api/geocode/json')) {
+        const requested = new URL(String(url)).searchParams.get('address') || '';
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              status: 'OK',
+              results: [
+                {
+                  formatted_address: requested.includes('Cliente')
+                    ? 'Rua Cliente, 10 - Centro, Campo Grande - MS'
+                    : 'Rua da Loja, 1 - Centro, Campo Grande - MS',
+                  geometry: { location: { lat: -20.45, lng: -54.61 } }
+                }
+              ]
+            })
+        } as Response);
+      }
+      if (String(url) === 'https://routes.googleapis.com/directions/v2:computeRoutes') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ routes: [{ distanceMeters: routeDistanceMeters }] })
+        } as Response);
+      }
+      throw new Error(`Unexpected integration URL: ${String(url)}`);
+    });
+    const address = {
+      postalCode: '79000-010',
+      street: 'Rua Cliente',
+      number: '10',
+      district: 'Centro',
+      city: 'Campo Grande',
+      stateCode: 'MS',
+      complement: 'Casa 2',
+      reference: '<img src=x onerror=alert(1)>'
+    };
+
+    try {
+      await expect(
+        checkout.price({
+          menuSlug,
+          fulfillment: 'PICKUP',
+          address: null,
+          items: [{ menuItemId, quantity: 1 }]
+        })
+      ).resolves.toMatchObject({ deliveryFeeCents: 0, amountDueCents: 4590 });
+      await expect(
+        checkout.deliveryQuote({
+          menuSlug,
+          address,
+          items: [{ menuItemId, quantity: 1 }],
+          deliveryFeeCents: 0,
+          totalCents: 1
+        })
+      ).resolves.toMatchObject({
+        eligible: true,
+        distanceMeters: 500,
+        deliveryFeeCents: 800,
+        itemsTotalCents: 4590,
+        totalCents: 5390,
+        normalizedAddress: expect.stringContaining('Rua Cliente')
+      });
+      await expect(
+        checkout.deliveryQuote({
+          menuSlug,
+          address: { ...address, city: '' },
+          items: [{ menuItemId, quantity: 1 }]
+        })
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      routeDistanceMeters = 1500;
+      await expect(
+        checkout.deliveryQuote({ menuSlug, address, items: [{ menuItemId, quantity: 3 }] })
+      ).resolves.toMatchObject({ deliveryFeeCents: 0, totalCents: 13_770 });
+      routeDistanceMeters = 3001;
+      await expect(
+        checkout.deliveryQuote({ menuSlug, address, items: [{ menuItemId, quantity: 1 }] })
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      routeDistanceMeters = 500;
+      await deliveryAdmin.replace(authorization, tenantId, {
+        bands: [
+          { minDistanceMeters: 0, maxDistanceMeters: 500, feeCents: 0, active: true },
+          { minDistanceMeters: 500, maxDistanceMeters: 1000, feeCents: 900, active: true },
+          { minDistanceMeters: 1000, maxDistanceMeters: 3000, feeCents: 1000, active: true }
+        ]
+      });
+      const idempotencyKey = randomUUID();
+      const draft = {
+        menuSlug,
+        fulfillment: 'DELIVERY' as const,
+        customer: { name: 'Cliente Logística', phone: '67994440001' },
+        address,
+        orderNote: 'Entrega operacional',
+        items: [{ menuItemId, quantity: 1 }]
+      };
+      const payment = await createPayOnDeliveryPayment({ idempotencyKey, ...draft });
+      expect(payment.amountCents).toBe(5490);
+      const manipulatedOrderRequest = {
+        idempotencyKey,
+        ...draft,
+        deliveryFeeCents: 0,
+        totalCents: 1,
+        payment: { method: payment.method, paymentId: payment.paymentId }
+      };
+      await deliveryAdmin.replace(authorization, tenantId, {
+        bands: [
+          { minDistanceMeters: 0, maxDistanceMeters: 500, feeCents: 0, active: true },
+          { minDistanceMeters: 500, maxDistanceMeters: 1000, feeCents: 1000, active: true },
+          { minDistanceMeters: 1000, maxDistanceMeters: 3000, feeCents: 1200, active: true }
+        ]
+      });
+      await expect(nativeOrders.create(manipulatedOrderRequest)).rejects.toBeInstanceOf(
+        BadRequestException
+      );
+      await deliveryAdmin.replace(authorization, tenantId, {
+        bands: [
+          { minDistanceMeters: 0, maxDistanceMeters: 500, feeCents: 0, active: true },
+          { minDistanceMeters: 500, maxDistanceMeters: 1000, feeCents: 900, active: true },
+          { minDistanceMeters: 1000, maxDistanceMeters: 3000, feeCents: 1000, active: true }
+        ]
+      });
+      const created = await nativeOrders.create(manipulatedOrderRequest);
+      expect(created).toMatchObject({
+        deliveryFeeCents: 900,
+        deliveryDistanceMeters: 500,
+        deliveryQuoteProvider: 'GOOGLE_MAPS',
+        totalCents: 5490
+      });
+
+      await deliveryAdmin.replace(authorization, tenantId, {
+        bands: [
+          { minDistanceMeters: 0, maxDistanceMeters: 500, feeCents: 0, active: true },
+          { minDistanceMeters: 500, maxDistanceMeters: 1000, feeCents: 1200, active: true },
+          { minDistanceMeters: 1000, maxDistanceMeters: 3000, feeCents: 1400, active: true }
+        ]
+      });
+      const snapshots = await database.$queryRawUnsafe<
+        Array<{
+          feeCents: number;
+          distanceMeters: number;
+          feeRule: string;
+          normalizedAddress: string;
+        }>
+      >(
+        `SELECT delivery_fee_cents AS "feeCents",delivery_distance_m AS "distanceMeters",
+                delivery_fee_rule AS "feeRule",
+                delivery_normalized_address AS "normalizedAddress"
+           FROM commerce_native_orders WHERE id=$1::uuid`,
+        created.orderId
+      );
+      expect(snapshots[0]).toEqual({
+        feeCents: 900,
+        distanceMeters: 500,
+        feeRule: 'BAND:1',
+        normalizedAddress: expect.stringContaining('Rua Cliente')
+      });
+
+      const firstDriver = await deliveryOperations.createDriver(authorization, tenantId, {
+        name: 'João Entregador',
+        phone: '67990000001'
+      });
+      const secondDriver = await deliveryOperations.createDriver(authorization, tenantId, {
+        name: 'Maria Entregadora',
+        phone: '67990000002'
+      });
+      const operation = (await deliveryOperations.operations(
+        authorization,
+        tenantId
+      )) as unknown as { deliveries: Array<{ deliveryId: string; orderId: string }> };
+      const delivery = operation.deliveries.find((entry) => entry.orderId === created.orderId);
+      expect(delivery).toBeDefined();
+      const assignments = await Promise.allSettled([
+        deliveryOperations.assign(authorization, tenantId, delivery!.deliveryId, {
+          driverId: firstDriver.id
+        }),
+        deliveryOperations.assign(authorization, tenantId, delivery!.deliveryId, {
+          driverId: secondDriver.id
+        })
+      ]);
+      expect(assignments.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+      expect(assignments.filter((result) => result.status === 'rejected')).toHaveLength(1);
+      await expect(deliveryOperations.operations(authorization, otherTenantId)).resolves.toEqual({
+        deliveries: []
+      });
+
+      await kitchen.transition(authorization, tenantId, created.orderId, { status: 'CONFIRMED' });
+      await kitchen.transition(authorization, tenantId, created.orderId, { status: 'PREPARING' });
+      await kitchen.transition(authorization, tenantId, created.orderId, { status: 'READY' });
+      await expect(
+        deliveryOperations.start(authorization, tenantId, delivery!.deliveryId)
+      ).resolves.toMatchObject({ status: 'OUT_FOR_DELIVERY', orderStatus: 'DISPATCHED' });
+      await expect(
+        deliveryOperations.complete(authorization, tenantId, delivery!.deliveryId)
+      ).rejects.toBeInstanceOf(ConflictException);
+      await kitchen.receivePayment(authorization, tenantId, created.orderId, { status: 'PAID' });
+      await expect(
+        deliveryOperations.complete(authorization, tenantId, delivery!.deliveryId)
+      ).resolves.toMatchObject({ status: 'DELIVERED', orderStatus: 'COMPLETED' });
+      await expect(
+        deliveryOperations.complete(authorization, tenantId, delivery!.deliveryId)
+      ).resolves.toMatchObject({ status: 'DELIVERED', orderStatus: 'COMPLETED' });
+
+      mapsFetch.mockRejectedValueOnce(new Error('provider offline'));
+      await expect(
+        checkout.deliveryQuote({ menuSlug, address, items: [{ menuItemId, quantity: 1 }] })
+      ).rejects.toBeInstanceOf(ServiceUnavailableException);
+    } finally {
+      mapsFetch.mockRestore();
+      if (previousKey === undefined) delete process.env.GOOGLE_MAPS_API_KEY;
+      else process.env.GOOGLE_MAPS_API_KEY = previousKey;
+      if (previousProvider === undefined) delete process.env.VERO_MAPS_PROVIDER;
+      else process.env.VERO_MAPS_PROVIDER = previousProvider;
+      await database.$executeRawUnsafe(
+        `UPDATE store_settings
+            SET delivery_radius_km=NULL,delivery_base_fee_cents=0,
+                free_delivery_above_cents=NULL
+          WHERE tenant_id=$1`,
+        tenantId
+      );
+    }
   });
 });
 

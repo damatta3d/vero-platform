@@ -23,6 +23,8 @@ export class PublicCheckoutController {
     request: {
       menuSlug: string;
       couponCode?: string;
+      fulfillment?: 'DELIVERY' | 'PICKUP';
+      address?: CheckoutDraft['address'];
       items: Array<{ menuItemId: string; quantity: number; note?: string }>;
     }
   ) {
@@ -32,7 +34,55 @@ export class PublicCheckoutController {
       itemsTotalCents: pricing.itemsTotalCents,
       discountCents: pricing.discountCents,
       deliveryFeeCents: pricing.deliveryFeeCents,
+      deliveryDistanceMeters: pricing.deliveryDistanceMeters,
+      deliveryQuoteProvider: pricing.deliveryQuoteProvider,
+      deliveryFeeRule: pricing.deliveryFeeRule,
+      normalizedDeliveryAddress: pricing.normalizedDeliveryAddress,
       amountDueCents: pricing.totalCents,
+      coupon: pricing.coupon
+    };
+  }
+
+  @Post('delivery-quote')
+  async deliveryQuote(
+    @Body()
+    request: {
+      menuSlug: string;
+      couponCode?: string;
+      address: CheckoutDraft['address'];
+      items: Array<{ menuItemId: string; quantity: number; note?: string }>;
+      deliveryFeeCents?: unknown;
+      totalCents?: unknown;
+    }
+  ) {
+    if (
+      !request.address?.postalCode?.trim() ||
+      !request.address.street?.trim() ||
+      !request.address.number?.trim() ||
+      !request.address.district?.trim() ||
+      !request.address.city?.trim() ||
+      !request.address.stateCode?.trim() ||
+      !/^\d{5}-?\d{3}$/.test(request.address.postalCode.trim()) ||
+      !/^[A-Za-z]{2}$/.test(request.address.stateCode.trim())
+    ) {
+      throw new BadRequestException({
+        code: 'INVALID_DELIVERY_ADDRESS',
+        message: 'Informe CEP, rua, número, bairro, cidade e UF.'
+      });
+    }
+    const pricing = await priceCheckout(this.db, { ...request, fulfillment: 'DELIVERY' });
+    const availability = await loadStoreAvailability(this.db, pricing.tenantId);
+    if (!availability.canAcceptOrders) {
+      throw new ConflictException({ code: 'STORE_CLOSED', message: availability.statusMessage });
+    }
+    return {
+      eligible: true,
+      normalizedAddress: pricing.normalizedDeliveryAddress,
+      distanceMeters: pricing.deliveryDistanceMeters,
+      deliveryFeeCents: pricing.deliveryFeeCents,
+      itemsTotalCents: pricing.itemsTotalCents,
+      discountCents: pricing.discountCents,
+      totalCents: pricing.totalCents,
       coupon: pricing.coupon
     };
   }
@@ -58,6 +108,8 @@ export class PublicCheckoutController {
       itemsTotalCents: pricing.itemsTotalCents,
       discountCents: pricing.discountCents,
       deliveryFeeCents: pricing.deliveryFeeCents,
+      deliveryDistanceMeters: pricing.deliveryDistanceMeters,
+      normalizedDeliveryAddress: pricing.normalizedDeliveryAddress,
       amountDueCents: pricing.totalCents,
       coupon: pricing.coupon
     };

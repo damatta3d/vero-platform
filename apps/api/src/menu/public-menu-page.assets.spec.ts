@@ -5,7 +5,7 @@ type EventListener = (...args: unknown[]) => unknown;
 
 interface TestElement {
   addEventListener: (event: string, listener: EventListener) => void;
-  classList: { add: jest.Mock; remove: jest.Mock; toggle: jest.Mock };
+  classList: { add: jest.Mock; contains: jest.Mock; remove: jest.Mock; toggle: jest.Mock };
   className: string;
   disabled: boolean;
   innerHTML: string;
@@ -27,7 +27,12 @@ function testElement(value = ''): TestElement {
   const listeners = new Map<string, EventListener>();
   return {
     addEventListener: (event, listener) => listeners.set(event, listener),
-    classList: { add: jest.fn(), remove: jest.fn(), toggle: jest.fn() },
+    classList: {
+      add: jest.fn(),
+      contains: jest.fn(() => false),
+      remove: jest.fn(),
+      toggle: jest.fn()
+    },
     className: '',
     disabled: false,
     innerHTML: '',
@@ -68,6 +73,13 @@ async function executeCheckout(
       'catalog',
       'checkout',
       'checkout-message',
+      'checkout-delivery',
+      'checkout-discount',
+      'checkout-discount-label',
+      'checkout-distance',
+      'checkout-subtotal',
+      'checkout-total',
+      'city',
       'continue',
       'customer-name',
       'customer-email',
@@ -76,6 +88,7 @@ async function executeCheckout(
       'coupon-code',
       'coupon-message',
       'district',
+      'delivery-quote-status',
       'finish',
       'fulfillment',
       'logo',
@@ -89,6 +102,7 @@ async function executeCheckout(
       'remove-coupon',
       'street',
       'store-status',
+      'state-code',
       'success'
     ].map((id) => [id, testElement()])
   ) as Record<string, TestElement>;
@@ -103,6 +117,9 @@ async function executeCheckout(
   elements['street']!.value = 'Rua das Flores';
   elements['number']!.value = '123';
   elements['district']!.value = 'Centro';
+  elements['city']!.value = 'Campo Grande';
+  elements['state-code']!.value = 'MS';
+  elements['postal-code']!.value = '79000-000';
 
   const documentListeners = new Map<string, EventListener>();
 
@@ -148,6 +165,19 @@ async function executeCheckout(
     if (url === '/v1/checkout/validate') {
       return Promise.resolve(successResponse({ valid: true }));
     }
+    if (url === '/v1/checkout/delivery-quote') {
+      return Promise.resolve(
+        successResponse({
+          eligible: true,
+          normalizedAddress: 'Rua das Flores, 123 - Centro, Campo Grande - MS',
+          distanceMeters: 2400,
+          deliveryFeeCents: 800,
+          itemsTotalCents: 4900,
+          discountCents: 0,
+          totalCents: 5700
+        })
+      );
+    }
     if (url === '/v1/checkout/price') {
       return Promise.resolve(
         successResponse({
@@ -184,7 +214,9 @@ async function executeCheckout(
       getElementById: (id: string) => elements[id]
     },
     fetch: fetchMock,
-    localStorage
+    localStorage,
+    clearTimeout: jest.fn(),
+    setTimeout: jest.fn(() => 1)
   });
   await new Promise((resolve) => setImmediate(resolve));
 
@@ -261,7 +293,14 @@ describe('publicMenuPage', () => {
     expect(orderRequest?.[1]?.body).toBeDefined();
     const paymentBody = JSON.parse(paymentRequest?.[1]?.body ?? '') as { checkoutId: string };
     const checkoutBody = JSON.parse(checkoutRequest?.[1]?.body ?? '') as {
-      address: { district: string; number: string; street: string };
+      address: {
+        city: string;
+        district: string;
+        number: string;
+        postalCode: string;
+        stateCode: string;
+        street: string;
+      };
       fulfillment: string;
       items: Array<{ note?: string }>;
       orderNote?: string;
@@ -277,7 +316,10 @@ describe('publicMenuPage', () => {
     expect(checkoutBody.fulfillment).toBe('DELIVERY');
     expect(checkoutBody.address).toMatchObject({
       district: 'Centro',
+      city: 'Campo Grande',
       number: '123',
+      postalCode: '79000-000',
+      stateCode: 'MS',
       street: 'Rua das Flores'
     });
     expect(checkoutBody.orderNote).toBe('Entregar talheres');
@@ -294,10 +336,34 @@ describe('publicMenuPage', () => {
     expect(elements['method']!.innerHTML).toContain('value="PAY_ON_DELIVERY"');
     expect(elements['method']!.innerHTML).toContain('value="PIX"');
     expect(elements['address']!.classList.toggle).toHaveBeenCalledWith('hidden', false);
-    expect(elements['finish']!.disabled).toBe(false);
+    const quoteRequest = fetchMock.mock.calls.find(
+      ([url]) => url === '/v1/checkout/delivery-quote'
+    );
+    expect(JSON.parse(quoteRequest?.[1]?.body ?? '')).not.toHaveProperty('deliveryFeeCents');
+    expect(publicMenuPage('santo-parma')).toContain('id="checkout-delivery"');
+    expect(publicMenuPage('santo-parma')).toContain('id="checkout-distance"');
+    expect(elements['finish']!.disabled).toBe(true);
     expect(elements['success']!.classList.remove).toHaveBeenCalledWith('hidden');
     expect(elements['success']!.innerHTML).toContain('<h2>Pedido #00427</h2>');
     expect(elements['store-status']!.textContent).toBe('Aberto agora');
+  });
+
+  it('keeps pickup address-free with zero delivery and does not request a route quote', async () => {
+    const { elements, fetchMock } = await executeCheckout(
+      { getRandomValues: (values) => values },
+      false
+    );
+    elements['fulfillment']!.value = 'PICKUP';
+    elements['fulfillment']!.onchange?.();
+    await elements['finish']!.onclick?.();
+
+    expect(fetchMock.mock.calls.some(([url]) => url === '/v1/checkout/delivery-quote')).toBe(false);
+    const validation = fetchMock.mock.calls.find(([url]) => url === '/v1/checkout/validate');
+    expect(JSON.parse(validation?.[1]?.body ?? '')).toMatchObject({
+      fulfillment: 'PICKUP',
+      address: null
+    });
+    expect(elements['checkout-delivery']!.textContent).toContain('0,00');
   });
 
   it('applies, revalidates and removes a coupon while sending only its code as intent', async () => {
@@ -408,7 +474,7 @@ describe('publicMenuPage', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('reports secure key preparation errors and always re-enables checkout', async () => {
+  it('reports secure key errors and keeps delivery blocked without a valid quote', async () => {
     const { elements, fetchMock } = await executeCheckout({});
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -416,6 +482,6 @@ describe('publicMenuPage', () => {
       'Seu navegador não oferece geração segura para finalizar o pedido.'
     );
     expect(elements['checkout-message']!.className).toBe('error');
-    expect(elements['finish']!.disabled).toBe(false);
+    expect(elements['finish']!.disabled).toBe(true);
   });
 });
