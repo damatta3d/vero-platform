@@ -7,11 +7,13 @@ export type CheckoutCustomer = {
 };
 
 export type CheckoutAddress = {
-  postalCode?: string;
+  postalCode: string;
   street: string;
   number: string;
   complement?: string;
   district: string;
+  city: string;
+  stateCode: string;
   reference?: string;
 };
 

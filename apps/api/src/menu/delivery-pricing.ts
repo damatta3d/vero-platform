@@ -17,15 +17,18 @@ type DeliverySettingsRow = {
   postalCode: string | null;
 };
 
-type DeliveryFeeBandRow = {
+export type DeliveryFeeBandRow = {
   sequence: number;
+  minDistanceM: number;
   maxDistanceM: number;
   feeCents: number;
+  active: boolean;
 };
 
 export type DeliveryRoute = {
   distanceMeters: number;
   provider: string;
+  normalizedDestination?: string;
 };
 
 export type DeliveryRouteProvider = {
@@ -37,6 +40,7 @@ export type DeliveryQuote = {
   feeCents: number;
   provider: string;
   feeRule: string;
+  normalizedAddress: string;
 };
 
 const maximumMoneyCents = 100_000_000;
@@ -45,15 +49,12 @@ function normalizeText(value: string | undefined | null): string {
   return value?.trim() || '';
 }
 
-export function formatDeliveryDestination(
-  address: CheckoutAddress,
-  locality: { city: string | null; stateCode: string | null }
-): string {
+export function formatDeliveryDestination(address: CheckoutAddress): string {
   const parts = [
     `${normalizeText(address.street)}, ${normalizeText(address.number)}`,
     normalizeText(address.district),
-    normalizeText(locality.city),
-    normalizeText(locality.stateCode),
+    normalizeText(address.city),
+    normalizeText(address.stateCode).toUpperCase(),
     normalizeText(address.postalCode),
     'Brasil'
   ].filter(Boolean);
@@ -77,9 +78,15 @@ export function selectDeliveryFee(input: {
   ) {
     return { feeCents: 0, feeRule: `FREE_ABOVE:${input.freeAboveCents}` };
   }
-  const selected = [...input.bands]
-    .sort((a, b) => a.maxDistanceM - b.maxDistanceM)
-    .find((band) => input.distanceMeters <= band.maxDistanceM);
+  const ordered = [...input.bands].sort((a, b) => a.sequence - b.sequence);
+  const lastSequence = ordered.at(-1)?.sequence;
+  const selected = ordered.find(
+    (band) =>
+      band.active &&
+      input.distanceMeters >= band.minDistanceM &&
+      (input.distanceMeters < band.maxDistanceM ||
+        (band.sequence === lastSequence && input.distanceMeters === band.maxDistanceM))
+  );
   if (selected) {
     return { feeCents: selected.feeCents, feeRule: `BAND:${selected.sequence}` };
   }
@@ -136,7 +143,7 @@ export async function quoteDelivery(
   ]
     .filter(Boolean)
     .join(', ');
-  const destination = formatDeliveryDestination(input.address, setting);
+  const destination = formatDeliveryDestination(input.address);
   const route = await routeProvider.route({ origin, destination });
   if (!Number.isSafeInteger(route.distanceMeters) || route.distanceMeters < 0) {
     throw new ServiceUnavailableException('Não foi possível calcular a rota da entrega.');
@@ -154,18 +161,21 @@ export async function quoteDelivery(
   }
 
   const bands = await database.$queryRawUnsafe<DeliveryFeeBandRow[]>(
-    `SELECT sequence, max_distance_m AS "maxDistanceM", fee_cents AS "feeCents"
+    `SELECT sequence, min_distance_m AS "minDistanceM",
+            max_distance_m AS "maxDistanceM", fee_cents AS "feeCents", active
        FROM store_delivery_fee_bands
       WHERE tenant_id=$1
-      ORDER BY max_distance_m`,
+      ORDER BY sequence`,
     input.tenantId
   );
   if (
     bands.some(
       (band) =>
         !Number.isInteger(band.sequence) ||
+        !Number.isSafeInteger(band.minDistanceM) ||
+        band.minDistanceM < 0 ||
         !Number.isSafeInteger(band.maxDistanceM) ||
-        band.maxDistanceM <= 0 ||
+        band.maxDistanceM <= band.minDistanceM ||
         !Number.isSafeInteger(band.feeCents) ||
         band.feeCents < 0 ||
         band.feeCents > maximumMoneyCents
@@ -173,18 +183,29 @@ export async function quoteDelivery(
   ) {
     throw new ServiceUnavailableException('A tabela de frete da loja não é válida.');
   }
+  const orderedBands = [...bands].sort((a, b) => a.sequence - b.sequence);
+  if (
+    orderedBands.some(
+      (band, index) =>
+        band.sequence !== index ||
+        band.minDistanceM !== (index === 0 ? 0 : orderedBands[index - 1]!.maxDistanceM)
+    )
+  ) {
+    throw new ServiceUnavailableException('A tabela de frete da loja possui intervalos inválidos.');
+  }
 
   const fee = selectDeliveryFee({
     distanceMeters: route.distanceMeters,
     itemsTotalCents: input.itemsTotalCents,
     baseFeeCents: setting.baseFeeCents,
     freeAboveCents: setting.freeAboveCents,
-    bands
+    bands: orderedBands
   });
   return {
     distanceMeters: route.distanceMeters,
     feeCents: fee.feeCents,
     provider: route.provider,
-    feeRule: fee.feeRule
+    feeRule: fee.feeRule,
+    normalizedAddress: route.normalizedDestination?.trim() || destination
   };
 }

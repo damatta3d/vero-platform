@@ -1,16 +1,23 @@
-import { ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import type { DeliveryRoute, DeliveryRouteProvider } from './delivery-pricing.js';
 
 type GeocodeResponse = {
   status?: string;
-  results?: Array<{ geometry?: { location?: { lat?: number; lng?: number } } }>;
+  results?: Array<{
+    formatted_address?: string;
+    partial_match?: boolean;
+    geometry?: { location?: { lat?: number; lng?: number } };
+  }>;
 };
 
 type RoutesResponse = {
   routes?: Array<{ distanceMeters?: number }>;
 };
 
-type Coordinates = { latitude: number; longitude: number };
+type GeocodedAddress = {
+  coordinates: { latitude: number; longitude: number };
+  formattedAddress: string;
+};
 
 export class GoogleMapsDeliveryGateway implements DeliveryRouteProvider {
   constructor(private readonly apiKey: string) {}
@@ -20,21 +27,28 @@ export class GoogleMapsDeliveryGateway implements DeliveryRouteProvider {
       this.geocode(input.origin),
       this.geocode(input.destination)
     ]);
-    const response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'X-Goog-Api-Key': this.apiKey,
-        'X-Goog-FieldMask': 'routes.distanceMeters'
-      },
-      body: JSON.stringify({
-        origin: { location: { latLng: origin } },
-        destination: { location: { latLng: destination } },
-        travelMode: 'DRIVE',
-        routingPreference: 'TRAFFIC_UNAWARE'
-      }),
-      signal: AbortSignal.timeout(8_000)
-    });
+    let response: Response;
+    try {
+      response = await fetch('https://routes.googleapis.com/directions/v2:computeRoutes', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'X-Goog-Api-Key': this.apiKey,
+          'X-Goog-FieldMask': 'routes.distanceMeters'
+        },
+        body: JSON.stringify({
+          origin: { location: { latLng: origin.coordinates } },
+          destination: { location: { latLng: destination.coordinates } },
+          travelMode: 'DRIVE',
+          routingPreference: 'TRAFFIC_UNAWARE'
+        }),
+        signal: AbortSignal.timeout(8_000)
+      });
+    } catch {
+      throw new ServiceUnavailableException(
+        'O serviço de rotas está temporariamente indisponível.'
+      );
+    }
     if (!response.ok) {
       throw new ServiceUnavailableException('Não foi possível calcular a rota da entrega.');
     }
@@ -43,20 +57,44 @@ export class GoogleMapsDeliveryGateway implements DeliveryRouteProvider {
     if (!Number.isSafeInteger(distanceMeters) || (distanceMeters ?? -1) < 0) {
       throw new ServiceUnavailableException('Não foi possível calcular a rota da entrega.');
     }
-    return { distanceMeters: distanceMeters!, provider: 'GOOGLE_MAPS' };
+    return {
+      distanceMeters: distanceMeters!,
+      provider: 'GOOGLE_MAPS',
+      normalizedDestination: destination.formattedAddress
+    };
   }
 
-  private async geocode(address: string): Promise<Coordinates> {
+  private async geocode(address: string): Promise<GeocodedAddress> {
     const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
     url.searchParams.set('address', address);
     url.searchParams.set('key', this.apiKey);
     url.searchParams.set('region', 'br');
-    const response = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    let response: Response;
+    try {
+      response = await fetch(url, { signal: AbortSignal.timeout(8_000) });
+    } catch {
+      throw new ServiceUnavailableException(
+        'O serviço de localização está temporariamente indisponível.'
+      );
+    }
     if (!response.ok) {
       throw new ServiceUnavailableException('Não foi possível localizar o endereço informado.');
     }
     const payload = (await response.json()) as GeocodeResponse;
-    const location = payload.results?.[0]?.geometry?.location;
+    if (payload.status === 'ZERO_RESULTS' || !payload.results?.length) {
+      throw new BadRequestException({
+        code: 'INVALID_DELIVERY_ADDRESS',
+        message: 'Não foi possível localizar o endereço informado.'
+      });
+    }
+    if (payload.results.length !== 1 || payload.results[0]?.partial_match) {
+      throw new BadRequestException({
+        code: 'AMBIGUOUS_DELIVERY_ADDRESS',
+        message: 'O endereço informado é ambíguo. Revise CEP, rua, número, bairro, cidade e UF.'
+      });
+    }
+    const result = payload.results[0];
+    const location = result?.geometry?.location;
     if (
       payload.status !== 'OK' ||
       !location ||
@@ -65,7 +103,10 @@ export class GoogleMapsDeliveryGateway implements DeliveryRouteProvider {
     ) {
       throw new ServiceUnavailableException('Não foi possível localizar o endereço informado.');
     }
-    return { latitude: location.lat!, longitude: location.lng! };
+    return {
+      coordinates: { latitude: location.lat!, longitude: location.lng! },
+      formattedAddress: result?.formatted_address?.trim() || address
+    };
   }
 }
 

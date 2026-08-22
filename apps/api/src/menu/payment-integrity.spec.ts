@@ -25,6 +25,7 @@ describe('payment integrity', () => {
     deliveryDistanceMeters: 2450,
     deliveryQuoteProvider: 'GOOGLE_MAPS',
     deliveryFeeRule: 'DISTANCE_BAND',
+    normalizedDeliveryAddress: 'Rua A, 1, Centro, Campo Grande - MS',
     totalCents: 10_000,
     coupon: {
       id: 'coupon-a',
@@ -41,7 +42,14 @@ describe('payment integrity', () => {
     method: 'PIX' as const,
     customer: { name: 'Cliente', phone: '67999999999', email: 'CLIENTE@example.com' },
     fulfillment: 'DELIVERY' as const,
-    address: { street: 'Rua A', number: '1', district: 'Centro' },
+    address: {
+      postalCode: '79000-000',
+      street: 'Rua A',
+      number: '1',
+      district: 'Centro',
+      city: 'Campo Grande',
+      stateCode: 'MS'
+    },
     orderNote: 'Portão vermelho',
     pricing
   };
@@ -69,5 +77,8 @@ describe('payment integrity', () => {
       original
     );
     expect(paymentRequestHash({ ...intent, orderNote: 'Outra observação' })).not.toBe(original);
+    expect(
+      paymentRequestHash({ ...intent, address: { ...intent.address, city: 'Dourados' } })
+    ).not.toBe(original);
   });
 });

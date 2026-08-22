@@ -27,6 +27,14 @@ const activeStatuses: readonly NativeOrderStatus[] = [
   'READY',
   'DISPATCHED'
 ];
+function kitchenTransitions(
+  status: NativeOrderStatus,
+  fulfillment: 'DELIVERY' | 'PICKUP'
+): readonly NativeOrderStatus[] {
+  return nextOrderStatuses(status, fulfillment).filter(
+    (next) => fulfillment !== 'DELIVERY' || (next !== 'DISPATCHED' && next !== 'COMPLETED')
+  );
+}
 @Controller('v1/kitchen/orders')
 export class KitchenOrderController {
   constructor(
@@ -63,7 +71,7 @@ export class KitchenOrderController {
       orders: orders.map(({ operationalNumber, ...order }) => ({
         ...order,
         orderNumber: formatOperationalOrderNumber(operationalNumber),
-        allowedTransitions: nextOrderStatuses(order.status, order.fulfillment)
+        allowedTransitions: kitchenTransitions(order.status, order.fulfillment)
       })),
       sync: { serverTime: new Date().toISOString() }
     };
@@ -83,7 +91,7 @@ export class KitchenOrderController {
         fulfillment: 'DELIVERY' | 'PICKUP';
       }>
     >(
-      `SELECT id AS "orderId",operational_number AS "operationalNumber",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",order_note AS "orderNote",items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",coupon_code AS "couponCode",coupon_name AS "couponName",coupon_source AS "couponSource",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
+      `SELECT id AS "orderId",operational_number AS "operationalNumber",menu_slug AS "menuSlug",customer_name AS "customerName",customer_phone AS "customerPhone",fulfillment,delivery_address AS "deliveryAddress",delivery_normalized_address AS "deliveryNormalizedAddress",delivery_distance_m AS "deliveryDistanceMeters",delivery_quote_provider AS "deliveryQuoteProvider",delivery_fee_rule AS "deliveryFeeRule",order_note AS "orderNote",items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",delivery_fee_cents AS "deliveryFeeCents",total_cents AS "totalCents",coupon_code AS "couponCode",coupon_name AS "couponName",coupon_source AS "couponSource",payment_method AS "paymentMethod",payment_status AS "paymentStatus",status,created_at AS "createdAt",updated_at AS "updatedAt" FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
       tenantId
     );
@@ -102,7 +110,7 @@ export class KitchenOrderController {
       order: {
         ...order,
         orderNumber: formatOperationalOrderNumber(operationalNumber),
-        allowedTransitions: nextOrderStatuses(order.status, order.fulfillment)
+        allowedTransitions: kitchenTransitions(order.status, order.fulfillment)
       },
       items,
       history
@@ -119,6 +127,37 @@ export class KitchenOrderController {
     if (!tenantId || !body.status)
       throw new BadRequestException('Tenant and order status are required.');
     try {
+      if (body.status === 'CANCELLED') {
+        const order = await this.db.$transaction(async (tx) => {
+          const transitioned = await transitionPersistedOrder(tx, tenantId, orderId, body.status!);
+          if (transitioned.fulfillment === 'DELIVERY') {
+            await tx.$executeRawUnsafe(
+              `UPDATE commerce_deliveries
+                  SET status='CANCELLED',cancelled_at=NOW(),updated_at=NOW()
+                WHERE tenant_id=$1 AND order_id=$2::uuid
+                  AND status NOT IN ('DELIVERED','CANCELLED')`,
+              tenantId,
+              orderId
+            );
+          }
+          return transitioned;
+        });
+        return {
+          orderId,
+          status: body.status,
+          allowedTransitions: kitchenTransitions(body.status, order.fulfillment)
+        };
+      }
+      if (body.status === 'DISPATCHED' || body.status === 'COMPLETED') {
+        const fulfillment = await this.db.$queryRawUnsafe<Array<{ fulfillment: string }>>(
+          'SELECT fulfillment FROM commerce_native_orders WHERE id=$1::uuid AND tenant_id=$2',
+          orderId,
+          tenantId
+        );
+        if (fulfillment[0]?.fulfillment === 'DELIVERY') {
+          throw new Error('DELIVERY_OPERATION_REQUIRED');
+        }
+      }
       const order = await transitionPersistedOrder(
         this.db,
         tenantId,
@@ -129,7 +168,7 @@ export class KitchenOrderController {
       return {
         orderId,
         status: body.status,
-        allowedTransitions: nextOrderStatuses(body.status, order.fulfillment)
+        allowedTransitions: kitchenTransitions(body.status, order.fulfillment)
       };
     } catch (error) {
       throw new BadRequestException(

@@ -65,6 +65,7 @@ export type CheckoutPricing = {
   deliveryDistanceMeters: number | null;
   deliveryQuoteProvider: string | null;
   deliveryFeeRule: string | null;
+  normalizedDeliveryAddress: string | null;
   totalCents: number;
   coupon: CouponSnapshot | null;
 };
@@ -207,6 +208,7 @@ export async function priceCheckout(
   let deliveryDistanceMeters: number | null = null;
   let deliveryQuoteProvider: string | null = null;
   let deliveryFeeRule: string | null = null;
+  let normalizedDeliveryAddress: string | null = null;
   if (request.fulfillment === 'DELIVERY') {
     const settings = await database.$queryRawUnsafe<
       Array<{
@@ -244,7 +246,10 @@ export async function priceCheckout(
       if (
         !request.address?.street?.trim() ||
         !request.address.number?.trim() ||
-        !request.address.district?.trim()
+        !request.address.district?.trim() ||
+        !request.address.city?.trim() ||
+        !request.address.stateCode?.trim() ||
+        !request.address.postalCode?.trim()
       ) {
         throw new BadRequestException('Informe o endereço para calcular a entrega.');
       }
@@ -257,6 +262,7 @@ export async function priceCheckout(
       deliveryDistanceMeters = quote.distanceMeters;
       deliveryQuoteProvider = quote.provider;
       deliveryFeeRule = quote.feeRule;
+      normalizedDeliveryAddress = quote.normalizedAddress;
     } else {
       deliveryFeeCents =
         delivery.freeDeliveryAboveCents !== null &&
@@ -284,6 +290,7 @@ export async function priceCheckout(
     deliveryDistanceMeters,
     deliveryQuoteProvider,
     deliveryFeeRule,
+    normalizedDeliveryAddress,
     totalCents,
     coupon
   };

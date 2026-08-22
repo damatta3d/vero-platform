@@ -88,7 +88,10 @@ export class NativeOrderController {
       request.fulfillment === 'DELIVERY' &&
       (!request.address?.street?.trim() ||
         !request.address.number?.trim() ||
-        !request.address.district?.trim())
+        !request.address.district?.trim() ||
+        !request.address.city?.trim() ||
+        !request.address.stateCode?.trim() ||
+        !request.address.postalCode?.trim())
     ) {
       throw new BadRequestException('Informe o endereço para entrega.');
     }
@@ -160,14 +163,14 @@ export class NativeOrderController {
           `INSERT INTO commerce_native_orders (
              id,tenant_id,menu_slug,provider,customer_name,customer_phone,fulfillment,
              items_total_cents,discount_cents,delivery_fee_cents,delivery_distance_m,
-             delivery_quote_provider,delivery_fee_rule,total_cents,
+             delivery_quote_provider,delivery_fee_rule,delivery_normalized_address,total_cents,
              coupon_id,coupon_code,coupon_name,coupon_source,coupon_discount_type,coupon_discount_value,
              payment_id,payment_method,payment_status,provider_payment_id,status,order_note,
              delivery_address,tracking_token_hash,idempotency_key_hash,created_at,updated_at
            ) VALUES (
-             $1::uuid,$2,$3,'VERO_NATIVE',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,
-             $14::uuid,$15,$16,$17,$18,$19,$20::uuid,$21,$22,$23,'RECEIVED',$24,
-             $25::jsonb,$26,$27,$28::timestamptz,$28::timestamptz
+             $1::uuid,$2,$3,'VERO_NATIVE',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
+             $15::uuid,$16,$17,$18,$19,$20,$21::uuid,$22,$23,$24,'RECEIVED',$25,
+             $26::jsonb,$27,$28,$29::timestamptz,$29::timestamptz
            ) RETURNING operational_number AS "operationalNumber"`,
           orderId,
           tenantId,
@@ -181,6 +184,7 @@ export class NativeOrderController {
           finalPricing.deliveryDistanceMeters,
           finalPricing.deliveryQuoteProvider,
           finalPricing.deliveryFeeRule,
+          finalPricing.normalizedDeliveryAddress,
           finalPricing.totalCents,
           finalPricing.coupon?.id ?? null,
           finalPricing.coupon?.code ?? null,
@@ -198,6 +202,17 @@ export class NativeOrderController {
           idempotencyHash,
           createdAt
         );
+        if (request.fulfillment === 'DELIVERY') {
+          await tx.$executeRawUnsafe(
+            `INSERT INTO commerce_deliveries
+               (id,tenant_id,order_id,status,created_at,updated_at)
+             VALUES ($1::uuid,$2,$3::uuid,'WAITING',$4::timestamptz,$4::timestamptz)`,
+            randomUUID(),
+            tenantId,
+            orderId,
+            createdAt
+          );
+        }
         const linked = await tx.$executeRawUnsafe(
           `UPDATE commerce_payment_attempts SET order_id=$2::uuid,updated_at=NOW()
             WHERE id=$1::uuid AND tenant_id=$3 AND (order_id IS NULL OR order_id=$2::uuid)`,

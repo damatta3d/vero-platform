@@ -28,6 +28,8 @@ import { InventoryController } from '../inventory/inventory.controller.js';
 import { INVENTORY_REPOSITORY } from '../inventory/inventory.tokens.js';
 import { ManagerPageController } from '../manager/manager-page.controller.js';
 import { CouponAdminController } from '../menu/coupon-admin.controller.js';
+import { DeliveryAdminController } from '../menu/delivery-admin.controller.js';
+import { DeliveryOperationsController } from '../menu/delivery-operations.controller.js';
 import { KitchenOrderController } from '../menu/kitchen-order.controller.js';
 import { MenuAdminController } from '../menu/menu-admin.controller.js';
 import { NativeOrderController } from '../menu/native-order.controller.js';
@@ -89,6 +91,8 @@ export class CatalogModule {
         PublicTrackingPageController,
         MenuAdminController,
         CouponAdminController,
+        DeliveryAdminController,
+        DeliveryOperationsController,
         StoreSettingsController
       ],
       providers: [
