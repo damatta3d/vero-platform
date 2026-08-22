@@ -11,6 +11,7 @@ const statuses = [
 const viewTitles = {
   dashboard: 'Visão geral',
   orders: 'Pedidos',
+  deliveries: 'Entregas',
   catalog: 'Cardápio',
   settings: 'Configurações'
 };
@@ -27,7 +28,10 @@ const state = {
   storeSettings: null,
   settingsSaving: false,
   coupons: [],
-  editingCoupon: null
+  editingCoupon: null,
+  deliveryBands: [],
+  deliveryDrivers: [],
+  deliveries: []
 };
 
 const board = document.querySelector('#board');
@@ -69,6 +73,11 @@ const couponForm = document.querySelector('#coupon-form');
 const couponFormTitle = document.querySelector('#coupon-form-title');
 const couponFormError = document.querySelector('#coupon-form-error');
 const couponFormCancel = document.querySelector('#coupon-form-cancel');
+const deliveryBandList = document.querySelector('#delivery-band-list');
+const addDeliveryBandButton = document.querySelector('#add-delivery-band');
+const deliveryBoard = document.querySelector('#delivery-board');
+const driverList = document.querySelector('#driver-list');
+const driverForm = document.querySelector('#driver-form');
 
 const weekdays = [
   ['MONDAY', 'Segunda-feira'],
@@ -201,7 +210,14 @@ function operatorErrorMessage(payload, status) {
     INVALID_COUPON: 'Revise os dados do cupom.',
     COUPON_CODE_CONFLICT: 'Já existe um cupom com este código.',
     EMPTY_COUPON_UPDATE: 'Informe ao menos uma alteração para o cupom.',
-    COUPON_NOT_FOUND: 'Cupom não encontrado.'
+    COUPON_NOT_FOUND: 'Cupom não encontrado.',
+    INVALID_DELIVERY_FEE_BANDS: 'Revise as faixas de distância. Elas devem ser contínuas.',
+    DELIVERY_ALREADY_ASSIGNED: 'Esta entrega já foi atribuída por outro operador.',
+    DELIVERY_CONCURRENTLY_CHANGED: 'A entrega foi atualizada por outro operador.',
+    DELIVERY_DRIVER_UNAVAILABLE: 'O entregador não está disponível.',
+    DELIVERY_NOT_ASSIGNED: 'Atribua um entregador antes da saída.',
+    ORDER_NOT_READY_FOR_DELIVERY: 'O pedido ainda não está pronto para entrega.',
+    DELIVERY_PAYMENT_NOT_RECEIVED: 'Confirme o pagamento recebido antes de concluir a entrega.'
   };
   if (known[code]) return known[code];
   if (String(raw || '').startsWith('INVALID_ORDER_TRANSITION:')) {
@@ -216,7 +232,7 @@ function operatorErrorMessage(payload, status) {
 
 function transitionsForOrder(order) {
   return (order.allowedTransitions || []).filter(
-    (next) => next !== 'DISPATCHED' || order.fulfillment === 'DELIVERY'
+    (next) => next !== 'DISPATCHED' && (order.fulfillment !== 'DELIVERY' || next !== 'COMPLETED')
   );
 }
 
@@ -259,6 +275,7 @@ function setView(view) {
   document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
   if (view === 'catalog') loadMenus();
   if (view === 'settings') loadStoreSettings();
+  if (view === 'deliveries') loadDeliveryOperations();
 }
 
 function settingsControl(name) {
@@ -321,6 +338,68 @@ function renderScheduleFields(schedule) {
 function syncDeliveryFields() {
   const enabled = settingsControl('deliveryEnabled').checked;
   deliveryFields.querySelectorAll('input').forEach((input) => (input.disabled = !enabled));
+  deliveryBandList
+    .querySelectorAll('input,button')
+    .forEach((control) => (control.disabled = !enabled));
+}
+
+function renderDeliveryBands() {
+  deliveryBandList.innerHTML = state.deliveryBands.length
+    ? state.deliveryBands
+        .map(
+          (band, index) =>
+            `<div class="delivery-band-row" data-delivery-band="${index}"><label><span>De (km)</span><input data-band-field="minDistanceMeters" type="number" min="0" step="0.1" value="${escapeHtml((band.minDistanceMeters / 1000).toFixed(1))}" /></label><label><span>Até (km)</span><input data-band-field="maxDistanceMeters" type="number" min="0.1" step="0.1" value="${escapeHtml((band.maxDistanceMeters / 1000).toFixed(1))}" /></label><label><span>Frete (R$)</span><input data-band-field="feeCents" type="number" min="0" step="0.01" value="${escapeHtml(decimalFromCents(band.feeCents))}" /></label><label class="toggle-row"><span>Ativa</span><input data-band-field="active" type="checkbox" ${band.active ? 'checked' : ''} /></label><button class="text-button" data-remove-band="${index}" type="button">Remover</button></div>`
+        )
+        .join('')
+    : '<p class="muted">Sem faixas: será usada a taxa base compatível.</p>';
+  deliveryBandList.querySelectorAll('[data-remove-band]').forEach((button) =>
+    button.addEventListener('click', () => {
+      state.deliveryBands = deliveryBandsPayload().bands;
+      state.deliveryBands.splice(Number(button.dataset.removeBand), 1);
+      state.deliveryBands.forEach((band, index) => {
+        band.minDistanceMeters = index === 0 ? 0 : state.deliveryBands[index - 1].maxDistanceMeters;
+      });
+      renderDeliveryBands();
+      syncDeliveryFields();
+    })
+  );
+  syncDeliveryFields();
+}
+
+function deliveryBandsPayload() {
+  return {
+    bands: [...deliveryBandList.querySelectorAll('[data-delivery-band]')].map((row) => ({
+      minDistanceMeters: Math.round(
+        Number(row.querySelector('[data-band-field="minDistanceMeters"]').value.replace(',', '.')) *
+          1000
+      ),
+      maxDistanceMeters: Math.round(
+        Number(row.querySelector('[data-band-field="maxDistanceMeters"]').value.replace(',', '.')) *
+          1000
+      ),
+      feeCents: centsFromInput(row.querySelector('[data-band-field="feeCents"]').value) ?? 0,
+      active: row.querySelector('[data-band-field="active"]').checked
+    }))
+  };
+}
+
+async function loadDeliveryBands() {
+  const result = await api('/v1/delivery/fee-bands');
+  state.deliveryBands = result.bands || [];
+  renderDeliveryBands();
+}
+
+function addDeliveryBand() {
+  state.deliveryBands = deliveryBandsPayload().bands;
+  const previous = state.deliveryBands.at(-1);
+  const minimum = previous?.maxDistanceMeters ?? 0;
+  state.deliveryBands.push({
+    minDistanceMeters: minimum,
+    maxDistanceMeters: minimum + 1000,
+    feeCents: previous?.feeCents ?? 0,
+    active: true
+  });
+  renderDeliveryBands();
 }
 
 function fillSettings(settings) {
@@ -352,6 +431,7 @@ async function loadStoreSettings() {
     settingsLoading.hidden = true;
     settingsForm.hidden = false;
     await loadCoupons();
+    await loadDeliveryBands();
     connection.textContent = 'Online';
   } catch (error) {
     settingsLoading.hidden = true;
@@ -421,8 +501,14 @@ async function submitSettings(event) {
       method: 'PUT',
       body: JSON.stringify(settingsPayload())
     });
+    const bands = await api('/v1/delivery/fee-bands', {
+      method: 'PUT',
+      body: JSON.stringify(deliveryBandsPayload())
+    });
+    state.deliveryBands = bands.bands || [];
     state.storeSettings = settings;
     fillSettings(settings);
+    renderDeliveryBands();
     settingsStatus.textContent = 'Configurações salvas com sucesso.';
     connection.textContent = 'Online';
   } catch (error) {
@@ -631,6 +717,161 @@ function renderBoard() {
   }
 }
 
+function deliveryStatusLabel(status) {
+  return (
+    {
+      WAITING: 'Aguardando',
+      ASSIGNED: 'Atribuídas',
+      OUT_FOR_DELIVERY: 'Em rota',
+      DELIVERED: 'Concluídas'
+    }[status] || 'Entrega'
+  );
+}
+
+function deliveryAddressSummary(address) {
+  if (!address || typeof address !== 'object') return 'Endereço não informado';
+  return [address.district, address.city, address.stateCode].filter(Boolean).join(' · ');
+}
+
+function renderDeliveryOperations() {
+  driverList.innerHTML = state.deliveryDrivers.length
+    ? state.deliveryDrivers
+        .map(
+          (driver) =>
+            `<span class="driver-chip ${driver.active ? '' : 'inactive'}"><strong>${escapeHtml(driver.name)}</strong>${driver.phone ? ` · ${escapeHtml(driver.phone)}` : ''} <button class="text-button" data-toggle-driver="${escapeHtml(driver.id)}" type="button">${driver.active ? 'Desativar' : 'Ativar'}</button></span>`
+        )
+        .join('')
+    : '<p class="muted">Nenhum entregador cadastrado.</p>';
+  driverList.querySelectorAll('[data-toggle-driver]').forEach((button) =>
+    button.addEventListener('click', async () => {
+      const driver = state.deliveryDrivers.find(
+        (entry) => entry.id === button.dataset.toggleDriver
+      );
+      if (!driver) return;
+      try {
+        await api(`/v1/delivery/drivers/${driver.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ active: !driver.active })
+        });
+        await loadDeliveryOperations();
+      } catch (error) {
+        connection.textContent = `Erro: ${error.message}`;
+      }
+    })
+  );
+
+  const statuses = ['WAITING', 'ASSIGNED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+  deliveryBoard.innerHTML = statuses
+    .map((status) => {
+      const deliveries = state.deliveries.filter((delivery) => delivery.status === status);
+      return `<section class="delivery-column"><header><h3>${escapeHtml(deliveryStatusLabel(status))}</h3><span>${deliveries.length}</span></header><div>${deliveries
+        .map((delivery) => {
+          const driverOptions = state.deliveryDrivers
+            .filter((driver) => driver.active)
+            .map(
+              (driver) =>
+                `<option value="${escapeHtml(driver.id)}" ${delivery.driverId === driver.id ? 'selected' : ''}>${escapeHtml(driver.name)}</option>`
+            )
+            .join('');
+          const assign =
+            status === 'WAITING' || status === 'ASSIGNED'
+              ? `<div class="actions"><select data-driver-for="${escapeHtml(delivery.deliveryId)}"><option value="">Entregador</option>${driverOptions}</select><button type="button" data-assign-delivery="${escapeHtml(delivery.deliveryId)}">Atribuir</button></div>`
+              : '';
+          const start =
+            status === 'ASSIGNED'
+              ? `<button type="button" data-start-delivery="${escapeHtml(delivery.deliveryId)}">Marcar saída</button>`
+              : '';
+          const payment =
+            status === 'OUT_FOR_DELIVERY' &&
+            delivery.paymentMethod === 'PAY_ON_DELIVERY' &&
+            delivery.paymentStatus === 'PENDING'
+              ? `<button type="button" data-receive-delivery-payment="${escapeHtml(delivery.orderId)}">Receber pagamento</button>`
+              : '';
+          const complete =
+            status === 'OUT_FOR_DELIVERY'
+              ? `<button type="button" data-complete-delivery="${escapeHtml(delivery.deliveryId)}">Concluir entrega</button>`
+              : '';
+          const distance =
+            delivery.distanceMeters == null
+              ? ''
+              : `${(delivery.distanceMeters / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km · `;
+          return `<article class="delivery-card"><strong>#${escapeHtml(delivery.orderNumber || 'antigo')}</strong><span>${escapeHtml(delivery.customerName)}</span><small>${escapeHtml(deliveryAddressSummary(delivery.address))}</small><small>${escapeHtml(distance)}${money(delivery.feeCents)}</small>${delivery.driverName ? `<small>Entregador: ${escapeHtml(delivery.driverName)}</small>` : ''}${assign}<div class="actions">${payment}${start}${complete}</div></article>`;
+        })
+        .join('')}</div></section>`;
+    })
+    .join('');
+
+  deliveryBoard.querySelectorAll('[data-assign-delivery]').forEach((button) =>
+    button.addEventListener('click', () => {
+      const select = deliveryBoard.querySelector(
+        `[data-driver-for="${button.dataset.assignDelivery}"]`
+      );
+      if (select?.value)
+        deliveryAction(button.dataset.assignDelivery, 'assign', { driverId: select.value });
+    })
+  );
+  deliveryBoard
+    .querySelectorAll('[data-start-delivery]')
+    .forEach((button) =>
+      button.addEventListener('click', () => deliveryAction(button.dataset.startDelivery, 'start'))
+    );
+  deliveryBoard
+    .querySelectorAll('[data-complete-delivery]')
+    .forEach((button) =>
+      button.addEventListener('click', () =>
+        deliveryAction(button.dataset.completeDelivery, 'complete')
+      )
+    );
+  deliveryBoard.querySelectorAll('[data-receive-delivery-payment]').forEach((button) =>
+    button.addEventListener('click', async () => {
+      await receivePayment(button.dataset.receiveDeliveryPayment);
+      await loadDeliveryOperations();
+    })
+  );
+}
+
+async function loadDeliveryOperations() {
+  try {
+    const [drivers, operations] = await Promise.all([
+      api('/v1/delivery/drivers'),
+      api('/v1/delivery/operations')
+    ]);
+    state.deliveryDrivers = drivers;
+    state.deliveries = operations.deliveries || [];
+    renderDeliveryOperations();
+    connection.textContent = 'Online';
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
+async function deliveryAction(deliveryId, action, body) {
+  try {
+    await api(`/v1/delivery/operations/${deliveryId}/${action}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body || {})
+    });
+    await Promise.all([loadDeliveryOperations(), loadOrders({ incremental: false })]);
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
+async function submitDriver(event) {
+  event.preventDefault();
+  const values = formDataObject(driverForm);
+  try {
+    await api('/v1/delivery/drivers', {
+      method: 'POST',
+      body: JSON.stringify({ name: values.name.trim(), phone: optional(values.phone) ?? null })
+    });
+    driverForm.reset();
+    await loadDeliveryOperations();
+  } catch (error) {
+    connection.textContent = `Erro: ${error.message}`;
+  }
+}
+
 function createCard(order) {
   const article = document.createElement('article');
   article.className = 'order-card';
@@ -731,11 +972,15 @@ async function openDetail(orderId) {
     const discount = order.discountCents
       ? `<p>Subtotal: ${money(order.itemsTotalCents)}<br>Desconto${order.couponCode ? ` (${escapeHtml(order.couponCode)})` : ''}: − ${money(order.discountCents)}</p>`
       : '';
+    const deliveryPricing =
+      order.fulfillment === 'DELIVERY'
+        ? `<p>Entrega${order.deliveryDistanceMeters != null ? ` · ${escapeHtml((order.deliveryDistanceMeters / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }))} km` : ''}: ${money(order.deliveryFeeCents)}</p>`
+        : '';
     const paymentAction =
       order.paymentMethod === 'PAY_ON_DELIVERY' && order.paymentStatus === 'PENDING'
         ? '<button type="button" class="primary-button" data-receive-payment>Marcar pagamento como recebido</button>'
         : '';
-    orderDetail.innerHTML = `<h2>${escapeHtml(orderNumberLabel(order))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(fulfillment)}</p><p><strong>${escapeHtml(orderStatusLabel(order.status, order.fulfillment))}</strong></p><ul class="order-items">${itemRows}</ul>${orderNote}${discount}<p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(paymentStatusLabel(order.paymentStatus))}</p>${paymentAction}<h3>Histórico</h3><ol>${historyRows}</ol>`;
+    orderDetail.innerHTML = `<h2>${escapeHtml(orderNumberLabel(order))}</h2><p>${escapeHtml(dateTime(order.createdAt))}</p><p><strong>${escapeHtml(order.customerName)}</strong> · ${escapeHtml(order.customerPhone)}</p><p>${escapeHtml(fulfillment)}</p><p><strong>${escapeHtml(orderStatusLabel(order.status, order.fulfillment))}</strong></p><ul class="order-items">${itemRows}</ul>${orderNote}${discount}${deliveryPricing}<p><strong>Total: ${money(order.totalCents)}</strong></p><p>Pagamento: ${escapeHtml(paymentMethodLabel(order))} · ${escapeHtml(paymentStatusLabel(order.paymentStatus))}</p>${paymentAction}<h3>Histórico</h3><ol>${historyRows}</ol>`;
     orderDetail
       .querySelector('[data-receive-payment]')
       ?.addEventListener('click', () => receivePayment(orderId));
@@ -1032,8 +1277,11 @@ document
 refreshButton.addEventListener('click', () => {
   if (state.view === 'catalog') return loadMenus();
   if (state.view === 'settings') return loadStoreSettings();
+  if (state.view === 'deliveries') return loadDeliveryOperations();
   return loadOrders({ incremental: false });
 });
+addDeliveryBandButton.addEventListener('click', addDeliveryBand);
+driverForm.addEventListener('submit', submitDriver);
 newCouponButton.addEventListener('click', () => openCouponForm());
 couponForm.addEventListener('submit', submitCoupon);
 couponFormCancel.addEventListener('click', () => couponDialog.close());
