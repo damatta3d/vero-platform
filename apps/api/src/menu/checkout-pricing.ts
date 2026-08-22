@@ -238,7 +238,8 @@ export async function priceCheckout(
     }
 
     const automaticRouteConfigured =
-      options.deliveryRouteProvider !== undefined || Boolean(process.env.GOOGLE_MAPS_API_KEY?.trim());
+      options.deliveryRouteProvider !== undefined ||
+      Boolean(process.env.GOOGLE_MAPS_API_KEY?.trim());
     if (automaticRouteConfigured) {
       if (
         !request.address?.street?.trim() ||

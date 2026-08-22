@@ -76,7 +76,9 @@ export function configuredDeliveryRouteProvider(): DeliveryRouteProvider {
   }
   const apiKey = process.env.GOOGLE_MAPS_API_KEY?.trim();
   if (!apiKey) {
-    throw new ServiceUnavailableException('O cálculo automático de entrega ainda não está configurado.');
+    throw new ServiceUnavailableException(
+      'O cálculo automático de entrega ainda não está configurado.'
+    );
   }
   return new GoogleMapsDeliveryGateway(apiKey);
 }

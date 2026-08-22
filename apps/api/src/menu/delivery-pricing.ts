@@ -110,7 +110,9 @@ export async function quoteDelivery(
     throw new BadRequestException('A entrega não está disponível para este pedido.');
   }
   if (!setting.address || !setting.city || !setting.stateCode) {
-    throw new ServiceUnavailableException('O endereço de origem da loja ainda não está configurado.');
+    throw new ServiceUnavailableException(
+      'O endereço de origem da loja ainda não está configurado.'
+    );
   }
   if (
     !Number.isSafeInteger(setting.baseFeeCents) ||
