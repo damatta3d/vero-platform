@@ -22,6 +22,9 @@ describe('payment integrity', () => {
     itemsTotalCents: 10_000,
     discountCents: 1000,
     deliveryFeeCents: 1000,
+    deliveryDistanceMeters: 2450,
+    deliveryQuoteProvider: 'GOOGLE_MAPS',
+    deliveryFeeRule: 'DISTANCE_BAND',
     totalCents: 10_000,
     coupon: {
       id: 'coupon-a',
