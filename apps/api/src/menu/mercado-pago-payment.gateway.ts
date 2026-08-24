@@ -121,7 +121,8 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
     if (method?.id !== 'pix' || method.type !== 'bank_transfer') {
       throw new Error('MERCADO_PAGO_PAYMENT_METHOD_MISMATCH');
     }
-    const expiration = payment.date_of_expiration?.trim() || payment.expiration_time?.trim() || null;
+    const expiration =
+      payment.date_of_expiration?.trim() || payment.expiration_time?.trim() || null;
     if (expiration && Number.isNaN(new Date(expiration).getTime())) {
       throw new Error('MERCADO_PAGO_INVALID_EXPIRATION');
     }
