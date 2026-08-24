@@ -16,6 +16,7 @@ type MercadoPagoOrder = {
       status_detail?: string;
       amount?: string | number;
       expiration_time?: string;
+      date_of_expiration?: string;
       payment_method?: {
         id?: string;
         type?: string;
@@ -45,7 +46,7 @@ export function mercadoPagoAmountToCents(value: string | number | undefined): nu
 export class MercadoPagoPaymentGateway implements PaymentGateway {
   constructor(
     private readonly accessToken: string,
-    private readonly notificationUrl?: string
+    private readonly _notificationUrl?: string
   ) {
     if (!accessToken.trim()) throw new Error('MERCADO_PAGO_ACCESS_TOKEN_REQUIRED');
   }
@@ -65,8 +66,7 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
             payment_method: { id: 'pix', type: 'bank_transfer' }
           }
         ]
-      },
-      ...(this.notificationUrl ? { notification_url: this.notificationUrl } : {})
+      }
     };
     const order = await this.request('https://api.mercadopago.com/v1/orders', {
       method: 'POST',
@@ -121,7 +121,7 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
     if (method?.id !== 'pix' || method.type !== 'bank_transfer') {
       throw new Error('MERCADO_PAGO_PAYMENT_METHOD_MISMATCH');
     }
-    const expiration = payment.expiration_time?.trim() || null;
+    const expiration = payment.date_of_expiration?.trim() || payment.expiration_time?.trim() || null;
     if (expiration && Number.isNaN(new Date(expiration).getTime())) {
       throw new Error('MERCADO_PAGO_INVALID_EXPIRATION');
     }
