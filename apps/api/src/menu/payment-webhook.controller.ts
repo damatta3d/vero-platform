@@ -42,7 +42,8 @@ export function verifyMercadoPagoSignature(
 ): boolean {
   const { ts, v1 } = mercadoPagoSignatureParts(signature);
   if (!ts || !/^\d{1,20}$/.test(ts) || !v1 || !/^[0-9a-f]{64}$/i.test(v1)) return false;
-  const manifest = `id:${dataId};request-id:${requestId};ts:${ts};`;
+  const normalizedDataId = dataId.toLowerCase();
+  const manifest = `id:${normalizedDataId};request-id:${requestId};ts:${ts};`;
   const expected = createHmac('sha256', secret).update(manifest).digest('hex');
   const expectedBytes = Buffer.from(expected, 'hex');
   const receivedBytes = Buffer.from(v1, 'hex');
