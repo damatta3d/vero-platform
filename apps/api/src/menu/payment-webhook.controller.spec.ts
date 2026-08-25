@@ -83,7 +83,9 @@ describe('Mercado Pago webhook authentication', () => {
       $executeRawUnsafe: jest.fn().mockResolvedValue(1),
       $transaction: jest.fn()
     };
-    database.$transaction.mockImplementation(async (callback) => callback(database));
+    database.$transaction.mockImplementation(
+      (callback: (transaction: typeof database) => Promise<unknown>) => callback(database)
+    );
     process.env.MERCADO_PAGO_WEBHOOK_SECRET = secret;
     process.env.MERCADO_PAGO_ACCESS_TOKEN = 'access-token';
     const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue({
