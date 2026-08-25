@@ -215,12 +215,18 @@ export async function priceCheckout(
         deliveryEnabled: boolean;
         deliveryBaseFeeCents: number;
         freeDeliveryAboveCents: number | null;
+        deliveryRadiusKm: number | null;
+        hasDeliveryBands: boolean;
       }>
     >(
-      `SELECT delivery_enabled AS "deliveryEnabled",
-              delivery_base_fee_cents AS "deliveryBaseFeeCents",
-              free_delivery_above_cents AS "freeDeliveryAboveCents"
-         FROM store_settings WHERE tenant_id=$1`,
+      `SELECT s.delivery_enabled AS "deliveryEnabled",
+              s.delivery_base_fee_cents AS "deliveryBaseFeeCents",
+              s.free_delivery_above_cents AS "freeDeliveryAboveCents",
+              s.delivery_radius_km AS "deliveryRadiusKm",
+              EXISTS (
+                SELECT 1 FROM store_delivery_fee_bands b WHERE b.tenant_id=s.tenant_id
+              ) AS "hasDeliveryBands"
+         FROM store_settings s WHERE s.tenant_id=$1`,
       tenantId
     );
     const delivery = settings[0];
@@ -239,10 +245,12 @@ export async function priceCheckout(
       throw new BadRequestException('A taxa de entrega configurada não é válida.');
     }
 
-    const automaticRouteConfigured =
+    const routePricingRequired =
       options.deliveryRouteProvider !== undefined ||
+      delivery.hasDeliveryBands === true ||
+      (delivery.deliveryRadiusKm !== null && delivery.deliveryRadiusKm !== undefined) ||
       Boolean(process.env.GOOGLE_MAPS_API_KEY?.trim());
-    if (automaticRouteConfigured) {
+    if (routePricingRequired) {
       if (
         !request.address?.street?.trim() ||
         !request.address.number?.trim() ||
