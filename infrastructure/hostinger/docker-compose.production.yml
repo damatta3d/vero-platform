@@ -56,6 +56,8 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+    environment:
+      VERO_PUBLIC_SITE: ${VERO_PUBLIC_SITE:-:80}
     ports:
       - '80:80'
       - '443:443'
