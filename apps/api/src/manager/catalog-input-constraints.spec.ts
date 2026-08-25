@@ -18,6 +18,15 @@ function extractHelper(source: string, name: string): string {
   return helper[0];
 }
 
+function extractCatalogConstraintsHelper(): string {
+  const start = constraintsSource.indexOf('function applyCatalogInputConstraints');
+  const end = constraintsSource.indexOf('\n\nconst catalogFields', start);
+  if (start < 0 || end < 0) {
+    throw new Error('Manager helper not found: applyCatalogInputConstraints');
+  }
+  return constraintsSource.slice(start, end);
+}
+
 describe('Manager catalog numeric inputs', () => {
   it('accepts decimal menu prices and converts 44.90 to 4490 cents', () => {
     const context: Record<string, unknown> = {};
@@ -39,7 +48,7 @@ describe('Manager catalog numeric inputs', () => {
     };
     const context: Record<string, unknown> = { root };
     new Script(
-      `${extractHelper(constraintsSource, 'applyCatalogInputConstraints')}\napplyCatalogInputConstraints(root);`
+      `${extractCatalogConstraintsHelper()}\napplyCatalogInputConstraints(root);`
     ).runInNewContext(context);
 
     expect(salePrice).toEqual({ min: '0', step: '0.01', inputMode: 'decimal' });
