@@ -18,6 +18,10 @@ set -a
 source "${ENV_FILE}"
 set +a
 
+readonly MENU_SLUG="${VERO_SMOKE_MENU_SLUG:-${VERO_MVP_TENANT_ID}}"
+[[ "${MENU_SLUG}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$ ]] \
+  || fail "VERO_SMOKE_MENU_SLUG contém caracteres inválidos."
+
 request_status() {
   local method="$1" path="$2"
   shift 2
@@ -38,10 +42,11 @@ expect_status() {
 }
 
 expect_http_page() {
-  local path="$1" headers body size
+  local path="$1" expected_cache="${2:-no-store}" headers body size
   headers="$(curl --silent --show-error --head --connect-timeout 5 --max-time 15 "${BASE_URL}${path}")"
   grep -qi '^content-type: text/html' <<<"${headers}" || fail "${path}: content-type HTML ausente."
-  grep -qi '^cache-control:.*no-store' <<<"${headers}" || fail "${path}: cache-control no-store ausente."
+  grep -qi "^cache-control:.*${expected_cache}" <<<"${headers}" \
+    || fail "${path}: cache-control ${expected_cache} ausente."
   if grep -qi '^content-security-policy:.*upgrade-insecure-requests' <<<"${headers}"; then
     fail "${path}: CSP tenta forçar HTTPS durante homologação por IP."
   fi
@@ -92,6 +97,7 @@ AUTH_HEADERS=(
   -H "Authorization: Bearer ${VERO_MVP_API_KEY}"
   -H "x-tenant-id: ${VERO_MVP_TENANT_ID}"
 )
+JSON_HEADERS=(-H 'content-type: application/json')
 
 expect_status 200 GET /
 expect_status 200 GET /inicio
@@ -104,12 +110,18 @@ expect_status 200 GET /operacao
 expect_status 200 GET /financeiro
 expect_status 200 GET /financeiro.css
 expect_status 200 GET /financeiro.js
+expect_status 200 GET /manager
+expect_status 200 GET /manager/styles.css
+expect_status 200 GET /manager/main.js
+expect_status 200 GET "/menu/${MENU_SLUG}"
 
 expect_http_page /
 expect_http_page /inicio
 expect_http_page /mvp
 expect_http_page /operacao
 expect_http_page /financeiro
+expect_http_page /manager
+expect_http_page "/menu/${MENU_SLUG}" 'no-cache'
 
 expect_inline_page /
 expect_inline_page /mvp
@@ -122,6 +134,8 @@ expect_asset /mvp.css 'text/css' css
 expect_asset /mvp.js 'application/javascript' js
 expect_asset /financeiro.css 'text/css' css
 expect_asset /financeiro.js 'application/javascript' js
+expect_asset /manager/styles.css 'text/css' css
+expect_asset /manager/main.js 'application/javascript' js
 
 expect_status 200 GET /health/live
 expect_status 200 GET /health/ready
@@ -130,5 +144,16 @@ expect_status 200 GET /v1/finance "${AUTH_HEADERS[@]}"
 expect_status 200 GET /v1/finance/summary "${AUTH_HEADERS[@]}"
 expect_status 200 GET '/v1/operations?from=2026-01-01T00:00:00.000Z&to=2027-01-01T00:00:00.000Z&limit=1' "${AUTH_HEADERS[@]}"
 expect_status 200 GET '/v1/operations/summary?from=2026-01-01T00:00:00.000Z&to=2027-01-01T00:00:00.000Z' "${AUTH_HEADERS[@]}"
+
+expect_status 200 GET "/v1/menu/${MENU_SLUG}"
+expect_status 401 GET /v1/delivery/fee-bands -H "x-tenant-id: ${VERO_MVP_TENANT_ID}"
+expect_status 200 GET /v1/delivery/fee-bands "${AUTH_HEADERS[@]}"
+expect_status 200 GET /v1/delivery/drivers "${AUTH_HEADERS[@]}"
+expect_status 200 GET /v1/delivery/operations "${AUTH_HEADERS[@]}"
+
+expect_status 400 POST /v1/payments "${JSON_HEADERS[@]}" --data '{}'
+expect_status 400 POST /v1/checkout/delivery-quote "${JSON_HEADERS[@]}" --data '{}'
+expect_status 401 POST '/v1/payments/webhooks/mercado-pago?data.id=smoke' \
+  "${JSON_HEADERS[@]}" --data '{"type":"order","data":{"id":"smoke"}}'
 
 pass 'Varredura funcional concluída.'
