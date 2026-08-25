@@ -32,7 +32,7 @@ O script:
 6. inicia e valida o PostgreSQL;
 7. constrói a imagem da API;
 8. aplica as migrations antes de publicar a nova API;
-9. valida pré-requisitos de entrega por rota contra a configuração persistida da loja;
+9. valida pré-requisitos de PIX e entrega por rota contra a configuração persistida da loja;
 10. publica API e Caddy;
 11. testa saúde, Manager, cardápio público, RBAC, pagamentos, webhook, entregas e módulos legados sem criar pedidos nem cobrar pagamentos;
 12. mostra o estado final dos containers e as URLs públicas.
@@ -53,13 +53,15 @@ GOOGLE_MAPS_API_KEY=
 
 ### Mercado Pago / PIX
 
-O PIX pode permanecer desabilitado deixando as três variáveis do Mercado Pago vazias. Se a integração for usada, as três devem estar preenchidas em conjunto:
+O PIX pode permanecer indisponível deixando as três variáveis do Mercado Pago vazias **desde que `pixEnabled` esteja desligado nas configurações da loja**. Se `pixEnabled` estiver ligado, o deploy exige configuração completa e interrompe a publicação antes de substituir a API em execução.
+
+Quando a integração for usada, as três variáveis devem estar preenchidas em conjunto:
 
 - `MERCADO_PAGO_ACCESS_TOKEN` — credencial server-to-server da aplicação;
 - `MERCADO_PAGO_WEBHOOK_SECRET` — segredo usado para validar `x-signature`;
 - `MERCADO_PAGO_PAYER_EMAIL` — e-mail técnico de fallback quando o cliente não informar e-mail.
 
-Configuração parcial é bloqueada pelo preflight. O script nunca imprime os valores desses segredos.
+Configuração parcial é bloqueada pelo preflight, e o e-mail técnico também é validado. O script nunca imprime os valores desses segredos.
 
 O webhook deve ser configurado no aplicativo do Mercado Pago apontando para o host público da VERO:
 
