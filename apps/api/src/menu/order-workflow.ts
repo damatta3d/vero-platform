@@ -59,7 +59,9 @@ export async function transitionPersistedOrder(
   to: NativeOrderStatus,
   confirmationSource?: ConfirmationSource
 ): Promise<{ status: NativeOrderStatus; fulfillment: OrderFulfillment }> {
-  const perform = async (client: WorkflowDatabase) => {
+  const perform = async (
+    client: WorkflowDatabase
+  ): Promise<{ status: NativeOrderStatus; fulfillment: OrderFulfillment }> => {
     const rows = await client.$queryRawUnsafe<
       Array<{
         status: NativeOrderStatus;
@@ -81,7 +83,11 @@ export async function transitionPersistedOrder(
     if (order.status === 'CANCELLED' && to === 'CANCELLED') {
       return { status: 'CANCELLED', fulfillment: order.fulfillment };
     }
-    if (order.paymentMethod === 'PIX' && order.paymentStatus !== 'PAID' && to !== 'CANCELLED') {
+    if (
+      order.paymentMethod === 'PIX' &&
+      order.paymentStatus !== 'PAID' &&
+      to !== 'CANCELLED'
+    ) {
       throw new Error('PAYMENT_NOT_CONFIRMED');
     }
     assertOrderTransition(order.status, to, order.fulfillment);
