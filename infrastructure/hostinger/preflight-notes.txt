@@ -1,1 +1,0 @@
-Public runtime gates are validated by deploy.sh and CI. This file should not exist.
