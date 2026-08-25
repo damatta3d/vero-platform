@@ -1,4 +1,4 @@
-:80 {
+{$VERO_PUBLIC_SITE::80}, http://127.0.0.1 {
     encode zstd gzip
 
     reverse_proxy api:3000
