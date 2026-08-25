@@ -83,11 +83,7 @@ export async function transitionPersistedOrder(
     if (order.status === 'CANCELLED' && to === 'CANCELLED') {
       return { status: 'CANCELLED', fulfillment: order.fulfillment };
     }
-    if (
-      order.paymentMethod === 'PIX' &&
-      order.paymentStatus !== 'PAID' &&
-      to !== 'CANCELLED'
-    ) {
+    if (order.paymentMethod === 'PIX' && order.paymentStatus !== 'PAID' && to !== 'CANCELLED') {
       throw new Error('PAYMENT_NOT_CONFIRMED');
     }
     assertOrderTransition(order.status, to, order.fulfillment);
