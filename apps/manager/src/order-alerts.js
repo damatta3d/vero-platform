@@ -170,12 +170,12 @@ async function loadAudioBlob(mode) {
   }
 }
 
-async function playAudioBlob(blob, config) {
+async function playAudioBlob(blob, config = { volume: 80 }) {
   if (!blob) throw new Error('Nenhum áudio personalizado foi salvo.');
   const objectUrl = URL.createObjectURL(blob);
   const audio = new Audio();
   audio.preload = 'auto';
-  audio.volume = clampVolume(config.volume) / 100;
+  audio.volume = Math.max(0, Math.min(1, Number(config.volume) / 100));
   audio.src = objectUrl;
   let released = false;
   const release = () => {
@@ -190,7 +190,7 @@ async function playAudioBlob(blob, config) {
     return true;
   } catch {
     release();
-    throw new Error('Não foi possível reproduzir o arquivo. Clique em “Ativar som” e tente novamente.');
+    throw new Error('Não foi possível reproduzir o arquivo. Verifique se o MP3 ou WAV é válido.');
   }
 }
 
