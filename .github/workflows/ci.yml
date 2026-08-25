@@ -27,6 +27,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma:generate
       - run: pnpm exec prisma validate
+      - run: |
+          bash -n infrastructure/hostinger/deploy.sh
+          bash -n infrastructure/hostinger/smoke-test.sh
       - run: pnpm audit --audit-level high
       - run: pnpm verify
 
