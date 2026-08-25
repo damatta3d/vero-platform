@@ -44,10 +44,7 @@ export function mercadoPagoAmountToCents(value: string | number | undefined): nu
 }
 
 export class MercadoPagoPaymentGateway implements PaymentGateway {
-  constructor(
-    private readonly accessToken: string,
-    private readonly _notificationUrl?: string
-  ) {
+  constructor(private readonly accessToken: string) {
     if (!accessToken.trim()) throw new Error('MERCADO_PAGO_ACCESS_TOKEN_REQUIRED');
   }
 
