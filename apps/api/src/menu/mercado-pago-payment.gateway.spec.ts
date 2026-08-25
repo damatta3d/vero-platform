@@ -35,10 +35,7 @@ describe(MercadoPagoPaymentGateway.name, () => {
           }
         })
     } as Response);
-    const gateway = new MercadoPagoPaymentGateway(
-      'test-access-token',
-      'https://example.test/webhook'
-    );
+    const gateway = new MercadoPagoPaymentGateway('test-access-token');
 
     await expect(
       gateway.createPixPayment({
@@ -69,6 +66,7 @@ describe(MercadoPagoPaymentGateway.name, () => {
       total_amount: '100.00',
       payer: { email: 'cliente@example.com' }
     });
+    expect(body).not.toHaveProperty('notification_url');
     expect(JSON.stringify(body)).not.toContain('test-access-token');
   });
 

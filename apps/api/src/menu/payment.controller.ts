@@ -210,9 +210,6 @@ export class PaymentController {
     if (!accessToken) {
       throw new BadRequestException('O pagamento por PIX não está configurado.');
     }
-    return new MercadoPagoPaymentGateway(
-      accessToken,
-      process.env.MERCADO_PAGO_NOTIFICATION_URL?.trim()
-    );
+    return new MercadoPagoPaymentGateway(accessToken);
   }
 }
