@@ -50,7 +50,11 @@ atualizados juntos e a mudança fica no histórico financeiro.
 
 - `MERCADO_PAGO_ACCESS_TOKEN`: token privado usado exclusivamente pelo backend.
 - `MERCADO_PAGO_WEBHOOK_SECRET`: assinatura secreta do webhook Orders.
-- `MERCADO_PAGO_NOTIFICATION_URL`: URL HTTPS pública do endpoint de webhook.
+- `MERCADO_PAGO_PAYER_EMAIL`: e-mail técnico usado pelo PIX quando o cliente não informa
+  um e-mail válido.
+- A URL do webhook não é enviada no `POST /v1/orders`. Configure-a no painel do Mercado
+  Pago em **Suas integrações > Webhooks > Configurar notificações** e habilite o evento
+  **Order (Mercado Pago)** para o endpoint público `/v1/payments/webhooks/mercado-pago`.
 
 Não registrar valores dessas variáveis, QR Code, dados pessoais completos ou payloads do
 provedor em logs. O deploy deve aplicar as migrações antes de iniciar a nova imagem da API.
