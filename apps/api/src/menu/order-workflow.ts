@@ -20,6 +20,13 @@ const transitions: Record<NativeOrderStatus, readonly NativeOrderStatus[]> = {
   CANCELLED: []
 };
 
+const couponReleasablePaymentStatuses = new Set([
+  'PENDING',
+  'AWAITING_PAYMENT',
+  'FAILED',
+  'CANCELLED'
+]);
+
 export function nextOrderStatuses(
   from: NativeOrderStatus,
   fulfillment: OrderFulfillment
@@ -59,10 +66,11 @@ export async function transitionPersistedOrder(
         paymentMethod: string;
         paymentStatus: string;
         fulfillment: OrderFulfillment;
+        couponId: string | null;
       }>
     >(
       `SELECT status, fulfillment, payment_method AS "paymentMethod",
-              payment_status AS "paymentStatus"
+              payment_status AS "paymentStatus", coupon_id AS "couponId"
          FROM commerce_native_orders
         WHERE id=$1::uuid AND tenant_id=$2`,
       orderId,
@@ -70,7 +78,10 @@ export async function transitionPersistedOrder(
     );
     const order = rows[0];
     if (!order) throw new Error('ORDER_NOT_FOUND');
-    if (order.paymentMethod === 'PIX' && order.paymentStatus !== 'PAID') {
+    if (order.status === 'CANCELLED' && to === 'CANCELLED') {
+      return { status: 'CANCELLED', fulfillment: order.fulfillment };
+    }
+    if (order.paymentMethod === 'PIX' && order.paymentStatus !== 'PAID' && to !== 'CANCELLED') {
       throw new Error('PAYMENT_NOT_CONFIRMED');
     }
     assertOrderTransition(order.status, to, order.fulfillment);
@@ -96,6 +107,19 @@ export async function transitionPersistedOrder(
       source ?? null
     );
     if (changed !== 1) throw new Error('ORDER_CONCURRENTLY_CHANGED');
+    if (
+      to === 'CANCELLED' &&
+      order.couponId &&
+      couponReleasablePaymentStatuses.has(order.paymentStatus)
+    ) {
+      await client.$executeRawUnsafe(
+        `UPDATE commerce_coupons
+            SET uses_count=GREATEST(uses_count-1,0),updated_at=NOW()
+          WHERE tenant_id=$1 AND id=$2::uuid AND uses_count>0`,
+        tenantId,
+        order.couponId
+      );
+    }
     await client.$executeRawUnsafe(
       `INSERT INTO commerce_native_order_status_history
          (id,order_id,from_status,to_status,occurred_at)

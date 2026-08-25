@@ -100,6 +100,22 @@ export class PaymentWebhookController {
       throw new ServiceUnavailableException('Reconciliação de pagamento pendente.');
     }
     if (
+      result.orderId &&
+      result.tenantId &&
+      (result.paymentStatus === 'FAILED' || result.paymentStatus === 'CANCELLED')
+    ) {
+      try {
+        await transitionPersistedOrder(this.db, result.tenantId, result.orderId, 'CANCELLED');
+      } catch (error) {
+        this.logger.warn(
+          `Order cancellation after terminal payment failed order=${result.orderId} reason=${
+            error instanceof Error ? error.message : 'unknown'
+          }`
+        );
+        throw new ServiceUnavailableException('Cancelamento do pedido pendente.');
+      }
+    }
+    if (
       result.shouldConfirmAutomatically &&
       result.orderId &&
       result.tenantId &&
