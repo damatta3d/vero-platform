@@ -7,6 +7,10 @@ const constraintsSource = readFileSync(
   resolve('apps/manager/src/catalog-input-constraints.js'),
   'utf8'
 );
+const managerControllerSource = readFileSync(
+  resolve('apps/api/src/manager/manager-page.controller.ts'),
+  'utf8'
+);
 
 function extractHelper(source: string, name: string): string {
   const helper = source.match(new RegExp(`function ${name}\\([^)]*\\) \\{[\\s\\S]*?^\\}`, 'm'));
@@ -40,5 +44,10 @@ describe('Manager catalog numeric inputs', () => {
 
     expect(salePrice).toEqual({ min: '0', step: '0.01', inputMode: 'decimal' });
     expect(sortOrder.step).toBe('1');
+  });
+
+  it('bundles the input constraints with the Manager script response', () => {
+    expect(managerControllerSource).toContain("readAsset('catalog-input-constraints.js')");
+    expect(managerControllerSource).toContain('catalogInputConstraintsScript');
   });
 });
