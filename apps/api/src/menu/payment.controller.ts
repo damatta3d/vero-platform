@@ -55,9 +55,14 @@ export class PaymentController {
     if (request.method !== 'PIX' && request.method !== 'PAY_ON_DELIVERY') {
       throw new BadRequestException('A forma de pagamento não é válida.');
     }
-    const customerEmail = request.customer.email?.trim().toLowerCase() || '';
+    const providedCustomerEmail = request.customer.email?.trim().toLowerCase() || '';
+    if (providedCustomerEmail && !validEmail.test(providedCustomerEmail)) {
+      throw new BadRequestException('Informe um e-mail válido ou deixe o campo em branco.');
+    }
+    const technicalPayerEmail = process.env.MERCADO_PAGO_PAYER_EMAIL?.trim().toLowerCase() || '';
+    const customerEmail = providedCustomerEmail || technicalPayerEmail;
     if (request.method === 'PIX' && !validEmail.test(customerEmail)) {
-      throw new BadRequestException('Informe um e-mail válido para gerar o PIX.');
+      throw new BadRequestException('O e-mail técnico do PIX não está configurado.');
     }
 
     const pricing = await priceCheckout(this.db, request);
