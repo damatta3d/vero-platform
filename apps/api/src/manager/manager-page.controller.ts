@@ -37,10 +37,13 @@ export class ManagerPageController {
   @Header('content-type', 'application/javascript; charset=utf-8')
   @Header('cache-control', 'no-store')
   async script(@Res() reply: FastifyReply): Promise<void> {
-    const [managerScript, alertScript] = await Promise.all([
+    const [managerScript, catalogInputConstraintsScript, alertScript] = await Promise.all([
       readAsset('main.js'),
+      readAsset('catalog-input-constraints.js'),
       readAsset('order-alerts.js')
     ]);
-    void reply.send(`${managerScript}\n\n;(() => {\n${alertScript}\n})();\n`);
+    void reply.send(
+      `${managerScript}\n\n;(() => {\n${catalogInputConstraintsScript}\n})();\n\n;(() => {\n${alertScript}\n})();\n`
+    );
   }
 }

@@ -3,6 +3,7 @@ export type FulfillmentMode = 'DELIVERY' | 'PICKUP';
 export type CheckoutCustomer = {
   name: string;
   phone: string;
+  email?: string;
 };
 
 export type CheckoutAddress = {

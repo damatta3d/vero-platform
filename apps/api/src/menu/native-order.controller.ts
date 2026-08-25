@@ -11,23 +11,23 @@ import {
 import { createHash, randomUUID } from 'node:crypto';
 import { DATABASE_CLIENT } from '../catalog/catalog.tokens.js';
 import { priceCheckout, type CouponSnapshot } from './checkout-pricing.js';
+import { findPaymentById, type PaymentDatabase } from './payment-attempt.repository.js';
+import { paymentRequestHash } from './payment-integrity.js';
+import { isOrderCreatablePaymentStatus } from './payment-status.js';
 import type { PaymentMethod, PaymentStatus } from './payment.types.js';
 import { transitionPersistedOrder } from './order-workflow.js';
 import { formatOperationalOrderNumber } from './order-number.js';
 import { loadStoreAvailability } from './store-availability.repository.js';
 import type { CheckoutAddress } from './checkout.types.js';
 
-type Db = {
-  $queryRawUnsafe<T>(query: string, ...values: unknown[]): Promise<T>;
-  $executeRawUnsafe(query: string, ...values: unknown[]): Promise<number>;
-  $transaction<T>(callback: (tx: Db) => Promise<T>): Promise<T>;
-};
+type Db = PaymentDatabase;
 type ExistingOrder = {
   orderId: string;
   operationalNumber: number;
   fulfillment: 'DELIVERY' | 'PICKUP';
   itemsTotalCents: number;
   discountCents: number;
+  deliveryFeeCents: number;
   totalCents: number;
   couponId: string | null;
   couponCode: string | null;
@@ -43,13 +43,13 @@ type ExistingOrder = {
 type Request = {
   idempotencyKey: string;
   menuSlug: string;
-  customer: { name: string; phone: string };
+  customer: { name: string; phone: string; email?: string };
   fulfillment: 'DELIVERY' | 'PICKUP';
   couponCode?: string;
   address?: CheckoutAddress | null;
   orderNote?: string;
   items: Array<{ menuItemId: string; quantity: number; note?: string }>;
-  payment: { method: PaymentMethod; status: PaymentStatus; paymentId?: string | null };
+  payment: { method: PaymentMethod; paymentId: string; status?: unknown };
 };
 
 function databaseErrorCode(error: unknown): string | undefined {
@@ -74,10 +74,13 @@ export class NativeOrderController {
       !request.items?.length
     )
       throw new BadRequestException('Revise os dados do pedido.');
-    if (request.payment.method === 'PIX' && !request.payment.paymentId?.trim())
-      throw new BadRequestException('A identificação do pagamento PIX é obrigatória.');
-    if (request.payment.method === 'PAY_ON_DELIVERY' && request.payment.status !== 'PENDING')
-      throw new BadRequestException('A situação do pagamento ao receber não é válida.');
+    if (!request.payment?.paymentId?.trim())
+      throw new BadRequestException('A identificação do pagamento é obrigatória.');
+    if (Object.prototype.hasOwnProperty.call(request.payment, 'status')) {
+      throw new BadRequestException(
+        'A situação do pagamento é definida exclusivamente pelo servidor.'
+      );
+    }
     if (
       request.fulfillment === 'DELIVERY' &&
       (!request.address?.street?.trim() ||
@@ -112,6 +115,7 @@ export class NativeOrderController {
 
     let operationalNumber: number | null = null;
     let finalPricing = basePricing;
+    let finalPaymentStatus: PaymentStatus = 'PENDING';
     try {
       await this.db.$transaction(async (tx) => {
         const availability = await loadStoreAvailability(tx, tenantId, true);
@@ -122,17 +126,44 @@ export class NativeOrderController {
           });
         }
         finalPricing = await priceCheckout(tx, request, { lockCoupon: true });
+        const payment = await findPaymentById(tx, tenantId, request.payment.paymentId.trim(), true);
+        const expectedPaymentHash = paymentRequestHash({
+          tenantId,
+          menuSlug: request.menuSlug,
+          method: request.payment.method,
+          customer: request.customer,
+          fulfillment: request.fulfillment,
+          address: request.address,
+          orderNote: request.orderNote,
+          pricing: finalPricing
+        });
+        if (
+          !payment ||
+          payment.checkoutKeyHash !== idempotencyHash ||
+          payment.requestHash !== expectedPaymentHash ||
+          payment.method !== request.payment.method ||
+          payment.amountCents !== finalPricing.totalCents ||
+          payment.currency !== 'BRL' ||
+          (payment.orderId && payment.orderId !== orderId) ||
+          !isOrderCreatablePaymentStatus(payment.method, payment.status) ||
+          (payment.method === 'PIX' && (!payment.providerOrderId || !payment.providerPaymentId))
+        ) {
+          throw new BadRequestException(
+            'O pagamento não pertence a este checkout ou ainda não pode ser utilizado.'
+          );
+        }
+        finalPaymentStatus = payment.status;
         const inserted = await tx.$queryRawUnsafe<Array<{ operationalNumber: number }>>(
           `INSERT INTO commerce_native_orders (
              id,tenant_id,menu_slug,provider,customer_name,customer_phone,fulfillment,
              items_total_cents,discount_cents,delivery_fee_cents,total_cents,
              coupon_id,coupon_code,coupon_name,coupon_source,coupon_discount_type,coupon_discount_value,
-             payment_method,payment_status,provider_payment_id,status,order_note,delivery_address,
-             tracking_token_hash,idempotency_key_hash,created_at,updated_at
+             payment_id,payment_method,payment_status,provider_payment_id,status,order_note,
+             delivery_address,tracking_token_hash,idempotency_key_hash,created_at,updated_at
            ) VALUES (
-             $1::uuid,$2,$3,'VERO_NATIVE',$4,$5,$6,$7,$8,0,$9,
-             $10::uuid,$11,$12,$13,$14,$15,$16,$17,$18,'RECEIVED',$19,$20::jsonb,
-             $21,$22,$23::timestamptz,$23::timestamptz
+             $1::uuid,$2,$3,'VERO_NATIVE',$4,$5,$6,$7,$8,$9,$10,
+             $11::uuid,$12,$13,$14,$15,$16,$17::uuid,$18,$19,$20,'RECEIVED',$21,
+             $22::jsonb,$23,$24,$25::timestamptz,$25::timestamptz
            ) RETURNING operational_number AS "operationalNumber"`,
           orderId,
           tenantId,
@@ -142,6 +173,7 @@ export class NativeOrderController {
           request.fulfillment,
           finalPricing.itemsTotalCents,
           finalPricing.discountCents,
+          finalPricing.deliveryFeeCents,
           finalPricing.totalCents,
           finalPricing.coupon?.id ?? null,
           finalPricing.coupon?.code ?? null,
@@ -149,15 +181,26 @@ export class NativeOrderController {
           finalPricing.coupon?.source ?? null,
           finalPricing.coupon?.discountType ?? null,
           finalPricing.coupon?.discountValue ?? null,
-          request.payment.method,
-          request.payment.status,
-          request.payment.paymentId || null,
+          payment.id,
+          payment.method,
+          payment.status,
+          payment.providerPaymentId,
           request.orderNote?.trim() || null,
           request.fulfillment === 'DELIVERY' ? JSON.stringify(request.address) : null,
           trackingTokenHash,
           idempotencyHash,
           createdAt
         );
+        const linked = await tx.$executeRawUnsafe(
+          `UPDATE commerce_payment_attempts SET order_id=$2::uuid,updated_at=NOW()
+            WHERE id=$1::uuid AND tenant_id=$3 AND (order_id IS NULL OR order_id=$2::uuid)`,
+          payment.id,
+          orderId,
+          tenantId
+        );
+        if (linked !== 1) {
+          throw new BadRequestException('O pagamento já está vinculado a outro pedido.');
+        }
         operationalNumber = inserted[0]?.operationalNumber ?? null;
         for (const item of finalPricing.items)
           await tx.$executeRawUnsafe(
@@ -231,11 +274,11 @@ export class NativeOrderController {
       items: finalPricing.items,
       itemsTotalCents: finalPricing.itemsTotalCents,
       discountCents: finalPricing.discountCents,
-      deliveryFeeCents: 0,
+      deliveryFeeCents: finalPricing.deliveryFeeCents,
       totalCents: finalPricing.totalCents,
       coupon: finalPricing.coupon,
       paymentMethod: request.payment.method,
-      paymentStatus: request.payment.status,
+      paymentStatus: finalPaymentStatus,
       status,
       createdAt
     };
@@ -249,6 +292,7 @@ export class NativeOrderController {
     const rows = await this.db.$queryRawUnsafe<ExistingOrder[]>(
       `SELECT id AS "orderId",operational_number AS "operationalNumber",fulfillment,
               items_total_cents AS "itemsTotalCents",discount_cents AS "discountCents",
+              delivery_fee_cents AS "deliveryFeeCents",
               total_cents AS "totalCents",coupon_id AS "couponId",coupon_code AS "couponCode",
               coupon_name AS "couponName",coupon_source AS "couponSource",
               coupon_discount_type AS "couponDiscountType",
@@ -268,7 +312,7 @@ export class NativeOrderController {
       fulfillment: order.fulfillment,
       itemsTotalCents: order.itemsTotalCents,
       discountCents: order.discountCents,
-      deliveryFeeCents: 0,
+      deliveryFeeCents: order.deliveryFeeCents,
       totalCents: order.totalCents,
       coupon: this.existingCoupon(order),
       paymentMethod: order.paymentMethod,

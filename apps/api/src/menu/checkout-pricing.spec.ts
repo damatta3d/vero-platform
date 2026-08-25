@@ -105,6 +105,59 @@ describe('checkout pricing with coupons', () => {
     });
   });
 
+  it('calculates item subtotal minus coupon plus delivery entirely on the server', async () => {
+    const database = {
+      $queryRawUnsafe: jest
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            tenantId: 'tenant-a',
+            menuItemId: 'item-a',
+            name: 'Parmegiana família',
+            priceCents: 10_000,
+            available: true
+          }
+        ])
+        .mockResolvedValueOnce([
+          {
+            id: 'coupon-a',
+            code: 'SANTO10',
+            name: 'Santo 10',
+            source: null,
+            discountType: 'PERCENTAGE',
+            discountValue: 10,
+            active: true,
+            startsAt: null,
+            expiresAt: null,
+            minimumOrderCents: 0,
+            maxUses: null,
+            usesCount: 0
+          }
+        ])
+        .mockResolvedValueOnce([
+          {
+            deliveryEnabled: true,
+            deliveryBaseFeeCents: 1000,
+            freeDeliveryAboveCents: null
+          }
+        ])
+    };
+
+    await expect(
+      priceCheckout(database, {
+        menuSlug: 'santo-parma',
+        couponCode: 'SANTO10',
+        fulfillment: 'DELIVERY',
+        items: [{ menuItemId: 'item-a', quantity: 1 }]
+      })
+    ).resolves.toMatchObject({
+      itemsTotalCents: 10_000,
+      discountCents: 1000,
+      deliveryFeeCents: 1000,
+      totalCents: 10_000
+    });
+  });
+
   it.each([
     ['inactive', { active: false }],
     ['not started', { startsAt: new Date('2026-08-20T12:00:01.000Z') }],
