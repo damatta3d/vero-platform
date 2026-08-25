@@ -1,9 +1,10 @@
 /* global document, localStorage, MutationObserver, indexedDB, URL, window, setInterval, clearInterval, Audio */
 
-const ALERT_VERSION = 1;
+const ALERT_VERSION = 2;
 const DEFAULT_ALERTS = {
   version: ALERT_VERSION,
   enabled: false,
+  volume: 90,
   manualSound: 'PHONE',
   automaticSound: 'CHIME',
   manualCustomName: null,
@@ -28,12 +29,23 @@ function storageKey() {
   return `vero_order_alerts:${tenantId()}`;
 }
 
+function clampVolume(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return DEFAULT_ALERTS.volume;
+  return Math.max(0, Math.min(100, Math.round(parsed)));
+}
+
 function loadConfig() {
   try {
     const stored = JSON.parse(localStorage.getItem(storageKey()) || '{}');
     delete stored.manualCustom;
     delete stored.automaticCustom;
-    return { ...DEFAULT_ALERTS, ...stored };
+    return {
+      ...DEFAULT_ALERTS,
+      ...stored,
+      version: ALERT_VERSION,
+      volume: clampVolume(stored.volume ?? DEFAULT_ALERTS.volume)
+    };
   } catch {
     return { ...DEFAULT_ALERTS };
   }
@@ -43,6 +55,7 @@ function saveConfig(next) {
   const persisted = {
     version: ALERT_VERSION,
     enabled: next.enabled,
+    volume: clampVolume(next.volume),
     manualSound: next.manualSound,
     automaticSound: next.automaticSound,
     manualCustomName: next.manualCustomName || null,
@@ -57,18 +70,29 @@ function context() {
     if (!AudioContext) throw new Error('Áudio não é suportado neste navegador.');
     audioContext = new AudioContext();
   }
-  if (audioContext.state === 'suspended') audioContext.resume();
   return audioContext;
 }
 
-function tone(frequency, start, duration, volume = 0.12, type = 'sine') {
+async function ensureAudioReady() {
   const ctx = context();
+  if (ctx.state === 'suspended') await ctx.resume();
+  if (ctx.state !== 'running') {
+    throw new Error('O navegador bloqueou o áudio. Clique em “Ativar som” e tente novamente.');
+  }
+  return ctx;
+}
+
+function scaledGain(baseVolume, config) {
+  return Math.max(0.0001, Math.min(1, baseVolume * (clampVolume(config.volume) / 100)));
+}
+
+function tone(ctx, frequency, start, duration, volume, type = 'sine') {
   const oscillator = ctx.createOscillator();
   const gain = ctx.createGain();
   oscillator.type = type;
   oscillator.frequency.value = frequency;
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), start + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   oscillator.connect(gain);
   gain.connect(ctx.destination);
@@ -76,23 +100,23 @@ function tone(frequency, start, duration, volume = 0.12, type = 'sine') {
   oscillator.stop(start + duration + 0.03);
 }
 
-function synth(kind) {
-  const ctx = context();
+async function synth(kind, config) {
+  const ctx = await ensureAudioReady();
   const now = ctx.currentTime + 0.02;
   if (kind === 'PHONE') {
     [0, 0.42].forEach((offset) => {
-      tone(440, now + offset, 0.28, 0.12, 'sine');
-      tone(480, now + offset, 0.28, 0.08, 'sine');
+      tone(ctx, 440, now + offset, 0.3, scaledGain(0.72, config), 'square');
+      tone(ctx, 480, now + offset, 0.3, scaledGain(0.52, config), 'sine');
     });
     return;
   }
   if (kind === 'BELL') {
-    tone(880, now, 0.55, 0.14, 'sine');
-    tone(1320, now, 0.38, 0.07, 'sine');
+    tone(ctx, 880, now, 0.58, scaledGain(0.78, config), 'sine');
+    tone(ctx, 1320, now, 0.42, scaledGain(0.52, config), 'sine');
     return;
   }
-  tone(660, now, 0.16, 0.1, 'sine');
-  tone(880, now + 0.18, 0.28, 0.12, 'sine');
+  tone(ctx, 660, now, 0.18, scaledGain(0.62, config), 'sine');
+  tone(ctx, 880, now + 0.2, 0.3, scaledGain(0.72, config), 'sine');
 }
 
 function audioStorageKey(mode) {
@@ -146,12 +170,12 @@ async function loadAudioBlob(mode) {
   }
 }
 
-async function playAudioBlob(blob) {
+async function playAudioBlob(blob, config) {
   if (!blob) throw new Error('Nenhum áudio personalizado foi salvo.');
   const objectUrl = URL.createObjectURL(blob);
   const audio = new Audio();
   audio.preload = 'auto';
-  audio.volume = 0.8;
+  audio.volume = clampVolume(config.volume) / 100;
   audio.src = objectUrl;
   let released = false;
   const release = () => {
@@ -166,18 +190,19 @@ async function playAudioBlob(blob) {
     return true;
   } catch {
     release();
-    throw new Error('Não foi possível reproduzir o arquivo. Verifique se o MP3 ou WAV é válido.');
+    throw new Error('Não foi possível reproduzir o arquivo. Clique em “Ativar som” e tente novamente.');
   }
 }
 
 async function playAlert(mode, config = loadConfig(), previewBlob = null) {
   if (!config.enabled) return;
+  if (clampVolume(config.volume) === 0) return;
   const selected = mode === 'manual' ? config.manualSound : config.automaticSound;
   if (selected === 'CUSTOM') {
-    await playAudioBlob(previewBlob || (await loadAudioBlob(mode)));
+    await playAudioBlob(previewBlob || (await loadAudioBlob(mode)), config);
     return;
   }
-  synth(selected);
+  await synth(selected, config);
 }
 
 function columnCards(label) {
@@ -193,8 +218,28 @@ function cardSignature(card) {
   );
 }
 
+function audioStateLabel() {
+  if (!audioContext) return 'Som aguardando ativação';
+  return audioContext.state === 'running' ? 'Som ativo' : 'Som aguardando ativação';
+}
+
+function refreshAudioState(section = document.querySelector('#order-alert-settings')) {
+  const label = section?.querySelector('#audio-state');
+  const activate = section?.querySelector('#activate-audio');
+  if (!label || !activate) return;
+  const active = audioContext?.state === 'running';
+  label.textContent = active ? 'Som ativo' : 'Som aguardando ativação';
+  label.classList.toggle('active', Boolean(active));
+  activate.hidden = Boolean(active);
+}
+
 function safePlayAlert(mode, config) {
-  playAlert(mode, config).catch((error) => console.error('[VERO order alert]', error));
+  playAlert(mode, config).catch((error) => {
+    console.error('[VERO order alert]', error);
+    const status = document.querySelector('#alert-status');
+    if (status) status.textContent = error.message;
+    refreshAudioState();
+  });
 }
 
 function syncAlerts() {
@@ -261,7 +306,7 @@ function validateAudioFile(file) {
 function injectStyles() {
   const style = document.createElement('style');
   style.textContent = `
-    .alert-settings{grid-column:1/-1}.alert-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.alert-choice{display:grid;gap:8px}.alert-choice select,.alert-choice input[type=file]{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:9px;background:#fff}.alert-actions{display:flex;gap:8px;flex-wrap:wrap}.alert-note{font-size:12px;color:#6b7280;margin:0}.alert-status{min-height:18px;margin:0;color:#166534}@media(max-width:700px){.alert-grid{grid-template-columns:1fr}}
+    .alert-settings{grid-column:1/-1}.alert-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.alert-choice{display:grid;gap:8px}.alert-choice select,.alert-choice input[type=file]{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:9px;background:#fff}.alert-volume{display:grid;gap:8px;padding:12px 0}.alert-volume-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.alert-volume input[type=range]{width:100%}.alert-volume output{min-width:48px;text-align:right;font-weight:700}.alert-audio-state{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.alert-state{font-size:13px;font-weight:700;color:#92400e}.alert-state.active{color:#166534}.alert-actions{display:flex;gap:8px;flex-wrap:wrap}.alert-note{font-size:12px;color:#6b7280;margin:0}.alert-status{min-height:18px;margin:0;color:#166534}@media(max-width:700px){.alert-grid{grid-template-columns:1fr}}
   `;
   document.head.append(style);
 }
@@ -275,6 +320,8 @@ function injectSettings() {
   section.innerHTML = `
     <div class="panel-heading"><div><p class="eyebrow">ALERTAS</p><h2>Sons de novos pedidos</h2></div></div>
     <label class="toggle-row"><span><strong>Alertas sonoros</strong><small>Avise a operação quando um pedido exigir atenção.</small></span><input id="alert-enabled" type="checkbox" /></label>
+    <div class="alert-audio-state"><span id="audio-state" class="alert-state">${audioStateLabel()}</span><button id="activate-audio" class="text-button" type="button">Ativar som</button></div>
+    <label class="alert-volume"><strong>Volume dos alertas</strong><div class="alert-volume-row"><input id="alert-volume" type="range" min="0" max="100" step="1" /><output id="alert-volume-value"></output></div><small class="muted">Ajuste o volume usado nos alertas reais e nos testes.</small></label>
     <div class="alert-grid">
       <div class="alert-choice"><strong>Pedido aguardando confirmação</strong><small class="muted">Repete enquanto houver pedido em Recebidos.</small><select id="manual-sound"><option value="PHONE">Telefone</option><option value="BELL">Campainha</option><option value="CHIME">Aviso curto</option><option value="CUSTOM">MP3 ou WAV personalizado</option></select><input id="manual-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav" /><small id="manual-file-name" class="muted"></small><button id="test-manual" class="text-button" type="button">Testar som</button></div>
       <div class="alert-choice"><strong>Pedido recebido automaticamente</strong><small class="muted">Toca uma vez quando o pedido entra confirmado.</small><select id="automatic-sound"><option value="CHIME">Aviso curto</option><option value="BELL">Campainha</option><option value="PHONE">Telefone</option><option value="CUSTOM">MP3 ou WAV personalizado</option></select><input id="automatic-file" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav" /><small id="automatic-file-name" class="muted"></small><button id="test-automatic" class="text-button" type="button">Testar som</button></div>
@@ -286,6 +333,8 @@ function injectSettings() {
 
   const current = loadConfig();
   const enabled = section.querySelector('#alert-enabled');
+  const volume = section.querySelector('#alert-volume');
+  const volumeValue = section.querySelector('#alert-volume-value');
   const manual = section.querySelector('#manual-sound');
   const automatic = section.querySelector('#automatic-sound');
   const manualFileInput = section.querySelector('#manual-file');
@@ -294,6 +343,8 @@ function injectSettings() {
   const automaticFileName = section.querySelector('#automatic-file-name');
   const status = section.querySelector('#alert-status');
   enabled.checked = current.enabled;
+  volume.value = String(current.volume);
+  volumeValue.textContent = `${current.volume}%`;
   manual.value = current.manualSound;
   automatic.value = current.automaticSound;
   manualFileName.textContent = current.manualCustomName
@@ -302,10 +353,28 @@ function injectSettings() {
   automaticFileName.textContent = current.automaticCustomName
     ? `Salvo: ${current.automaticCustomName}`
     : 'Nenhum arquivo salvo.';
+  refreshAudioState(section);
+
+  volume.addEventListener('input', () => {
+    volumeValue.textContent = `${clampVolume(volume.value)}%`;
+  });
+
+  section.querySelector('#activate-audio').addEventListener('click', async () => {
+    try {
+      status.textContent = '';
+      await ensureAudioReady();
+      refreshAudioState(section);
+      status.textContent = 'Som ativado neste navegador.';
+    } catch (error) {
+      status.textContent = error.message;
+      refreshAudioState(section);
+    }
+  });
 
   async function testSound(mode) {
     try {
       status.textContent = '';
+      await ensureAudioReady();
       const select = mode === 'manual' ? manual : automatic;
       const fileInput = mode === 'manual' ? manualFileInput : automaticFileInput;
       const previous = loadConfig();
@@ -314,12 +383,15 @@ function injectSettings() {
       const preview = {
         ...previous,
         enabled: true,
+        volume: clampVolume(volume.value),
         [soundKey]: select.value
       };
       await playAlert(mode, preview, selectedFile);
+      refreshAudioState(section);
       status.textContent = 'Som reproduzido com sucesso.';
     } catch (error) {
       status.textContent = error.message;
+      refreshAudioState(section);
     }
   }
 
@@ -335,6 +407,7 @@ function injectSettings() {
       const next = {
         ...previous,
         enabled: enabled.checked,
+        volume: clampVolume(volume.value),
         manualSound: manual.value,
         automaticSound: automatic.value,
         manualCustomName: manualFile ? manualFile.name : previous.manualCustomName,
@@ -356,11 +429,21 @@ function injectSettings() {
       automaticFileName.textContent = next.automaticCustomName
         ? `Salvo: ${next.automaticCustomName}`
         : 'Nenhum arquivo salvo.';
-      if (next.enabled) context();
-      status.textContent = 'Alertas sonoros salvos para este estabelecimento.';
+      if (next.enabled) {
+        try {
+          await ensureAudioReady();
+        } catch {
+          // State below tells the operator that activation is still required.
+        }
+      }
+      refreshAudioState(section);
+      status.textContent = next.enabled
+        ? 'Alertas sonoros salvos para este estabelecimento.'
+        : 'Alertas sonoros desativados para este estabelecimento.';
       syncAlerts();
     } catch (error) {
       status.textContent = error.message;
+      refreshAudioState(section);
     }
   });
 }
@@ -371,12 +454,13 @@ const board = document.querySelector('#board');
 if (board) new MutationObserver(syncAlerts).observe(board, { childList: true, subtree: true });
 document.addEventListener(
   'click',
-  () => {
+  async () => {
     if (loadConfig().enabled) {
       try {
-        context();
+        await ensureAudioReady();
+        refreshAudioState();
       } catch {
-        // The settings test action will surface unsupported audio explicitly.
+        refreshAudioState();
       }
     }
   },
