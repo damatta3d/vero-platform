@@ -106,7 +106,7 @@ describe('Mercado Pago webhook authentication', () => {
           ]
         }
       })
-    } as Response);
+    } as unknown as Response);
 
     try {
       const controller = new PaymentWebhookController(database as never);
