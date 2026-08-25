@@ -74,7 +74,7 @@ describe('Mercado Pago webhook authentication', () => {
         .mockResolvedValueOnce([
           {
             status: 'RECEIVED',
-            fulfillment: 'PICKUP',
+            fulfillment: 'DELIVERY',
             paymentMethod: 'PIX',
             paymentStatus: 'FAILED',
             couponId
@@ -134,6 +134,14 @@ describe('Mercado Pago webhook authentication', () => {
             String(query).includes('commerce_coupons') &&
             tenantId === 'tenant-a' &&
             persistedCouponId === couponId
+        )
+      ).toBe(true);
+      expect(
+        database.$executeRawUnsafe.mock.calls.some(
+          ([query, tenantId, persistedOrderId]) =>
+            String(query).includes('commerce_deliveries') &&
+            tenantId === 'tenant-a' &&
+            persistedOrderId === orderId
         )
       ).toBe(true);
     } finally {
