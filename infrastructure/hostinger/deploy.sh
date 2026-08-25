@@ -9,6 +9,7 @@ readonly PROJECT_NAME="vero-production"
 DEPLOY_POSTGRES_USER=''
 DEPLOY_POSTGRES_DB=''
 DEPLOY_TENANT_ID=''
+DEPLOY_PUBLIC_SITE=''
 
 log() { printf '\n[VERO] %s\n' "$*"; }
 warn() { printf '\n[VERO][AVISO] %s\n' "$*" >&2; }
@@ -41,6 +42,7 @@ VERO_OTEL_ENABLED=false
 VERO_MVP_ENABLED=true
 VERO_MVP_API_KEY=${api_key}
 VERO_MVP_TENANT_ID=santo-parma
+VERO_PUBLIC_SITE=:80
 MERCADO_PAGO_ACCESS_TOKEN=
 MERCADO_PAGO_WEBHOOK_SECRET=
 MERCADO_PAGO_PAYER_EMAIL=
@@ -48,6 +50,30 @@ VERO_MAPS_PROVIDER=GOOGLE
 GOOGLE_MAPS_API_KEY=
 EOF
   chmod 600 "${ENV_FILE}"; unset db_password api_key
+}
+
+validate_public_site() {
+  DEPLOY_PUBLIC_SITE="$(env_value VERO_PUBLIC_SITE)"
+  [[ -n "${DEPLOY_PUBLIC_SITE}" ]] \
+    || fail "VERO_PUBLIC_SITE deve ser definido explicitamente como :80 ou como hostname público."
+
+  if [[ "${DEPLOY_PUBLIC_SITE}" == ':80' ]]; then
+    log "Site público configurado para homologação HTTP por IP."
+    return
+  fi
+
+  (( ${#DEPLOY_PUBLIC_SITE} <= 253 )) || fail "VERO_PUBLIC_SITE excede o tamanho máximo de hostname."
+  [[ "${DEPLOY_PUBLIC_SITE}" != *'://'*
+    && "${DEPLOY_PUBLIC_SITE}" != *'/'*
+    && "${DEPLOY_PUBLIC_SITE}" != *':'*
+    && "${DEPLOY_PUBLIC_SITE}" != *'..'*
+    && "${DEPLOY_PUBLIC_SITE}" == *'.'*
+    && "${DEPLOY_PUBLIC_SITE}" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$ ]] \
+    || fail "VERO_PUBLIC_SITE inválido. Use somente :80 ou um hostname, sem protocolo, porta ou caminho."
+
+  getent ahosts "${DEPLOY_PUBLIC_SITE}" >/dev/null 2>&1 \
+    || fail "VERO_PUBLIC_SITE=${DEPLOY_PUBLIC_SITE} não resolve no DNS; publicação HTTPS bloqueada."
+  log "DNS público resolvido para ${DEPLOY_PUBLIC_SITE}."
 }
 
 validate_environment() {
@@ -59,6 +85,7 @@ validate_environment() {
   DEPLOY_TENANT_ID="$(env_value VERO_MVP_TENANT_ID)"
   [[ "${DEPLOY_TENANT_ID}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$ ]] \
     || fail "VERO_MVP_TENANT_ID contém caracteres inválidos."
+  validate_public_site
 
   local mp_access mp_secret mp_email mp_fields maps_provider maps_key
   mp_access="$(env_value MERCADO_PAGO_ACCESS_TOKEN)"
@@ -144,6 +171,27 @@ resolve_interrupted_receipt_migration() {
   compose run --rm --no-deps api pnpm exec prisma migrate resolve --rolled-back "${migration_name}"
 }
 
+validate_mercado_pago_orders_access() {
+  local access_token="$1" begin_date end_date http_status
+  begin_date="$(date -u -d '5 minutes ago' '+%Y-%m-%dT%H:%M:%S.000Z')"
+  end_date="$(date -u '+%Y-%m-%dT%H:%M:%S.000Z')"
+
+  if ! http_status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+    --connect-timeout 5 --max-time 15 --get 'https://api.mercadopago.com/v1/orders' \
+    -H "Authorization: Bearer ${access_token}" \
+    --data-urlencode "begin_date=${begin_date}" \
+    --data-urlencode "end_date=${end_date}" \
+    --data-urlencode 'limit=1')"; then
+    fail "Não foi possível validar a credencial do Mercado Pago na Orders API."
+  fi
+
+  case "${http_status}" in
+    200) log "Credencial Mercado Pago autorizada na Orders API." ;;
+    401|403) fail "Credencial Mercado Pago recusada pela Orders API (HTTP ${http_status}); PIX não será publicado." ;;
+    *) fail "Preflight da Mercado Pago Orders API retornou HTTP ${http_status}; publicação bloqueada." ;;
+  esac
+}
+
 validate_runtime_integrations() {
   local runtime_state pix_enabled delivery_enabled route_configured origin_ready
   local mp_access mp_secret mp_email maps_provider maps_key
@@ -174,6 +222,7 @@ validate_runtime_integrations() {
   if [[ "${pix_enabled}" == '1' ]]; then
     [[ -n "${mp_access}" && -n "${mp_secret}" && -n "${mp_email}" ]] \
       || fail "PIX está habilitado para ${DEPLOY_TENANT_ID}, mas Mercado Pago não está configurado por completo."
+    validate_mercado_pago_orders_access "${mp_access}"
     log "Preflight de PIX aprovado para ${DEPLOY_TENANT_ID}."
   fi
 
@@ -198,8 +247,23 @@ wait_for_endpoint() {
   compose ps || true; compose logs --tail=120 api || true; fail "Endpoint não respondeu com sucesso: ${path}"
 }
 
+wait_for_public_endpoint() {
+  [[ "${DEPLOY_PUBLIC_SITE}" == ':80' ]] && return
+  local url="https://${DEPLOY_PUBLIC_SITE}/health/ready" attempts=45 i
+  for ((i = 1; i <= attempts; i++)); do
+    if curl --fail --silent --show-error --max-time 10 "${url}" >/dev/null 2>&1; then
+      log "HTTPS público aprovado: ${url}"
+      return
+    fi
+    sleep 2
+  done
+  compose ps || true
+  compose logs --tail=120 caddy || true
+  fail "HTTPS público não ficou acessível em ${url}."
+}
+
 main() {
-  require_command git; require_command docker; require_command curl; require_command openssl; require_command gzip; require_command bash
+  require_command git; require_command docker; require_command curl; require_command openssl; require_command gzip; require_command bash; require_command date; require_command getent
   docker compose version >/dev/null 2>&1 || fail "Docker Compose plugin não está disponível."
   [[ -f "${COMPOSE_FILE}" ]] || fail "Compose de produção não encontrado: ${COMPOSE_FILE}"
   [[ -f "${SCRIPT_DIR}/Caddyfile" ]] || fail "Caddyfile não encontrado."
@@ -220,12 +284,19 @@ main() {
 
   log "Executando varredura completa do MVP."
   bash "${SCRIPT_DIR}/smoke-test.sh"
+  wait_for_public_endpoint
 
   log "Containers ativos:"; compose ps
-  local public_ip; public_ip="$(curl --silent --max-time 5 https://api.ipify.org || true)"
+  local public_ip public_base
+  if [[ "${DEPLOY_PUBLIC_SITE}" == ':80' ]]; then
+    public_ip="$(curl --silent --max-time 5 https://api.ipify.org || true)"
+    public_base="http://${public_ip:-IP-DO-VPS}"
+  else
+    public_base="https://${DEPLOY_PUBLIC_SITE}"
+  fi
   printf '\n[VERO] DEPLOY CONCLUÍDO\n'
-  printf '[VERO] Entrada única: http://%s/\n' "${public_ip:-IP-DO-VPS}"
-  printf '[VERO] Saúde:        http://%s/health/ready\n' "${public_ip:-IP-DO-VPS}"
+  printf '[VERO] Entrada única: %s/\n' "${public_base}"
+  printf '[VERO] Saúde:        %s/health/ready\n' "${public_base}"
   printf '[VERO] A chave do MVP permanece protegida em .env.production.\n'
 }
 
