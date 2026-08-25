@@ -68,6 +68,17 @@ describe(MvpSecurityService.name, () => {
     expect(trusted.request.action.value).toBe('coupons.write');
   });
 
+  it('creates delivery access only on the delivery management resource', async () => {
+    const context = await service.authorize(
+      `Bearer ${apiKey}`,
+      'santo-parma',
+      'delivery.operations.write'
+    );
+    const trusted = consumeAuthorizedAccess(context);
+    expect(trusted.request.resource.value).toBe('delivery.management');
+    expect(trusted.request.action.value).toBe('delivery.operations.write');
+  });
+
   it.each([
     ['Bearer wrong-key-that-is-long-enough', 'santo-parma'],
     [`Bearer ${apiKey}`, 'another-tenant'],

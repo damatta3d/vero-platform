@@ -246,6 +246,82 @@ main {
   align-items: start;
   overflow-x: auto;
 }
+.delivery-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(250px, 1fr));
+  gap: 14px;
+  align-items: start;
+  overflow-x: auto;
+}
+.delivery-column {
+  min-height: 220px;
+  padding: 12px;
+  background: #e5e7eb;
+  border-radius: 14px;
+}
+.delivery-card {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 11px;
+}
+.delivery-card p,
+.delivery-card small {
+  margin: 0;
+}
+.delivery-card .actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.driver-list,
+.inline-form,
+.delivery-bands-heading,
+.delivery-band-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.driver-list {
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.driver-chip {
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+}
+.driver-chip.inactive {
+  opacity: 0.55;
+}
+.inline-form input {
+  min-width: 150px;
+  padding: 9px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+.delivery-bands-heading {
+  justify-content: space-between;
+  margin-top: 22px;
+}
+.delivery-band-list {
+  display: grid;
+  gap: 8px;
+}
+.delivery-band-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr)) auto auto;
+  padding: 10px;
+  background: #f9fafb;
+  border-radius: 9px;
+}
+.delivery-band-row input {
+  width: 100%;
+}
 .column {
   min-height: 220px;
   padding: 12px;

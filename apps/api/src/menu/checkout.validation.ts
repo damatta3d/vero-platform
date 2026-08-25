@@ -16,6 +16,18 @@ export function validateCheckoutDraft(draft: CheckoutDraft): string[] {
     if (!draft.address?.street?.trim()) errors.push('address.street');
     if (!draft.address?.number?.trim()) errors.push('address.number');
     if (!draft.address?.district?.trim()) errors.push('address.district');
+    if (!draft.address?.city?.trim()) errors.push('address.city');
+    if (!draft.address?.stateCode?.trim()) errors.push('address.stateCode');
+    if (!draft.address?.postalCode?.trim()) errors.push('address.postalCode');
+    if (draft.address?.stateCode?.trim() && !/^[A-Za-z]{2}$/.test(draft.address.stateCode.trim())) {
+      errors.push('address.stateCode.invalid');
+    }
+    if (
+      draft.address?.postalCode?.trim() &&
+      !/^\d{5}-?\d{3}$/.test(draft.address.postalCode.trim())
+    ) {
+      errors.push('address.postalCode.invalid');
+    }
   }
   return errors;
 }

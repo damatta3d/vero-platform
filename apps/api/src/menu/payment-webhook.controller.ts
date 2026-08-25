@@ -106,6 +106,14 @@ export class PaymentWebhookController {
     ) {
       try {
         await transitionPersistedOrder(this.db, result.tenantId, result.orderId, 'CANCELLED');
+        await this.db.$executeRawUnsafe(
+          `UPDATE commerce_deliveries
+              SET status='CANCELLED',cancelled_at=COALESCE(cancelled_at,NOW()),updated_at=NOW()
+            WHERE tenant_id=$1 AND order_id=$2::uuid
+              AND status NOT IN ('DELIVERED','CANCELLED')`,
+          result.tenantId,
+          result.orderId
+        );
       } catch (error) {
         this.logger.warn(
           `Order cancellation after terminal payment failed order=${result.orderId} reason=${

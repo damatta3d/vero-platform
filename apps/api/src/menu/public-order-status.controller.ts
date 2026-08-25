@@ -19,6 +19,7 @@ type Row = {
   itemsTotalCents: number;
   discountCents: number;
   deliveryFeeCents: number;
+  deliveryDistanceMeters: number | null;
   totalCents: number;
   couponCode: string | null;
 };
@@ -37,7 +38,8 @@ export class PublicOrderStatusController {
       `SELECT id AS "orderId", operational_number AS "operationalNumber", status,
               payment_status AS "paymentStatus", fulfillment, order_note AS "orderNote",
               items_total_cents AS "itemsTotalCents", discount_cents AS "discountCents",
-              delivery_fee_cents AS "deliveryFeeCents", total_cents AS "totalCents",
+              delivery_fee_cents AS "deliveryFeeCents",
+              delivery_distance_m AS "deliveryDistanceMeters",total_cents AS "totalCents",
               coupon_code AS "couponCode",
               created_at AS "createdAt", tracking_token_hash AS "trackingTokenHash"
          FROM commerce_native_orders
@@ -72,6 +74,7 @@ export class PublicOrderStatusController {
       itemsTotalCents: order.itemsTotalCents,
       discountCents: order.discountCents,
       deliveryFeeCents: order.deliveryFeeCents,
+      deliveryDistanceMeters: order.deliveryDistanceMeters,
       totalCents: order.totalCents,
       couponCode: order.couponCode,
       items

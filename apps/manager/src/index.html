@@ -14,6 +14,7 @@
         <nav class="nav" aria-label="Navegação principal">
           <button class="nav-item active" data-view="dashboard" type="button">Visão geral</button>
           <button class="nav-item" data-view="orders" type="button">Pedidos</button>
+          <button class="nav-item" data-view="deliveries" type="button">Entregas</button>
           <button class="nav-item" data-view="catalog" type="button">Cardápio</button>
           <button class="nav-item" data-view="settings" type="button">Configurações</button>
         </nav>
@@ -66,6 +67,21 @@
               </div>
             </div>
             <section id="board" class="board" aria-live="polite"></section>
+          </section>
+          <section id="deliveries-view" class="view" aria-labelledby="page-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">LOGÍSTICA EM TEMPO REAL</p>
+                <h2>Central de entregas</h2>
+              </div>
+              <form id="driver-form" class="inline-form">
+                <input name="name" maxlength="160" placeholder="Nome do entregador" required />
+                <input name="phone" maxlength="32" placeholder="Telefone" />
+                <button class="primary-button" type="submit">Cadastrar entregador</button>
+              </form>
+            </div>
+            <div id="driver-list" class="driver-list" aria-live="polite"></div>
+            <section id="delivery-board" class="delivery-board" aria-live="polite"></section>
           </section>
           <section id="catalog-view" class="view" aria-labelledby="page-title">
             <div class="section-heading">
@@ -233,6 +249,9 @@
                       <h2>Entrega</h2>
                     </div>
                   </div>
+                  <p class="muted">
+                    O endereço estruturado em Dados da loja é usado como origem das rotas.
+                  </p>
                   <div id="delivery-fields" class="form-grid">
                     <label class="form-field"
                       ><span>Raio máximo (km)</span
@@ -250,6 +269,18 @@
                       ><input name="freeAbove" type="number" min="0" step="0.01"
                     /></label>
                   </div>
+                  <div class="delivery-bands-heading">
+                    <div>
+                      <h3>Faixas por distância</h3>
+                      <p class="muted">
+                        Início inclusivo e fim exclusivo; a última inclui o limite.
+                      </p>
+                    </div>
+                    <button id="add-delivery-band" class="text-button" type="button">
+                      + Adicionar faixa
+                    </button>
+                  </div>
+                  <div id="delivery-band-list" class="delivery-band-list"></div>
                 </section>
                 <section class="panel settings-section settings-schedule">
                   <div class="panel-heading">
