@@ -8,11 +8,14 @@ readonly COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.production.yml"
 readonly PROJECT_NAME="vero-production"
 DEPLOY_POSTGRES_USER=''
 DEPLOY_POSTGRES_DB=''
+DEPLOY_TENANT_ID=''
 
 log() { printf '\n[VERO] %s\n' "$*"; }
+warn() { printf '\n[VERO][AVISO] %s\n' "$*" >&2; }
 fail() { printf '\n[VERO][ERRO] %s\n' "$*" >&2; exit 1; }
 require_command() { command -v "$1" >/dev/null 2>&1 || fail "Comando obrigatório não encontrado: $1"; }
 compose() { docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" "$@"; }
+env_value() { sed -n "s/^$1=//p" "${ENV_FILE}" | tail -n 1; }
 
 create_environment() {
   if [[ -f "${ENV_FILE}" ]]; then chmod 600 "${ENV_FILE}"; log "Arquivo .env.production existente preservado."; return; fi
@@ -38,6 +41,11 @@ VERO_OTEL_ENABLED=false
 VERO_MVP_ENABLED=true
 VERO_MVP_API_KEY=${api_key}
 VERO_MVP_TENANT_ID=santo-parma
+MERCADO_PAGO_ACCESS_TOKEN=
+MERCADO_PAGO_WEBHOOK_SECRET=
+MERCADO_PAGO_PAYER_EMAIL=
+VERO_MAPS_PROVIDER=GOOGLE
+GOOGLE_MAPS_API_KEY=
 EOF
   chmod 600 "${ENV_FILE}"; unset db_password api_key
 }
@@ -47,11 +55,43 @@ validate_environment() {
   local key
   for key in "${required[@]}"; do grep -q "^${key}=." "${ENV_FILE}" || fail "Variável ausente ou vazia em .env.production: ${key}"; done
   grep -q '^VERO_DATABASE_URL=.*@postgres:5432/' "${ENV_FILE}" || fail "VERO_DATABASE_URL deve apontar para postgres:5432 dentro do Docker."
+
+  DEPLOY_TENANT_ID="$(env_value VERO_MVP_TENANT_ID)"
+  [[ "${DEPLOY_TENANT_ID}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$ ]] \
+    || fail "VERO_MVP_TENANT_ID contém caracteres inválidos."
+
+  local mp_access mp_secret mp_email mp_fields maps_provider maps_key
+  mp_access="$(env_value MERCADO_PAGO_ACCESS_TOKEN)"
+  mp_secret="$(env_value MERCADO_PAGO_WEBHOOK_SECRET)"
+  mp_email="$(env_value MERCADO_PAGO_PAYER_EMAIL)"
+  mp_fields=0
+  [[ -n "${mp_access}" ]] && ((mp_fields += 1))
+  [[ -n "${mp_secret}" ]] && ((mp_fields += 1))
+  [[ -n "${mp_email}" ]] && ((mp_fields += 1))
+  if ((mp_fields > 0 && mp_fields < 3)); then
+    fail "Mercado Pago está parcialmente configurado. Preencha ACCESS_TOKEN, WEBHOOK_SECRET e PAYER_EMAIL ou deixe os três vazios."
+  fi
+  if ((mp_fields == 0)); then
+    warn "Mercado Pago não configurado; pagamentos PIX permanecerão indisponíveis."
+  else
+    log "Configuração do Mercado Pago completa para PIX e webhook."
+  fi
+
+  maps_provider="$(env_value VERO_MAPS_PROVIDER)"
+  maps_provider="${maps_provider:-GOOGLE}"
+  [[ "${maps_provider}" == 'GOOGLE' ]] \
+    || fail "VERO_MAPS_PROVIDER=${maps_provider} não é suportado; use GOOGLE."
+  maps_key="$(env_value GOOGLE_MAPS_API_KEY)"
+  if [[ -z "${maps_key}" ]]; then
+    warn "Google Maps não configurado; frete por rota só poderá permanecer desabilitado."
+  else
+    log "Google Maps configurado para geocodificação e cálculo de rotas."
+  fi
 }
 
 load_database_identity() {
-  DEPLOY_POSTGRES_USER="$(sed -n 's/^VERO_POSTGRES_USER=//p' "${ENV_FILE}" | tail -n 1)"
-  DEPLOY_POSTGRES_DB="$(sed -n 's/^VERO_POSTGRES_DB=//p' "${ENV_FILE}" | tail -n 1)"
+  DEPLOY_POSTGRES_USER="$(env_value VERO_POSTGRES_USER)"
+  DEPLOY_POSTGRES_DB="$(env_value VERO_POSTGRES_DB)"
   [[ -n "${DEPLOY_POSTGRES_USER}" && -n "${DEPLOY_POSTGRES_DB}" ]] || fail "Identidade PostgreSQL inválida em .env.production."
 }
 
@@ -102,6 +142,40 @@ resolve_interrupted_receipt_migration() {
   compose run --rm --no-deps api pnpm exec prisma migrate resolve --rolled-back "${migration_name}"
 }
 
+validate_runtime_integrations() {
+  local runtime_state delivery_enabled route_configured origin_ready maps_provider maps_key
+  runtime_state="$(compose exec -T postgres psql \
+    -U "${DEPLOY_POSTGRES_USER}" -d "${DEPLOY_POSTGRES_DB}" -tA -F '|' \
+    -c "SELECT delivery_enabled::int,
+               ((delivery_radius_km IS NOT NULL) OR EXISTS (
+                  SELECT 1 FROM store_delivery_fee_bands b WHERE b.tenant_id=store_settings.tenant_id
+                ))::int,
+               (COALESCE(NULLIF(BTRIM(address),''),'')<>''
+                AND COALESCE(NULLIF(BTRIM(city),''),'')<>''
+                AND COALESCE(NULLIF(BTRIM(state_code),''),'')<>'')::int
+          FROM store_settings
+         WHERE tenant_id='${DEPLOY_TENANT_ID}' LIMIT 1" \
+    | tr -d '\r')"
+
+  if [[ -z "${runtime_state}" ]]; then
+    warn "Configuração da loja ${DEPLOY_TENANT_ID} ainda não existe; o smoke funcional deverá detectar ausência de dados obrigatórios."
+    return
+  fi
+
+  IFS='|' read -r delivery_enabled route_configured origin_ready <<<"${runtime_state}"
+  maps_provider="$(env_value VERO_MAPS_PROVIDER)"
+  maps_provider="${maps_provider:-GOOGLE}"
+  maps_key="$(env_value GOOGLE_MAPS_API_KEY)"
+
+  if [[ "${delivery_enabled}" == '1' && ("${route_configured}" == '1' || -n "${maps_key}") ]]; then
+    [[ "${maps_provider}" == 'GOOGLE' && -n "${maps_key}" ]] \
+      || fail "Entrega por rota está habilitada, mas Google Maps não está completamente configurado."
+    [[ "${origin_ready}" == '1' ]] \
+      || fail "Entrega por rota está habilitada, mas endereço, cidade ou UF da loja estão incompletos."
+    log "Preflight de entrega por rota aprovado para ${DEPLOY_TENANT_ID}."
+  fi
+}
+
 wait_for_endpoint() {
   local path="$1" attempts=30 i
   for ((i = 1; i <= attempts; i++)); do
@@ -127,6 +201,7 @@ main() {
   resolve_interrupted_receipt_migration
   log "Aplicando migrations antes de iniciar a nova API."
   compose run --rm --no-deps api pnpm exec prisma migrate deploy
+  validate_runtime_integrations
   log "Publicando VERO."; compose up -d --remove-orphans
   log "Aguardando banco e API."; wait_for_endpoint /health/live; wait_for_endpoint /health/ready; wait_for_endpoint /
 
