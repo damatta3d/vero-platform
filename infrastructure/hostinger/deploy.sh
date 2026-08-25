@@ -74,6 +74,8 @@ validate_environment() {
   if ((mp_fields == 0)); then
     warn "Mercado Pago não configurado; pagamentos PIX permanecerão indisponíveis."
   else
+    [[ "${mp_email}" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] \
+      || fail "MERCADO_PAGO_PAYER_EMAIL não possui formato de e-mail válido."
     log "Configuração do Mercado Pago completa para PIX e webhook."
   fi
 
@@ -143,10 +145,12 @@ resolve_interrupted_receipt_migration() {
 }
 
 validate_runtime_integrations() {
-  local runtime_state delivery_enabled route_configured origin_ready maps_provider maps_key
+  local runtime_state pix_enabled delivery_enabled route_configured origin_ready
+  local mp_access mp_secret mp_email maps_provider maps_key
   runtime_state="$(compose exec -T postgres psql \
     -U "${DEPLOY_POSTGRES_USER}" -d "${DEPLOY_POSTGRES_DB}" -tA -F '|' \
-    -c "SELECT delivery_enabled::int,
+    -c "SELECT pix_enabled::int,
+               delivery_enabled::int,
                ((delivery_radius_km IS NOT NULL) OR EXISTS (
                   SELECT 1 FROM store_delivery_fee_bands b WHERE b.tenant_id=store_settings.tenant_id
                 ))::int,
@@ -162,11 +166,20 @@ validate_runtime_integrations() {
     return
   fi
 
-  IFS='|' read -r delivery_enabled route_configured origin_ready <<<"${runtime_state}"
+  IFS='|' read -r pix_enabled delivery_enabled route_configured origin_ready <<<"${runtime_state}"
+
+  mp_access="$(env_value MERCADO_PAGO_ACCESS_TOKEN)"
+  mp_secret="$(env_value MERCADO_PAGO_WEBHOOK_SECRET)"
+  mp_email="$(env_value MERCADO_PAGO_PAYER_EMAIL)"
+  if [[ "${pix_enabled}" == '1' ]]; then
+    [[ -n "${mp_access}" && -n "${mp_secret}" && -n "${mp_email}" ]] \
+      || fail "PIX está habilitado para ${DEPLOY_TENANT_ID}, mas Mercado Pago não está configurado por completo."
+    log "Preflight de PIX aprovado para ${DEPLOY_TENANT_ID}."
+  fi
+
   maps_provider="$(env_value VERO_MAPS_PROVIDER)"
   maps_provider="${maps_provider:-GOOGLE}"
   maps_key="$(env_value GOOGLE_MAPS_API_KEY)"
-
   if [[ "${delivery_enabled}" == '1' && ("${route_configured}" == '1' || -n "${maps_key}") ]]; then
     [[ "${maps_provider}" == 'GOOGLE' && -n "${maps_key}" ]] \
       || fail "Entrega por rota está habilitada, mas Google Maps não está completamente configurado."
