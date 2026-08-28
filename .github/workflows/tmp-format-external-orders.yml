@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.actor != 'github-actions[bot]'
     timeout-minutes: 20
+    env:
+      VERO_DATABASE_URL: postgresql://vero:vero@127.0.0.1:5432/vero
     steps:
       - uses: actions/checkout@v4
         with:
