@@ -1,9 +1,7 @@
 import { consumeAuthorizedAccess, type AuthorizedAccessContext } from '@vero/core-access';
 
-import type {
-  ExternalCatalogLink,
-  ExternalCatalogLinkRepository
-} from './external-catalog-link-service.js';
+import type { ExternalCatalogLink } from './external-catalog-link.js';
+import type { ExternalCatalogLinkRepository } from './external-catalog-link-service.js';
 import type { ExternalOrder } from './external-order.js';
 
 export type ExternalOrderOperationalStatus =
