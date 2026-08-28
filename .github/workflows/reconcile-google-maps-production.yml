@@ -1,0 +1,95 @@
+name: Reconcile production Google Maps
+
+on:
+  push:
+    branches: [chore/reconcile-google-maps-production]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-google-maps-reconcile
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Reconcile Google Maps on Hostinger VPS
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - name: Checkout reconciliation commit
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        env:
+          VERO_VPS_HOST: ${{ secrets.VERO_VPS_HOST }}
+          VERO_VPS_USER: ${{ secrets.VERO_VPS_USER }}
+          VERO_VPS_SSH_KEY: ${{ secrets.VERO_VPS_SSH_KEY }}
+          VERO_VPS_HOST_FINGERPRINT: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          set -Eeuo pipefail
+          for key in VERO_VPS_HOST VERO_VPS_USER VERO_VPS_SSH_KEY VERO_VPS_HOST_FINGERPRINT GOOGLE_MAPS_API_KEY; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Required production secret is missing: ${key}" >&2
+              exit 1
+            fi
+          done
+          [[ "${VERO_VPS_HOST_FINGERPRINT}" == SHA256:* ]] || {
+            echo "VERO_VPS_HOST_FINGERPRINT must use SHA256:... format." >&2
+            exit 1
+          }
+
+      - name: Reconcile Google Maps key without exposing it
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        with:
+          host: ${{ secrets.VERO_VPS_HOST }}
+          username: ${{ secrets.VERO_VPS_USER }}
+          key: ${{ secrets.VERO_VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+          port: 22
+          protocol: tcp4
+          timeout: 30s
+          command_timeout: 5m
+          envs: GOOGLE_MAPS_API_KEY
+          script: |
+            bash -lc '
+              set -Eeuo pipefail
+              cd /opt/vero/platform
+              env_file=.env.production
+              [[ -f "${env_file}" ]] || { echo "Production environment file not found." >&2; exit 1; }
+              [[ -n "${GOOGLE_MAPS_API_KEY:-}" ]] || { echo "Google Maps secret was not delivered to the VPS." >&2; exit 1; }
+
+              umask 077
+              backup_dir=.runtime/config-backups
+              mkdir -p "${backup_dir}"
+              chmod 700 .runtime "${backup_dir}"
+              backup_file="${backup_dir}/env-production-$(date -u +%Y%m%dT%H%M%SZ).bak"
+              cp "${env_file}" "${backup_file}"
+              chmod 600 "${backup_file}"
+
+              tmp="$(mktemp .env.production.tmp.XXXXXX)"
+              trap '\''rm -f "${tmp}"'\'' EXIT
+              replaced=false
+              while IFS= read -r line || [[ -n "${line}" ]]; do
+                case "${line}" in
+                  GOOGLE_MAPS_API_KEY=*)
+                    printf '\''GOOGLE_MAPS_API_KEY=%s\n'\'' "${GOOGLE_MAPS_API_KEY}" >>"${tmp}"
+                    replaced=true
+                    ;;
+                  *) printf '\''%s\n'\'' "${line}" >>"${tmp}" ;;
+                esac
+              done <"${env_file}"
+              if [[ "${replaced}" != true ]]; then
+                printf '\''GOOGLE_MAPS_API_KEY=%s\n'\'' "${GOOGLE_MAPS_API_KEY}" >>"${tmp}"
+              fi
+              chmod 600 "${tmp}"
+              mv "${tmp}" "${env_file}"
+              trap - EXIT
+              unset GOOGLE_MAPS_API_KEY
+              echo "Google Maps production configuration reconciled."
+              echo "Backup preserved under .runtime/config-backups."
+            '
