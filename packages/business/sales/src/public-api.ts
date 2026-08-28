@@ -48,6 +48,25 @@ export {
   type PersistedExternalCatalogLink,
   type RemoveExternalCatalogLinkInput
 } from './application/external-catalog-link-service.js';
+export {
+  ExternalOrderInboxError,
+  ExternalOrderInboxService,
+  type ExternalOrderInboxClock,
+  type ExternalOrderInboxErrorCode,
+  type ExternalOrderInboxItem,
+  type ExternalOrderInboxListQuery,
+  type ExternalOrderInboxModifier,
+  type ExternalOrderInboxPage,
+  type ExternalOrderInboxRecord,
+  type ExternalOrderInboxRepository,
+  type ExternalOrderInboxSnapshot,
+  type ExternalOrderMappingStatus,
+  type ExternalOrderOperationalStatus,
+  type ExternalOrderReceiveDisposition,
+  type ExternalOrderReceiveResult,
+  type PersistExternalOrderReceiptInput,
+  type ReceiveExternalOrderInput
+} from './application/external-order-inbox.js';
 export type { SalePostingDecision, SalesRepository } from './application/sales-repository.js';
 export {
   SalesService,
