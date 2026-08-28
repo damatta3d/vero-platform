@@ -2,7 +2,7 @@ import { consumeAuthorizedAccess, type AuthorizedAccessContext } from '@vero/cor
 
 import type { ExternalCatalogLink } from './external-catalog-link.js';
 import type { ExternalCatalogLinkRepository } from './external-catalog-link-service.js';
-import type { ExternalOrder } from './external-order.js';
+import type { ExternalOrder, ExternalOrderItem } from './external-order.js';
 
 export type ExternalOrderOperationalStatus =
   | 'RECEIVED'
@@ -145,16 +145,17 @@ export interface ExternalOrderInboxClock {
   now(): Date;
 }
 
-const transitions: Readonly<Record<ExternalOrderOperationalStatus, readonly ExternalOrderOperationalStatus[]>> =
-  Object.freeze({
-    RECEIVED: Object.freeze(['CONFIRMED', 'CANCELLED']),
-    CONFIRMED: Object.freeze(['PREPARING', 'CANCELLED']),
-    PREPARING: Object.freeze(['READY', 'CANCELLED']),
-    READY: Object.freeze(['DISPATCHED', 'COMPLETED', 'CANCELLED']),
-    DISPATCHED: Object.freeze(['COMPLETED', 'CANCELLED']),
-    COMPLETED: Object.freeze([]),
-    CANCELLED: Object.freeze([])
-  });
+const transitions: Readonly<
+  Record<ExternalOrderOperationalStatus, readonly ExternalOrderOperationalStatus[]>
+> = Object.freeze({
+  RECEIVED: Object.freeze<ExternalOrderOperationalStatus[]>(['CONFIRMED', 'CANCELLED']),
+  CONFIRMED: Object.freeze<ExternalOrderOperationalStatus[]>(['PREPARING', 'CANCELLED']),
+  PREPARING: Object.freeze<ExternalOrderOperationalStatus[]>(['READY', 'CANCELLED']),
+  READY: Object.freeze<ExternalOrderOperationalStatus[]>(['DISPATCHED', 'COMPLETED', 'CANCELLED']),
+  DISPATCHED: Object.freeze<ExternalOrderOperationalStatus[]>(['COMPLETED', 'CANCELLED']),
+  COMPLETED: Object.freeze<ExternalOrderOperationalStatus[]>([]),
+  CANCELLED: Object.freeze<ExternalOrderOperationalStatus[]>([])
+});
 
 export class ExternalOrderInboxService {
   constructor(
@@ -275,12 +276,15 @@ function buildSnapshot(
 
   const linkMap = createLinkMap(links);
   let fullyMapped = true;
-  const items = order.items.map((item, index) => {
+  const items = order.items.map((item: ExternalOrderItem, index) => {
     const mapped = mapItem(item, index, linkMap);
     fullyMapped = fullyMapped && mapped.mapped;
     return mapped.item;
   });
-  const subtotalCents = safeSum(items.map((item) => item.totalCents), 'order.items');
+  const subtotalCents = safeSum(
+    items.map((item) => item.totalCents),
+    'order.items'
+  );
   const discountCents = safeSum(
     order.discounts.map((discount, index) =>
       money(discount.amountCents, `order.discounts[${index}].amountCents`)
@@ -288,7 +292,9 @@ function buildSnapshot(
     'order.discounts'
   );
   const additionalFeesCents = safeSum(
-    order.additionalFeesCents.map((fee, index) => money(fee, `order.additionalFeesCents[${index}]`)),
+    order.additionalFeesCents.map((fee, index) =>
+      money(fee, `order.additionalFeesCents[${index}]`)
+    ),
     'order.additionalFeesCents'
   );
   const customerDisplayName = minimizeCustomerName(order.customer.name);
@@ -314,7 +320,10 @@ function buildSnapshot(
 function mapStoredItems(
   items: readonly ExternalOrderInboxItem[],
   links: readonly ExternalCatalogLink[]
-): Readonly<{ items: readonly ExternalOrderInboxItem[]; mappingStatus: ExternalOrderMappingStatus }> {
+): Readonly<{
+  items: readonly ExternalOrderInboxItem[];
+  mappingStatus: ExternalOrderMappingStatus;
+}> {
   const linkMap = createLinkMap(links);
   let fullyMapped = true;
   const mappedItems = items.map((item) => {
@@ -349,11 +358,15 @@ function mapStoredItems(
 }
 
 function mapItem(
-  item: ExternalOrder['items'][number],
+  item: ExternalOrderItem,
   index: number,
   links: ReadonlyMap<string, string>
 ): Readonly<{ item: ExternalOrderInboxItem; mapped: boolean }> {
-  const providerItemId = requiredText(item.providerItemId, `order.items[${index}].providerItemId`, 256);
+  const providerItemId = requiredText(
+    item.providerItemId,
+    `order.items[${index}].providerItemId`,
+    256
+  );
   const catalogProductId = links.get(referenceKey('ITEM', providerItemId));
   let mapped = catalogProductId !== undefined;
   const modifiers = item.modifiers.map((modifier, modifierIndex) => {
@@ -449,7 +462,11 @@ function requiredText(value: string, field: string, maximum: number): string {
   return normalized;
 }
 
-function optionalText(value: string | undefined, field: string, maximum: number): string | undefined {
+function optionalText(
+  value: string | undefined,
+  field: string,
+  maximum: number
+): string | undefined {
   if (value === undefined) return undefined;
   return requiredText(value, field, maximum);
 }

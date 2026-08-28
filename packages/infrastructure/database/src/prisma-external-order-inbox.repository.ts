@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { type Prisma, type PrismaClient } from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 
 import {
   ExternalOrderInboxError,
@@ -156,7 +156,9 @@ export class PrismaExternalOrderInboxRepository implements ExternalOrderInboxRep
     const last = visible[visible.length - 1];
     return Object.freeze({
       items: Object.freeze(visible.map(fromRow)),
-      ...(hasNext && last !== undefined ? { nextCursor: encodeCursor(last.occurredAt, last.id) } : {})
+      ...(hasNext && last !== undefined
+        ? { nextCursor: encodeCursor(last.occurredAt, last.id) }
+        : {})
     });
   }
 
