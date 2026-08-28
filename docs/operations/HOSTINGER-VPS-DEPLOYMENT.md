@@ -10,6 +10,27 @@ O deploy oficial usa `infrastructure/hostinger/deploy.sh`. O script preserva a c
 
 A árvore Git deve permanecer limpa. Configurações específicas do servidor devem ficar em `.env.production`, nunca em alterações locais de arquivos versionados.
 
+## Automação de acesso à VPS
+
+O workflow `.github/workflows/deploy-production.yml` automatiza apenas o transporte SSH até a VPS e sempre reutiliza `infrastructure/hostinger/deploy.sh` no servidor. Ele não substitui o backup, migrations, preflight ou smoke test do script oficial.
+
+O workflow pode ser executado manualmente ou por atualização da branch `deploy/production`. Em ambos os casos, ele bloqueia qualquer SHA que não seja exatamente o HEAD atual de `main`.
+
+Antes do primeiro uso, configure estes GitHub Actions Secrets no repositório:
+
+```text
+VERO_VPS_HOST
+VERO_VPS_USER
+VERO_VPS_SSH_KEY
+VERO_VPS_HOST_FINGERPRINT
+```
+
+`VERO_VPS_SSH_KEY` deve ser uma chave privada dedicada ao deploy, sem ser versionada. `VERO_VPS_HOST_FINGERPRINT` deve conter a fingerprint SHA256 da chave pública SSH do servidor, no formato `SHA256:...`, para impedir conexão com host não autenticado.
+
+O workflow usa a porta SSH 22 e o diretório de aplicação `/opt/vero/platform`. O usuário configurado deve conseguir atualizar o repositório e executar Docker Compose sem interação. O segredo `.env.production` continua existindo somente dentro da VPS.
+
+A action SSH externa é fixada por SHA de commit, evitando que uma tag mutável altere o código executado durante um deploy.
+
 ## Endereço público
 
 `VERO_PUBLIC_SITE` é obrigatório no ambiente de produção. Use explicitamente:
@@ -68,6 +89,8 @@ Por padrão, o smoke usa `VERO_MVP_TENANT_ID` como slug público. Um slug difere
 - somente o Caddy publica as portas web;
 - backups pré-deploy ficam em `.runtime/backups`;
 - o token Mercado Pago e demais segredos não são impressos pelo preflight;
+- credenciais SSH ficam somente em GitHub Actions Secrets;
+- o workflow valida fingerprint do host SSH antes de executar comandos;
 - não registre credenciais reais em documentação, issues, PRs ou commits;
 - nunca remova volumes persistentes durante uma atualização normal.
 
