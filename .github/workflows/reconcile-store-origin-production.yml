@@ -43,23 +43,20 @@ jobs:
           timeout: 30s
           command_timeout: 5m
           script: |
-            bash -lc '
-              set -Eeuo pipefail
-              cd /opt/vero/platform
-              compose=(docker compose --env-file .env.production -f infrastructure/hostinger/docker-compose.production.yml)
-              "${compose[@]}" exec -T postgres sh -lc '\''psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<"SQL"
-              UPDATE store_settings
-                 SET address = '\'''\''Rua Urano, 178'\'''\'',
-                     neighborhood = '\'''\''Vila Planalto'\'''\'',
-                     city = '\'''\''Campo Grande'\'''\'',
-                     state_code = '\'''\''MS'\'''\''
-               WHERE tenant_id = '\'''\''santo-parma'\'''\'';
+            set -Eeuo pipefail
+            cd /opt/vero/platform
+            cat <<'SQL' | docker compose --env-file .env.production -f infrastructure/hostinger/docker-compose.production.yml exec -T postgres sh -lc 'psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+            UPDATE store_settings
+               SET address = 'Rua Urano, 178',
+                   neighborhood = 'Vila Planalto',
+                   city = 'Campo Grande',
+                   state_code = 'MS'
+             WHERE tenant_id = 'santo-parma';
 
-              SELECT tenant_id,
-                     (address IS NOT NULL AND btrim(address) <> '\'''\'''\'' ) AS address_ok,
-                     (city IS NOT NULL AND btrim(city) <> '\'''\'''\'' ) AS city_ok,
-                     (state_code IS NOT NULL AND btrim(state_code) <> '\'''\'''\'' ) AS state_ok
-                FROM store_settings
-               WHERE tenant_id = '\'''\''santo-parma'\'''\'';
-              SQL'\''
-            '
+            SELECT tenant_id,
+                   (address IS NOT NULL AND btrim(address) <> '') AS address_ok,
+                   (city IS NOT NULL AND btrim(city) <> '') AS city_ok,
+                   (state_code IS NOT NULL AND btrim(state_code) <> '') AS state_ok
+              FROM store_settings
+             WHERE tenant_id = 'santo-parma';
+            SQL
