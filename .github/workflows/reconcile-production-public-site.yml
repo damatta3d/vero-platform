@@ -1,0 +1,43 @@
+name: Reconcile production public site
+
+on:
+  push:
+    branches:
+      - chore/vps-hostkey-diagnostic
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Reconcile VERO_PUBLIC_SITE on VPS
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2
+        with:
+          host: ${{ secrets.VERO_VPS_HOST }}
+          username: ${{ secrets.VERO_VPS_USER }}
+          key: ${{ secrets.VERO_VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+          port: 22
+          protocol: tcp4
+          timeout: 30s
+          command_timeout: 5m
+          script: |
+            bash -lc '
+              set -Eeuo pipefail
+              cd /opt/vero/platform
+              test -f .env.production
+              umask 077
+              backup=".env.production.pre-public-site.$(date -u +%Y%m%dT%H%M%SZ)"
+              cp -p .env.production "$backup"
+              if grep -q "^VERO_PUBLIC_SITE=" .env.production; then
+                sed -i "s|^VERO_PUBLIC_SITE=.*$|VERO_PUBLIC_SITE=api.veroplatform.cloud|" .env.production
+              else
+                printf "\nVERO_PUBLIC_SITE=api.veroplatform.cloud\n" >> .env.production
+              fi
+              value="$(grep "^VERO_PUBLIC_SITE=" .env.production | tail -n 1 | cut -d= -f2-)"
+              [[ "$value" == "api.veroplatform.cloud" ]]
+              echo "VERO_PUBLIC_SITE configured; backup preserved as $backup"
+            '
