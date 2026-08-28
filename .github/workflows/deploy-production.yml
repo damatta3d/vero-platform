@@ -1,0 +1,94 @@
+name: Deploy production VPS
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - deploy/production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-vps-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Hostinger VPS
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 40
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify release is current main
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git fetch --no-tags origin main
+          main_sha="$(git rev-parse origin/main)"
+          if [[ "${GITHUB_SHA}" != "${main_sha}" ]]; then
+            echo "Refusing deploy: release SHA ${GITHUB_SHA} is not current main ${main_sha}." >&2
+            exit 1
+          fi
+
+      - name: Validate SSH deployment secrets
+        shell: bash
+        env:
+          VERO_VPS_HOST: ${{ secrets.VERO_VPS_HOST }}
+          VERO_VPS_USER: ${{ secrets.VERO_VPS_USER }}
+          VERO_VPS_SSH_KEY: ${{ secrets.VERO_VPS_SSH_KEY }}
+          VERO_VPS_HOST_FINGERPRINT: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+        run: |
+          set -Eeuo pipefail
+          for key in VERO_VPS_HOST VERO_VPS_USER VERO_VPS_SSH_KEY VERO_VPS_HOST_FINGERPRINT; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Required production secret is missing: ${key}" >&2
+              exit 1
+            fi
+          done
+          [[ "${VERO_VPS_HOST_FINGERPRINT}" == SHA256:* ]] || {
+            echo "VERO_VPS_HOST_FINGERPRINT must use SHA256:... format." >&2
+            exit 1
+          }
+
+      - name: Deploy current main over SSH
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        env:
+          VERO_DEPLOY_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.VERO_VPS_HOST }}
+          username: ${{ secrets.VERO_VPS_USER }}
+          key: ${{ secrets.VERO_VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+          port: 22
+          protocol: tcp4
+          timeout: 30s
+          command_timeout: 30m
+          envs: VERO_DEPLOY_SHA
+          script: |
+            bash -lc '
+              set -Eeuo pipefail
+              cd /opt/vero/platform
+
+              if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
+                echo "Tracked local changes detected on the VPS; deploy aborted." >&2
+                exit 1
+              fi
+
+              git fetch --no-tags origin main
+              git checkout main
+              git pull --ff-only origin main
+
+              actual_sha="$(git rev-parse HEAD)"
+              if [[ "${actual_sha}" != "${VERO_DEPLOY_SHA}" ]]; then
+                echo "VPS SHA ${actual_sha} does not match authorized release ${VERO_DEPLOY_SHA}." >&2
+                exit 1
+              fi
+
+              bash infrastructure/hostinger/deploy.sh
+            '
