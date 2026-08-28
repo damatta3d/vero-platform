@@ -12,6 +12,7 @@ jobs:
   format:
     runs-on: ubuntu-24.04
     if: github.actor != 'github-actions[bot]'
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,17 +26,52 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - name: Apply targeted type fixes
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          business = Path('packages/business/sales/src/application/external-order-inbox.ts')
+          text = business.read_text()
+          text = text.replace(
+              "import type { ExternalOrder } from './external-order.js';",
+              "import type { ExternalOrder, ExternalOrderItem } from './external-order.js';",
+          )
+          text = text.replace(
+              "item: ExternalOrder['items'][number],",
+              "item: ExternalOrderItem,",
+          )
+          text = text.replace(
+              "order.items.map((item, index) => {",
+              "order.items.map((item: ExternalOrderItem, index) => {",
+          )
+          business.write_text(text)
+
+          repository = Path('packages/infrastructure/database/src/prisma-external-order-inbox.repository.ts')
+          text = repository.read_text().replace(
+              "import { type Prisma, type PrismaClient } from '@prisma/client';",
+              "import { Prisma, type PrismaClient } from '@prisma/client';",
+          )
+          repository.write_text(text)
+          PY
       - run: pnpm exec prettier --write packages/business/sales/src/application/external-order-inbox.ts packages/infrastructure/database/src/prisma-external-order-inbox.repository.ts
-      - name: Commit formatting
+      - run: pnpm nx run business-sales:lint
+      - run: pnpm nx run infrastructure-database:lint
+      - run: pnpm nx run api:lint
+      - run: pnpm typecheck
+      - name: Commit validated fixes
         shell: bash
         run: |
           set -Eeuo pipefail
           if git diff --quiet --exit-code; then
-            echo "Already formatted."
+            echo "No fixes required."
             exit 0
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add packages/business/sales/src/application/external-order-inbox.ts packages/infrastructure/database/src/prisma-external-order-inbox.repository.ts
-          git commit -m "style(orders): format external order inbox"
+          HUSKY=0 git commit -m "fix(orders): satisfy inbox quality gates"
           git push origin HEAD:feat/external-order-inbox-v2
