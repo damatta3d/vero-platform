@@ -1,0 +1,27 @@
+name: Diagnose VPS host key
+
+on:
+  push:
+    branches:
+      - chore/vps-hostkey-diagnostic
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Scan public SSH host keys from runner
+        shell: bash
+        env:
+          VERO_VPS_HOST: ${{ secrets.VERO_VPS_HOST }}
+        run: |
+          set -Eeuo pipefail
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp"' EXIT
+          ssh-keyscan -T 5 -p 22 "$VERO_VPS_HOST" >"$tmp" 2>/dev/null
+          test -s "$tmp"
+          echo "Public SSH host key fingerprints observed by GitHub runner:"
+          ssh-keygen -lf "$tmp" -E sha256
