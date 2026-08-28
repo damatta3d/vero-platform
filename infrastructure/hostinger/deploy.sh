@@ -159,13 +159,13 @@ resolve_interrupted_receipt_migration() {
     -U "${DEPLOY_POSTGRES_USER}" -d "${DEPLOY_POSTGRES_DB}" \
     -tAc "SELECT to_regclass('public._prisma_migrations')" \
     | tr -d '[:space:]')"
-  [[ "${migration_table}" == '_prisma_migrations' ]] || return
+  [[ "${migration_table}" == '_prisma_migrations' ]] || return 0
 
   failed="$(compose exec -T postgres psql \
     -U "${DEPLOY_POSTGRES_USER}" -d "${DEPLOY_POSTGRES_DB}" \
     -tAc "SELECT EXISTS (SELECT 1 FROM public._prisma_migrations WHERE migration_name='20260819173000_order_receipt_mode' AND finished_at IS NULL AND rolled_back_at IS NULL)::int" \
     | tr -d '[:space:]')"
-  [[ "${failed}" == '1' ]] || return
+  [[ "${failed}" == '1' ]] || return 0
 
   log "Marcando a tentativa interrompida de ${migration_name} para reaplicação segura."
   compose run --rm --no-deps api pnpm exec prisma migrate resolve --rolled-back "${migration_name}"
