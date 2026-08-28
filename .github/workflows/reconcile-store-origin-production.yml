@@ -1,0 +1,65 @@
+name: Reconcile production store origin
+
+on:
+  push:
+    branches:
+      - chore/reconcile-store-origin-production
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Reconcile Santo Parma origin on Hostinger VPS
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 10
+    steps:
+      - name: Checkout reconciliation commit
+        uses: actions/checkout@v4
+
+      - name: Validate SSH deployment secrets
+        shell: bash
+        env:
+          VERO_VPS_HOST: ${{ secrets.VERO_VPS_HOST }}
+          VERO_VPS_USER: ${{ secrets.VERO_VPS_USER }}
+          VERO_VPS_SSH_KEY: ${{ secrets.VERO_VPS_SSH_KEY }}
+          VERO_VPS_HOST_FINGERPRINT: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+        run: |
+          set -Eeuo pipefail
+          for key in VERO_VPS_HOST VERO_VPS_USER VERO_VPS_SSH_KEY VERO_VPS_HOST_FINGERPRINT; do
+            [[ -n "${!key:-}" ]] || { echo "Required production secret is missing: ${key}" >&2; exit 1; }
+          done
+
+      - name: Reconcile store origin without exposing environment secrets
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2
+        with:
+          host: ${{ secrets.VERO_VPS_HOST }}
+          username: ${{ secrets.VERO_VPS_USER }}
+          key: ${{ secrets.VERO_VPS_SSH_KEY }}
+          fingerprint: ${{ secrets.VERO_VPS_HOST_FINGERPRINT }}
+          port: 22
+          protocol: tcp4
+          timeout: 30s
+          command_timeout: 5m
+          script: |
+            bash -lc '
+              set -Eeuo pipefail
+              cd /opt/vero/platform
+              compose=(docker compose --env-file .env.production -f infrastructure/hostinger/docker-compose.production.yml)
+              "${compose[@]}" exec -T postgres sh -lc '\''psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<"SQL"
+              UPDATE store_settings
+                 SET address = '\'''\''Rua Urano, 178'\'''\'',
+                     neighborhood = '\'''\''Vila Planalto'\'''\'',
+                     city = '\'''\''Campo Grande'\'''\'',
+                     state_code = '\'''\''MS'\'''\''
+               WHERE tenant_id = '\'''\''santo-parma'\'''\'';
+
+              SELECT tenant_id,
+                     (address IS NOT NULL AND btrim(address) <> '\'''\'''\'' ) AS address_ok,
+                     (city IS NOT NULL AND btrim(city) <> '\'''\'''\'' ) AS city_ok,
+                     (state_code IS NOT NULL AND btrim(state_code) <> '\'''\'''\'' ) AS state_ok
+                FROM store_settings
+               WHERE tenant_id = '\'''\''santo-parma'\'''\'';
+              SQL'\''
+            '
