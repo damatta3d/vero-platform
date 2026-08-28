@@ -277,3 +277,55 @@ model StoreScheduleWindow {
   @@index([tenantId, weekday])
   @@map("store_schedule_windows")
 }
+
+model ExternalOrderInbox {
+  id                      String                 @id @default(uuid()) @db.Uuid
+  tenantId                String                 @db.VarChar(128)
+  provider                String                 @db.VarChar(64)
+  establishmentExternalId String                 @db.VarChar(256)
+  externalOrderId         String                 @db.VarChar(256)
+  reference               String                 @db.VarChar(128)
+  customerDisplayName     String?                @db.VarChar(80)
+  orderType               String                 @db.VarChar(128)
+  salesChannel            String                 @db.VarChar(128)
+  currency                String                 @db.Char(3)
+  subtotalCents           Int
+  discountCents           Int
+  deliveryFeeCents        Int
+  additionalFeesCents     Int
+  totalCents              Int
+  items                   Json
+  operationalStatus       String                 @db.VarChar(32)
+  providerStatus          String?                @db.VarChar(128)
+  mappingStatus           String                 @db.VarChar(32)
+  occurredAt              DateTime               @db.Timestamptz(3)
+  lastObservedAt          DateTime               @db.Timestamptz(3)
+  sourceRevision          String                 @db.VarChar(256)
+  statusUpdatedAt         DateTime               @db.Timestamptz(3)
+  createdAt               DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime               @updatedAt @db.Timestamptz(3)
+  receipts                ExternalOrderReceipt[]
+
+  @@unique([tenantId, provider, establishmentExternalId, externalOrderId])
+  @@index([tenantId, occurredAt, id])
+  @@index([tenantId, provider, operationalStatus, occurredAt])
+  @@index([tenantId, mappingStatus, occurredAt])
+  @@map("external_order_inbox")
+}
+
+model ExternalOrderReceipt {
+  id             String             @id @default(uuid()) @db.Uuid
+  orderId        String             @db.Uuid
+  sourceRevision String             @db.VarChar(256)
+  observedAt     DateTime           @db.Timestamptz(3)
+  occurredAt     DateTime           @db.Timestamptz(3)
+  providerStatus String?            @db.VarChar(128)
+  payloadHash    String             @db.Char(64)
+  snapshot       Json
+  createdAt      DateTime           @default(now()) @db.Timestamptz(3)
+  order          ExternalOrderInbox @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, sourceRevision])
+  @@index([orderId, observedAt])
+  @@map("external_order_receipts")
+}
