@@ -8,11 +8,19 @@ import {
   type InventoryRepository
 } from '@vero/business-inventory';
 import { ProductionService, type ProductionRepository } from '@vero/business-production';
-import { SalesService, type SalesRepository } from '@vero/business-sales';
+import {
+  ExternalOrderInboxService,
+  SalesService,
+  type ExternalCatalogLinkRepository,
+  type ExternalOrderInboxRepository,
+  type SalesRepository
+} from '@vero/business-sales';
 import type { AppConfig } from '@vero/core-configuration';
 import {
   createDatabaseClient,
   PrismaCatalogRepository,
+  PrismaExternalCatalogLinkRepository,
+  PrismaExternalOrderInboxRepository,
   PrismaFinanceEntryRepository,
   PrismaInventoryRepository,
   PrismaOperationalEntryRepository,
@@ -44,6 +52,7 @@ import { OperationalEntryController } from '../operations/operational-entry.cont
 import { OperationalEntryService } from '../operations/operational-entry.service.js';
 import { OPERATIONAL_ENTRY_REPOSITORY } from '../operations/operational-entry.tokens.js';
 import { OperationsPageController } from '../operations/operations-page.controller.js';
+import { ExternalOrderController } from '../orders/external-order.controller.js';
 import { PortalPageController } from '../portal/portal-page.controller.js';
 import { ProductionController } from '../production/production.controller.js';
 import { PRODUCTION_REPOSITORY } from '../production/production.tokens.js';
@@ -79,6 +88,7 @@ export class CatalogModule {
         FinancePageController,
         OperationalEntryController,
         OperationsPageController,
+        ExternalOrderController,
         MvpPageController,
         PublicMenuController,
         PublicMenuPageController,
@@ -146,6 +156,24 @@ export class CatalogModule {
           inject: [SALES_REPOSITORY],
           useFactory: (repository: SalesRepository) =>
             new SalesService(repository, { generate: randomUUID }, { now: () => new Date() })
+        },
+        {
+          provide: PrismaExternalCatalogLinkRepository,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaExternalCatalogLinkRepository(client)
+        },
+        {
+          provide: PrismaExternalOrderInboxRepository,
+          inject: [DATABASE_CLIENT],
+          useFactory: (client: DatabaseClient) => new PrismaExternalOrderInboxRepository(client)
+        },
+        {
+          provide: ExternalOrderInboxService,
+          inject: [PrismaExternalOrderInboxRepository, PrismaExternalCatalogLinkRepository],
+          useFactory: (
+            repository: ExternalOrderInboxRepository,
+            links: ExternalCatalogLinkRepository
+          ) => new ExternalOrderInboxService(repository, links, { now: () => new Date() })
         },
         {
           provide: FINANCE_REPOSITORY,
