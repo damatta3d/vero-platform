@@ -50,6 +50,16 @@ jobs:
               "order.items.map((item, index) => {",
               "order.items.map((item: ExternalOrderItem, index) => {",
           )
+          for old, new in (
+              ("RECEIVED: Object.freeze(['CONFIRMED', 'CANCELLED']),", "RECEIVED: Object.freeze<ExternalOrderOperationalStatus[]>(['CONFIRMED', 'CANCELLED']),"),
+              ("CONFIRMED: Object.freeze(['PREPARING', 'CANCELLED']),", "CONFIRMED: Object.freeze<ExternalOrderOperationalStatus[]>(['PREPARING', 'CANCELLED']),"),
+              ("PREPARING: Object.freeze(['READY', 'CANCELLED']),", "PREPARING: Object.freeze<ExternalOrderOperationalStatus[]>(['READY', 'CANCELLED']),"),
+              ("READY: Object.freeze(['DISPATCHED', 'COMPLETED', 'CANCELLED']),", "READY: Object.freeze<ExternalOrderOperationalStatus[]>(['DISPATCHED', 'COMPLETED', 'CANCELLED']),"),
+              ("DISPATCHED: Object.freeze(['COMPLETED', 'CANCELLED']),", "DISPATCHED: Object.freeze<ExternalOrderOperationalStatus[]>(['COMPLETED', 'CANCELLED']),"),
+              ("COMPLETED: Object.freeze([]),", "COMPLETED: Object.freeze<ExternalOrderOperationalStatus[]>([]),"),
+              ("CANCELLED: Object.freeze([])", "CANCELLED: Object.freeze<ExternalOrderOperationalStatus[]>([])")
+          ):
+              text = text.replace(old, new)
           business.write_text(text)
 
           repository = Path('packages/infrastructure/database/src/prisma-external-order-inbox.repository.ts')
